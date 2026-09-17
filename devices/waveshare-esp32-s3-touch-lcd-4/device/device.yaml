@@ -406,6 +406,8 @@ display:
   - platform: mipi_rgb
     model: WAVESHARE-4-480X480
     id: my_display
+    # Swap complete RGB framebuffers at frame boundaries to prevent tearing.
+    tear_free: true
     # Start WiFi before the RGB panel allocates its frame buffers; otherwise the
     # WiFi driver can fail to claim enough internal RX buffers on fresh boots.
     setup_priority: 240

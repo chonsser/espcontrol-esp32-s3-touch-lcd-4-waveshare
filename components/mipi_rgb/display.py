@@ -72,6 +72,7 @@ from ..spi import CONF_SPI_MODE, SPI_DATA_RATE_SCHEMA, SPI_MODE_OPTIONS, SPIComp
 from . import models
 
 DEPENDENCIES = ["esp32", "psram"]
+CONF_TEAR_FREE = "tear_free"
 
 mipi_rgb_ns = cg.esphome_ns.namespace("mipi_rgb")
 mipi_rgb = mipi_rgb_ns.class_("MipiRgb", display.Display, cg.Component)
@@ -159,6 +160,7 @@ def model_schema(config):
             cv.Optional(CONF_TRANSFORM): transform,
             cv.Required(CONF_MODEL): cv.one_of(model.name, upper=True),
             model.option(CONF_INVERT_COLORS, False): cv.boolean,
+            cv.Optional(CONF_TEAR_FREE, default=False): cv.boolean,
             model.option(CONF_USE_AXIS_FLIPS, True): cv.boolean,
             model.option(CONF_PCLK_FREQUENCY, "40MHz"): cv.All(
                 cv.frequency, cv.Range(min=4e6, max=100e6)
@@ -278,6 +280,8 @@ async def to_code(config):
     width, height = model_dimensions(config, model)
     var = cg.new_Pvariable(config[CONF_ID], width, height)
     cg.add(var.set_model(model.name))
+    if config[CONF_TEAR_FREE]:
+        cg.add(var.set_tear_free(True))
     if enable_pin := config.get(CONF_ENABLE_PIN):
         enable = [await cg.gpio_pin_expression(pin) for pin in enable_pin]
         cg.add(var.set_enable_pins(enable))

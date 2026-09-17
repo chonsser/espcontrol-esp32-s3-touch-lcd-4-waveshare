@@ -4,6 +4,9 @@
 #include "esphome/core/gpio.h"
 #include "esphome/components/display/display.h"
 #include "esp_lcd_panel_ops.h"
+#include "esp_lcd_panel_rgb.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #ifdef USE_SPI
 #include "esphome/components/spi/spi.h"
 #endif
@@ -37,6 +40,7 @@ class MipiRgb : public display::Display {
   display::ColorOrder get_color_mode() { return this->color_mode_; }
   void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
+  void set_tear_free(bool tear_free) { this->tear_free_ = tear_free; }
 
   void add_data_pin(InternalGPIOPin *data_pin, size_t index) { this->data_pins_[index] = data_pin; };
   void set_de_pin(InternalGPIOPin *de_pin) { this->de_pin_ = de_pin; }
@@ -68,6 +72,40 @@ class MipiRgb : public display::Display {
  protected:
   void setup_enables_();
   void common_setup_();
+  esp_err_t setup_tear_free_();
+  void write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride);
+  bool wait_for_swap_();
+  static bool on_vsync_(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx);
+  static bool on_frame_complete_(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data,
+                                 void *user_ctx);
+
+  struct VsyncContext {
+    portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;
+    StaticSemaphore_t semaphore_storage;
+    SemaphoreHandle_t semaphore{nullptr};
+    uint32_t count{0};
+    uint32_t frame_count{0};
+  };
+  struct DirtyRect {
+    int x{0};
+    int y{0};
+    int w{0};
+    int h{0};
+  };
+  bool tear_free_{false};
+  void *frame_buffers_[2]{};
+  VsyncContext *vsync_{nullptr};
+  TickType_t swap_timeout_ticks_{0};
+  uint32_t swap_vsync_count_{0};
+  uint32_t swap_frame_count_{0};
+  // Front is the latest SUBMITTED buffer, not necessarily the latched reader.
+  // Back may still be scanned until wait_for_swap_() confirms its release.
+  uint8_t front_buffer_{0};
+  uint8_t back_buffer_{1};
+  bool swap_pending_{false};
+  // Difference to repair from front into back after release, before the next draw.
+  DirtyRect pending_rect_{};
+
   InternalGPIOPin *de_pin_{nullptr};
   InternalGPIOPin *pclk_pin_{nullptr};
   InternalGPIOPin *hsync_pin_{nullptr};
