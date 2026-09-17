@@ -12,9 +12,14 @@ inline void lv_label_set_display_text(lv_obj_t *label, const char *text) {
   if (text == nullptr ||
       (std::strstr(text, "\xE1\xB9\xA2") == nullptr &&
        std::strstr(text, "\xE1\xB9\xA3") == nullptr)) {
-    lv_label_set_text(label, text);
+    // nullptr explicitly refreshes existing text in LVGL; never suppress it.
+    if (text == nullptr || std::strcmp(lv_label_get_text(label), text) != 0) {
+      lv_label_set_text(label, text);
+    }
     return;
   }
   const std::string normalized = normalize_display_text(text);
-  lv_label_set_text(label, normalized.c_str());
+  if (normalized != lv_label_get_text(label)) {
+    lv_label_set_text(label, normalized.c_str());
+  }
 }

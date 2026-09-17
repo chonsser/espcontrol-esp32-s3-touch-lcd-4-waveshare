@@ -408,7 +408,14 @@ inline void apply_card_descendant_text_color(lv_obj_t *obj, lv_color_t color) {
   for (int32_t i = 0; i < count; i++) {
     lv_obj_t *child = lv_obj_get_child(obj, i);
     if (!child) continue;
-    lv_obj_set_style_text_color(child, color, LV_PART_MAIN);
+    // Compare the exact local override, not the resolved/inherited state color.
+    // A missing override must still be installed even when it looks identical.
+    lv_style_value_t current{};
+    if (lv_obj_get_local_style_prop(child, LV_STYLE_TEXT_COLOR, &current,
+                                   LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
+        !lv_color_eq(current.color, color)) {
+      lv_obj_set_style_text_color(child, color, LV_PART_MAIN);
+    }
     apply_card_descendant_text_color(child, color);
   }
 }
@@ -550,7 +557,9 @@ inline void optimistic_toggle_reported(lv_obj_t *, bool) {}
 // instead of running off the edge of the tile.
 inline void configure_button_label_wrap(lv_obj_t *label) {
   if (!label) return;
-  lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+  if (lv_label_get_long_mode(label) != LV_LABEL_LONG_WRAP) {
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+  }
   lv_obj_set_width(label, lv_pct(100));
 }
 
