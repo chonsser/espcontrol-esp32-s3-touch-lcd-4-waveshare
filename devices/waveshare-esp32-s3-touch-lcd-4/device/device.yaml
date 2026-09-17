@@ -136,6 +136,22 @@ esphome:
             id(wave_io_hub).digital_write(6, false);
             id(wave_io_hub).pin_mode(0, gpio::FLAG_INPUT);
             id(wave_io_hub).pin_mode(7, gpio::FLAG_INPUT);
+        # Reset the GT911 here instead of in the touchscreen driver. The driver
+        # probes the controller 56 ms after releasing reset, which is too early
+        # on this board after a warm restart: the probe fails, the driver falls
+        # back to the unused 0x14 address, and touch stays dead until a power
+        # cycle. Holding TP_INT low across the reset selects address 0x5D; then
+        # wait until the controller really answers before the driver sets up.
+        - lambda: |-
+            id(wave_io_hub).digital_write(2, false);
+            id(wave_io_hub).digital_write(1, false);
+            delay(10);
+            id(wave_io_hub).digital_write(1, true);
+            delay(100);
+            for (int attempt = 0; attempt < 40; attempt++) {
+              if (id(bus_a).write(0x5D, nullptr, 0) == i2c::ERROR_OK) break;
+              delay(25);
+            }
     - priority: 800
       then:
         - lambda: |-
@@ -372,14 +388,9 @@ touchscreen:
     i2c_id: bus_a
     display: my_display
     update_interval: 16ms
-    # TP_INT sits behind the expander, so it only selects the GT911 I2C address
-    # during reset; touches are polled.
-    interrupt_pin:
-      waveshare_io_ch32v003: wave_io_hub
-      number: 2
-    reset_pin:
-      waveshare_io_ch32v003: wave_io_hub
-      number: 1
+    # TP_RST (EXIO1) and TP_INT (EXIO2) sit behind the expander. The reset and
+    # address select run from on_boot above, so no pins are declared here and
+    # touches are polled.
     transform:
       mirror_x: false
       mirror_y: false
