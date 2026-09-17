@@ -18,13 +18,25 @@ inline bool send_toggle_action(const std::string &entity_id) {
     is_button_entity(entity_id) ? "button.press" : "homeassistant.toggle");
 }
 
+// Only domains whose next reported state is the plain opposite of the current
+// one may flip early. A cover reports "closing" and a media player "idle" or
+// "playing" first, so an early flip would bounce straight back.
+inline bool optimistic_toggle_supported(const std::string &entity_id) {
+  static const char *const domains[] = {
+    "light.", "switch.", "input_boolean.", "fan.", "siren.", "humidifier.", "automation."};
+  for (const char *domain : domains) {
+    if (entity_id.compare(0, std::strlen(domain), domain) == 0) return true;
+  }
+  return false;
+}
+
 // Toggle from a card tap. Profiles with optimistic toggles flip the card as
 // soon as the action has been sent instead of waiting for the state report.
 inline void send_card_toggle_action(const std::string &entity_id, lv_obj_t *card,
                                     bool currently_on) {
   const bool sent = send_toggle_action(entity_id);
 #ifdef ESPCONTROL_OPTIMISTIC_TOGGLE
-  if (sent && card && !is_button_entity(entity_id)) {
+  if (sent && card && optimistic_toggle_supported(entity_id)) {
     optimistic_toggle_apply(card, !currently_on);
   }
 #else

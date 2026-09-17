@@ -165,8 +165,9 @@ inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
       lv_label_set_display_text(s.icon_lbl, find_icon(p.icon.c_str()));
     } else if (p.type == "push") {
       lv_label_set_display_text(s.icon_lbl, "\U000F0741");
-      apply_push_button_transition(s.btn);
     }
+    // A push card keeps its colour fade whether or not it has a custom icon.
+    if (p.type == "push") apply_push_button_transition(s.btn);
     if (p.type == "push" && p.label.empty()) {
       lv_label_set_display_text(s.text_lbl, espcontrol_i18n("Push"));
     }
