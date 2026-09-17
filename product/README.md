@@ -69,6 +69,8 @@ generated output.
   entry, including its local-voice and relay capabilities.
 - `v2/devices/guition-esp32-s3-4848s040.json` is the authoritative compact
   S3 device entry.
+- `v2/devices/waveshare-esp32-s3-touch-lcd-4.json` is the authoritative
+  Waveshare 4-inch S3 device entry.
 
 `python3 scripts/check_product_model_v2.py` proves that the composed model is
 byte-for-byte equivalent to the generated card contract and device catalogue,

@@ -1227,7 +1227,7 @@ def firmware_cover_art_lifecycle_controller_errors(
     if (
         "transition_is_current(" not in hide_effect
         or "artwork_image.release: cover_art_downloaded_image" not in hide_effect
-        or 'std::string("${device_slug}") == "guition-esp32-s3-4848s040"' not in hide_effect
+        or "#ifdef ESPCONTROL_LOW_HEAP_COVER_ART" not in hide_effect
     ):
         errors.append(f"{cover_art_rel}: preserve guarded S3 image release when cover art is hidden")
 
@@ -2464,7 +2464,11 @@ def firmware_camera_refresh_action_errors(root: Path) -> list[str]:
     for package_path in sorted((root / "devices").glob("*/packages.yaml")):
         slug = package_path.parent.name
         package_text = package_path.read_text(encoding="utf-8")
-        expected = "image_cards_2.yaml" if slug == "guition-esp32-s3-4848s040" else "image_cards_6.yaml"
+        capacity = re.search(r'^\s*image_card_slot_capacity:\s*"(\d+)"', package_text, re.MULTILINE)
+        if capacity:
+            expected = f"image_cards_{capacity.group(1)}.yaml"
+        else:
+            expected = "image_cards_2.yaml" if slug == "guition-esp32-s3-4848s040" else "image_cards_6.yaml"
         if expected not in package_text:
             errors.append(
                 f"{package_path.relative_to(root)}: include {expected} so camera refresh action support "
@@ -5956,7 +5960,11 @@ def run_self_test() -> int:
         "      - lambda: 'id(espcontrol_app).display().transition_is_current(generation, espcontrol::DisplayMode::COVER_ART); lv_obj_move_foreground(id(cover_art_screensaver));'\n"
         "  - id: cover_art_hide_effect\n"
         "    then:\n"
-        "      - lambda: 'id(espcontrol_app).display().transition_is_current(generation, target); return std::string(\"${device_slug}\") == \"guition-esp32-s3-4848s040\";'\n"
+        "      - lambda: |-\n"
+        "          id(espcontrol_app).display().transition_is_current(generation, target);\n"
+        "          #ifdef ESPCONTROL_LOW_HEAP_COVER_ART\n"
+        "          return true;\n"
+        "          #endif\n"
         "      - artwork_image.release: cover_art_downloaded_image\n"
         "  - id: hide_cover_art_view\n"
         "    then:\n"

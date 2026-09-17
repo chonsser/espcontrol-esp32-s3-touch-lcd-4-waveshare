@@ -79,6 +79,14 @@ const screenProducts: Record<string, Record<string, string>> = {
     resolution: '480 x 480',
     processor: 'ESP32-S3',
   },
+  'screens/s3-touch-lcd-4.md': {
+    name: 'Waveshare ESP32-S3-Touch-LCD-4',
+    brand: 'Waveshare',
+    model: 'ESP32-S3-Touch-LCD-4',
+    size: '4 inches',
+    resolution: '480 x 480',
+    processor: 'ESP32-S3',
+  },
   'screens/jc1060p470.md': {
     name: 'Guition JC1060P470',
     model: 'JC1060P470 / new panel revision',
@@ -178,7 +186,7 @@ const faqItems = [
   {
     question: 'How Many Cards Can I Have?',
     answer:
-      'The home screen supports 20 cards on both JC8012P4A1 rear-case revisions, 15 on both JC1060P470 panel revisions, 6 on JC4880P443, and 9 on 4848S040 or the ESP32-P4 86 Panel, with more available through subpages.',
+      'The home screen supports 20 cards on both JC8012P4A1 rear-case revisions, 15 on both JC1060P470 panel revisions, 6 on JC4880P443, and 9 on 4848S040, the Waveshare ESP32-S3-Touch-LCD-4, or the ESP32-P4 86 Panel, with more available through subpages.',
   },
   {
     question: 'What Is a Subpage?',
@@ -422,6 +430,7 @@ export default defineConfig({
           { text: '4.3-inch JC4880P443', link: '/screens/jc4880p443' },
           { text: '4-inch ESP32-P4 86 Panel', link: '/screens/p4-86' },
           { text: '4-inch 4848S040', link: '/screens/4848s040' },
+          { text: '4-inch Waveshare S3-Touch-LCD-4', link: '/screens/s3-touch-lcd-4' },
           { text: 'Printable Stands', link: '/reference/3d-printable-stands' },
         ],
       },
