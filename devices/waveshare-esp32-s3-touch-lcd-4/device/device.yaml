@@ -29,6 +29,7 @@ esp32:
     # incompletely in ESPHome containers and then fail while creating .bin files.
     #platform_version: 55.03.37
     advanced:
+      compiler_optimization: PERF
       # The clock/cover-art display controller uses a deep ESPHome action chain.
       # Keep enough headroom for rapid presence-driven sleep/wake transitions;
       # the 8 KiB default can overflow loopTask on this profile.
