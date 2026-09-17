@@ -8,6 +8,7 @@
 #include <driver/gpio.h>
 #include <esp_cache.h>
 #include <esp_heap_caps.h>
+#include <esp_idf_version.h>
 #include <esp_lcd_panel_rgb.h>
 #include <freertos/task.h>
 #include <new>
@@ -173,6 +174,9 @@ void MipiRgb::common_setup_() {
     config.de_gpio_num = GPIO_NUM_NC;
   }
   config.pclk_gpio_num = static_cast<gpio_num_t>(this->pclk_pin_->get_pin());
+  // RGB and GDMA IRQ allocation happens synchronously on this task's core.
+  if (this->tear_free_)
+    this->capture_source_owner_();
   esp_err_t err = esp_lcd_new_rgb_panel(&config, &this->handle_);
   if (err == ESP_OK && this->tear_free_)
     err = this->setup_tear_free_();
@@ -236,6 +240,41 @@ esp_err_t MipiRgb::setup_tear_free_() {
   return esp_lcd_rgb_panel_register_event_callbacks(this->handle_, &callbacks, this->vsync_);
 }
 
+void MipiRgb::capture_source_owner_() {
+  this->source_owner_task_ = xTaskGetCurrentTaskHandle();
+  this->source_owner_core_ = xPortGetCoreID();
+  // Audited IDF bounce-buffer latch/callback order and level 1-3 IRQ allocation.
+  // Other chips/IDF versions and verbose IDF logging retain the two-wrap fence.
+#if defined(USE_ESP32_VARIANT_ESP32S3) && ESP_IDF_VERSION == ESP_IDF_VERSION_VAL(5, 5, 5) && \
+    defined(CONFIG_LOG_MAXIMUM_LEVEL) && CONFIG_LOG_MAXIMUM_LEVEL < 5 && \
+    !defined(MIPI_RGB_FORCE_CONSERVATIVE_FENCE)
+  this->exact_source_fence_ = xTaskGetCoreID(this->source_owner_task_) == this->source_owner_core_;
+#endif
+}
+
+bool MipiRgb::is_source_owner_() const {
+  if (xPortInIsrContext() || xTaskGetCurrentTaskHandle() != this->source_owner_task_)
+    return false;
+#if defined(USE_ESP32_VARIANT_ESP32S3) && ESP_IDF_VERSION == ESP_IDF_VERSION_VAL(5, 5, 5)
+  if (this->exact_source_fence_)
+    return xPortGetCoreID() == this->source_owner_core_ &&
+           xTaskGetCoreID(this->source_owner_task_) == this->source_owner_core_;
+#endif
+  return true;
+}
+
+#ifdef MIPI_RGB_DIAGNOSTICS
+class RgbDiagnosticTimer {
+ public:
+  explicit RgbDiagnosticTimer(uint64_t &total) : total_(total), start_(micros()) {}
+  ~RgbDiagnosticTimer() { this->total_ += static_cast<uint32_t>(micros() - this->start_); }
+
+ private:
+  uint64_t &total_;
+  uint32_t start_;
+};
+#endif
+
 void MipiRgb::loop() {
   // The ESP-IDF RGB driver already restarts on real DMA underflow when needed.
   // Continuously requesting restarts can cause visible one-frame shifts and flicker.
@@ -264,23 +303,26 @@ bool IRAM_ATTR MipiRgb::on_frame_complete_(esp_lcd_panel_handle_t panel,
 }
 
 bool MipiRgb::wait_for_swap_() {
-  if (this->is_failed())
+  if (!this->is_source_owner_() || this->is_failed())
     return false;
   if (!this->swap_pending_)
     return true;
+#ifdef MIPI_RGB_DIAGNOSTICS
+  RgbDiagnosticTimer wait_timer(this->diagnostics_.wait_us);
+#endif
   const TickType_t start = xTaskGetTickCount();
   while (true) {
     portENTER_CRITICAL(&this->vsync_->lock);
     const uint32_t count = this->vsync_->count;
     const uint32_t frame_count = this->vsync_->frame_count;
     portEXIT_CRITICAL(&this->vsync_->lock);
-    // Verified against ESP-IDF 5.5.5 esp_lcd_panel_rgb.c: fill_bounce_buffer()
-    // latches bb_fb_index = cur_fb_index BEFORE on_frame_buf_complete, and
-    // before VSYNC. An old latch's callback can race our post-submit snapshot.
-    // Require two fresh wraps to exclude that race, plus two VSYNCs conservatively.
-    // VSYNC alone is insufficient: try_restart_transmission() can reset the copy
-    // position without latching a new buffer during sustained DMA underrun.
-    if (count - this->swap_vsync_count_ >= 2 && frame_count - this->swap_frame_count_ >= 2)
+    // The exact fence excludes an old latch between publication and arming.
+    // A real wrap completes the old PSRAM copy, latches the new source, THEN
+    // calls us. Trailing old pixels in SRAM bounce buffers may still drain.
+    // VSYNC-only underrun restart does not latch and must never release PSRAM.
+    if (this->exact_source_fence_ ? frame_count - this->swap_frame_count_ >= 1
+                                  : count - this->swap_vsync_count_ >= 2 &&
+                                        frame_count - this->swap_frame_count_ >= 2)
       break;
     // Once timed out, later refreshes only poll. Missing callbacks must not
     // impose another full wait (or warning) on every LVGL refresh attempt.
@@ -298,26 +340,38 @@ bool MipiRgb::wait_for_swap_() {
   }
   this->swap_pending_ = false;
   this->swap_timed_out_ = false;
+#ifdef MIPI_RGB_DIAGNOSTICS
+  this->diagnostics_.acknowledgements++;
+#endif
   return true;
 }
 
 void MipiRgb::begin_frame() {
-  if (this->tear_free_ && !this->is_failed()) {
+  if (this->tear_free_ && !this->is_failed() && this->is_source_owner_()) {
     this->frame_active_ = true;
     this->frame_aborted_ = false;
   }
 }
 
 bool MipiRgb::end_frame() {
+  if (this->tear_free_ && !this->is_source_owner_())
+    return false;
   if (!this->frame_active_)
     return true;
   this->frame_active_ = false;
   // Never publish a suffix of a rejected refresh, even if its fence arrived
   // between chunks. The caller must re-invalidate/replay the complete refresh.
-  return !this->frame_aborted_ && this->submit_frame_();
+  const bool accepted = !this->frame_aborted_ && this->submit_frame_();
+#ifdef MIPI_RGB_DIAGNOSTICS
+  if (!accepted)
+    this->diagnostics_.rejected_refreshes++;
+#endif
+  return accepted;
 }
 
 bool MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride) {
+  if (!this->is_source_owner_())
+    return false;
   if (this->frame_active_ && this->frame_aborted_)
     return false;
   const int x_end = std::min(x_start + w, static_cast<int>(this->width_));
@@ -338,14 +392,30 @@ bool MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
   // chunks already staged for this refresh with pixels from the old front.
   if (this->frame_dirty_.h == 0) {
     const auto previous = this->pending_rect_;
-    for (int row = previous.y; row < previous.y + previous.h; row++) {
-      const size_t offset = row * this->width_ + previous.x;
-      memcpy(back + offset, front + offset, previous.w * sizeof(uint16_t));
+    // Only this actual first chunk can prove complete overwrite. A bounding
+    // union of separate chunks may contain holes and is not sufficient proof.
+    const bool overwritten = x <= previous.x && y <= previous.y &&
+                             x_end >= previous.x + previous.w && y_end >= previous.y + previous.h;
+    if (!overwritten) {
+#ifdef MIPI_RGB_DIAGNOSTICS
+      RgbDiagnosticTimer repair_timer(this->diagnostics_.repair_us);
+      this->diagnostics_.repair_bytes += previous.w * previous.h * sizeof(uint16_t);
+#endif
+      for (int row = previous.y; row < previous.y + previous.h; row++) {
+        const size_t offset = row * this->width_ + previous.x;
+        memcpy(back + offset, front + offset, previous.w * sizeof(uint16_t));
+      }
     }
   }
-  for (int row = y; row < y_end; row++) {
-    memcpy(back + row * this->width_ + x, ptr, (x_end - x) * sizeof(uint16_t));
-    ptr += stride;
+  {
+#ifdef MIPI_RGB_DIAGNOSTICS
+    RgbDiagnosticTimer staging_timer(this->diagnostics_.staging_us);
+    this->diagnostics_.staging_bytes += (x_end - x) * (y_end - y) * sizeof(uint16_t);
+#endif
+    for (int row = y; row < y_end; row++) {
+      memcpy(back + row * this->width_ + x, ptr, (x_end - x) * sizeof(uint16_t));
+      ptr += stride;
+    }
   }
   const auto staged = this->frame_dirty_;
   const int left = staged.h == 0 ? x : std::min(x, staged.x);
@@ -356,7 +426,7 @@ bool MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
 }
 
 bool MipiRgb::submit_frame_() {
-  if (this->is_failed())
+  if (!this->is_source_owner_() || this->is_failed())
     return false;
   if (this->frame_dirty_.h == 0)
     return true;
@@ -371,24 +441,48 @@ bool MipiRgb::submit_frame_() {
   this->pending_rect_ = {dirty_x, dirty_y, dirty_end_x - dirty_x, dirty_end_y - dirty_y};
   // Match IDF's C2M writeback flags and full-row range; never invalidate CPU writes.
   // IDF skips framebuffer writeback in bounce mode, where the ISR reads via cache.
+#ifdef MIPI_RGB_DIAGNOSTICS
+  const uint32_t cache_start = micros();
+  this->diagnostics_.cache_bytes += (dirty_end_y - dirty_y) * this->width_ * sizeof(uint16_t);
+#endif
   auto err = esp_cache_msync(back + dirty_y * this->width_,
                             (dirty_end_y - dirty_y) * this->width_ * sizeof(uint16_t),
                             ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_UNALIGNED);
+#ifdef MIPI_RGB_DIAGNOSTICS
+  this->diagnostics_.cache_us += static_cast<uint32_t>(micros() - cache_start);
+#endif
   // Passing an IDF-owned full-frame pointer selects it without copying into the
   // scanned framebuffer. Publish only once after ALL chunks of an LVGL refresh.
-  if (err == ESP_OK)
+  if (err == ESP_OK) {
+    // Only the audited owned-pointer/bounce/no-color-callback path is inside
+    // this guard: no copy, cache sync, allocation, descriptor relink or wait.
+    // Same-core IRQ masking excludes the driver's latch AND our callback;
+    // locking only our counters would NOT exclude an earlier cross-core latch.
+#ifdef MIPI_RGB_DIAGNOSTICS
+    const uint32_t publish_start = micros();
+#endif
+    if (this->exact_source_fence_)
+      portENTER_CRITICAL(&this->vsync_->lock);
     err = esp_lcd_panel_draw_bitmap(this->handle_, 0, 0, this->width_, this->height_, back);
+    if (!this->exact_source_fence_)
+      portENTER_CRITICAL(&this->vsync_->lock);
+    this->swap_vsync_count_ = this->vsync_->count;
+    this->swap_frame_count_ = this->vsync_->frame_count;
+    portEXIT_CRITICAL(&this->vsync_->lock);
+#ifdef MIPI_RGB_DIAGNOSTICS
+    this->diagnostics_.publish_max_us =
+        std::max(this->diagnostics_.publish_max_us, static_cast<uint32_t>(micros() - publish_start));
+#endif
+  }
   this->frame_dirty_ = {};
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "RGB framebuffer submission failed: %s", esp_err_to_name(err));
     return false;
   }
 
-  // Snapshot AFTER submission, so an earlier/stale semaphore cannot release back.
-  portENTER_CRITICAL(&this->vsync_->lock);
-  this->swap_vsync_count_ = this->vsync_->count;
-  this->swap_frame_count_ = this->vsync_->frame_count;
-  portEXIT_CRITICAL(&this->vsync_->lock);
+#ifdef MIPI_RGB_DIAGNOSTICS
+  this->diagnostics_.submissions++;
+#endif
   this->swap_pending_ = true;
   std::swap(this->front_buffer_, this->back_buffer_);
   this->pending_rect_ = changed;
@@ -396,7 +490,7 @@ bool MipiRgb::submit_frame_() {
 }
 
 void MipiRgb::update() {
-  if (this->is_failed())
+  if ((this->tear_free_ && !this->is_source_owner_()) || this->is_failed())
     return;
   if (this->auto_clear_enabled_) {
     this->clear();
@@ -431,7 +525,7 @@ void MipiRgb::update() {
 
 void MipiRgb::draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                              display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) {
-  if (w <= 0 || h <= 0 || this->is_failed())
+  if ((this->tear_free_ && !this->is_source_owner_()) || w <= 0 || h <= 0 || this->is_failed())
     return;
   // if color mapping is required, pass the buck.
   // note that endianness is not considered here - it is assumed to match!
@@ -486,6 +580,8 @@ bool MipiRgb::check_buffer_() {
 }
 
 void MipiRgb::draw_pixel_at(int x, int y, Color color) {
+  if (this->tear_free_ && !this->is_source_owner_())
+    return;
   if (!this->get_clipping().inside(x, y) || this->is_failed())
     return;
 
@@ -526,6 +622,8 @@ void MipiRgb::draw_pixel_at(int x, int y, Color color) {
     this->y_high_ = y;
 }
 void MipiRgb::fill(Color color) {
+  if (this->tear_free_ && !this->is_source_owner_())
+    return;
   if (!this->check_buffer_())
     return;
 
@@ -585,8 +683,10 @@ void MipiRgb::dump_pins_(uint8_t start, uint8_t end, const char *name, uint8_t o
 
 void MipiRgb::dump_config() {
   ESP_LOGCONFIG(TAG, "  Tear-free: %s", YESNO(this->tear_free_ && !this->is_failed()));
-  if (this->tear_free_)
+  if (this->tear_free_) {
     ESP_LOGCONFIG(TAG, "  Framebuffers: %p, %p", this->frame_buffers_[0], this->frame_buffers_[1]);
+    ESP_LOGCONFIG(TAG, "  Source fence: %s", this->exact_source_fence_ ? "exact bounce wrap" : "conservative two wraps");
+  }
   char reset_buf[GPIO_SUMMARY_MAX_LEN];
   char de_buf[GPIO_SUMMARY_MAX_LEN];
   char pclk_buf[GPIO_SUMMARY_MAX_LEN];

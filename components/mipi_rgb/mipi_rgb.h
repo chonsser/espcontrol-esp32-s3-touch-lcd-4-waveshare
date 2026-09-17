@@ -7,6 +7,7 @@
 #include "esp_lcd_panel_rgb.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
 #ifdef USE_SPI
 #include "esphome/components/spi/spi.h"
 #endif
@@ -50,6 +51,25 @@ class MipiRgb : public display::Display {
   void begin_frame();
   bool end_frame();
 
+#ifdef MIPI_RGB_DIAGNOSTICS
+  // Temporary task-side benchmark counters; no ISR work and absent by default.
+  // Read/reset only from the setup/loop owner task. Acknowledgements are counted
+  // when observed by that task, not displayed FPS or raster/ISR event counts.
+  struct Diagnostics {
+    uint32_t submissions{0}, acknowledgements{0}, rejected_refreshes{0};
+    uint64_t wait_us{0}, repair_us{0}, staging_us{0}, cache_us{0};
+    uint64_t repair_bytes{0}, staging_bytes{0}, cache_bytes{0};
+    uint32_t publish_max_us{0};  // Upper bound: includes immediate post-unlock IRQs.
+    bool exact_source_fence{false};
+  };
+  Diagnostics get_diagnostics() const {
+    auto snapshot = this->diagnostics_;
+    snapshot.exact_source_fence = this->exact_source_fence_;
+    return snapshot;
+  }
+  void reset_diagnostics() { this->diagnostics_ = {}; }
+#endif
+
   void add_data_pin(InternalGPIOPin *data_pin, size_t index) { this->data_pins_[index] = data_pin; };
   void set_de_pin(InternalGPIOPin *de_pin) { this->de_pin_ = de_pin; }
   void set_pclk_pin(InternalGPIOPin *pclk_pin) { this->pclk_pin_ = pclk_pin; }
@@ -81,6 +101,8 @@ class MipiRgb : public display::Display {
   void setup_enables_();
   void common_setup_();
   esp_err_t setup_tear_free_();
+  void capture_source_owner_();
+  bool is_source_owner_() const;
   bool write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride);
   bool submit_frame_();
   bool wait_for_swap_();
@@ -102,6 +124,13 @@ class MipiRgb : public display::Display {
     int h{0};
   };
   bool tear_free_{false};
+  TaskHandle_t source_owner_task_{nullptr};
+  BaseType_t source_owner_core_{-1};
+  // Fixed at setup; never switch acknowledgement rules for a pending generation.
+  bool exact_source_fence_{false};
+#ifdef MIPI_RGB_DIAGNOSTICS
+  Diagnostics diagnostics_{};
+#endif
   void *frame_buffers_[2]{};
   VsyncContext *vsync_{nullptr};
   TickType_t swap_timeout_ticks_{0};

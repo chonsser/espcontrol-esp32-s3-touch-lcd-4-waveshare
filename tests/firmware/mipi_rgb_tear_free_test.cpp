@@ -14,13 +14,56 @@
 #define ESP_LOGW(...) (++warnings)
 #define LOG_STR(x) x
 #define portMUX_INITIALIZER_UNLOCKED 0
-#define portENTER_CRITICAL(x) ((void) 0)
-#define portEXIT_CRITICAL(x) ((void) 0)
+static int current_core = 1;
+static int current_task = 7;
+static bool in_isr = false;
+bool xPortInIsrContext() { return in_isr; }
+static int masked[2]{};
+static std::vector<std::function<void()>> deferred[2];
+static void interrupt_on(int core, std::function<void()> event) {
+  auto delivery = [core, event = std::move(event)] {
+    const bool previous_isr = in_isr;
+    const int previous_core = current_core;
+    in_isr = true;
+    current_core = core;
+    event();
+    current_core = previous_core;
+    in_isr = previous_isr;
+  };
+  if (masked[core]) {
+    deferred[core].push_back(std::move(delivery));
+  } else {
+    delivery();
+  }
+}
+static void enter_critical() { ++masked[current_core]; }
+static void exit_critical() {
+  if (--masked[current_core] == 0) {
+    auto pending = std::move(deferred[current_core]);
+    deferred[current_core].clear();
+    for (auto &event : pending)
+      event();
+  }
+}
+#define portENTER_CRITICAL(x) enter_critical()
+#define portEXIT_CRITICAL(x) exit_critical()
 #define portENTER_CRITICAL_ISR(x) ((void) 0)
 #define portEXIT_CRITICAL_ISR(x) ((void) 0)
 using portMUX_TYPE = int;
 using TickType_t = uint32_t;
 using BaseType_t = int;
+using TaskHandle_t = void *;
+static int pinned_core = 1;
+TaskHandle_t xTaskGetCurrentTaskHandle() { return reinterpret_cast<void *>(static_cast<intptr_t>(current_task)); }
+BaseType_t xTaskGetCoreID(TaskHandle_t) { return pinned_core; }
+BaseType_t xPortGetCoreID() { return current_core; }
+#define ESP_IDF_VERSION_VAL(a, b, c) (((a) << 16) | ((b) << 8) | (c))
+#ifndef ESP_IDF_VERSION
+#define ESP_IDF_VERSION ESP_IDF_VERSION_VAL(5, 5, 5)
+#endif
+#ifndef CONFIG_LOG_MAXIMUM_LEVEL
+#define CONFIG_LOG_MAXIMUM_LEVEL 1
+#endif
 constexpr int pdTRUE = 1, pdFALSE = 0, ESP_OK = 0;
 constexpr int ESP_CACHE_MSYNC_FLAG_DIR_C2M = 1, ESP_CACHE_MSYNC_FLAG_UNALIGNED = 2;
 using esp_err_t = int;
@@ -29,6 +72,8 @@ struct esp_lcd_rgb_panel_event_data_t {};
 struct StaticSemaphore_t { bool ready{false}; };
 using SemaphoreHandle_t = StaticSemaphore_t *;
 static TickType_t ticks;
+static uint32_t work_us = 0;
+uint32_t micros() { return ticks * 1000 + work_us; }
 static int warnings;
 static std::function<void()> next_vsync;
 static std::function<void()> before_wait;
@@ -64,7 +109,9 @@ struct Flush { void *ptr; size_t size; };
 static std::vector<Flush> flushes;
 static int cache_error;
 int esp_cache_msync(void *ptr, size_t size, int flags) {
+  assert(masked[current_core] == 0);  // Cache sync remains outside publication guard.
   assert(flags == (ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_UNALIGNED));
+  work_us += 5;
   flushes.push_back({ptr, size});
   return cache_error;
 }
@@ -73,6 +120,7 @@ static std::vector<Submission> submissions;
 static int submission_error;
 static std::function<void(const void *)> on_submit;
 int esp_lcd_panel_draw_bitmap(void *, int x, int y, int end_x, int end_y, const void *ptr) {
+  work_us += 2;
   submissions.push_back({x, y, end_x, end_y, ptr});
   if (submission_error == ESP_OK && on_submit)
     on_submit(ptr);
@@ -145,7 +193,22 @@ class Display {
 }  // namespace display
 }  // namespace esphome
 
+static const uint16_t *active_source = nullptr;
+static size_t copied_bytes = 0;
+static void *checked_memcpy(void *dest, const void *src, size_t bytes) {
+  assert(masked[current_core] == 0);  // Never bulk-copy with RGB interrupts masked.
+  if (active_source != nullptr) {
+    const auto address = reinterpret_cast<uintptr_t>(dest);
+    const auto active = reinterpret_cast<uintptr_t>(active_source);
+    assert(address + bytes <= active || address >= active + 24);
+  }
+  work_us += 3;
+  copied_bytes += bytes;
+  return std::memcpy(dest, src, bytes);
+}
+#define memcpy checked_memcpy
 #include "mipi_rgb_test.inc"
+#undef memcpy
 
 namespace esphome::mipi_rgb {
 void MipiRgb::setup() {}
@@ -154,7 +217,10 @@ void MipiRgb::dump_config() {}
 
 class TestDisplay : public esphome::mipi_rgb::MipiRgb {
  public:
-  explicit TestDisplay(TickType_t timeout = 6) : MipiRgb(4, 3) {
+  explicit TestDisplay(TickType_t timeout = 6, bool exact = false) : MipiRgb(4, 3) {
+    capture_source_owner_();
+    if (!exact)
+      exact_source_fence_ = false;  // Keep existing cross-core conservative regressions.
     frame_buffers_[0] = a;
     frame_buffers_[1] = b;
     vsync_ = &context;
@@ -261,8 +327,8 @@ void check_bounce_latch_race() {
   on_submit = {};
 }
 
-void check_atomic_color_refresh() {
-  TestDisplay display;
+void check_atomic_color_refresh(bool exact = false) {
+  TestDisplay display(6, exact);
   display.set_tear_free(true);
   next_vsync = [&] { display.refresh(); };
   constexpr uint16_t blue = 0x001F, red = 0xF800, green = 0x07E0, white = 0xFFFF;
@@ -335,8 +401,8 @@ void check_atomic_color_refresh() {
   next_vsync = {};
 }
 
-void check_delayed_third_frame_repaint() {
-  TestDisplay display(56);  // Actual Waveshare budget at a 1ms RTOS tick.
+void check_delayed_third_frame_repaint(bool exact = false) {
+  TestDisplay display(56, exact);  // Actual Waveshare budget at a 1ms RTOS tick.
   FakeLvgl lvgl;
   display.set_tear_free(true);
   next_vsync = {};
@@ -371,7 +437,8 @@ void check_delayed_third_frame_repaint() {
       return;
     }
     ticks = event_times[event];
-    if (event != 0) {
+    // Exact mode: two abandoned wraps, then one genuine latch is sufficient.
+    if (event == 2 || (!exact && event != 0)) {
       scanning = selected;
       display.bounce_complete();
     }
@@ -436,9 +503,9 @@ void check_delayed_third_frame_repaint() {
   next_vsync = {};
 }
 
-void check_rejected_refresh_repaint() {
+void check_rejected_refresh_repaint(bool exact = false) {
   for (int failure = 0; failure < 2; ++failure) {
-    TestDisplay display;
+    TestDisplay display(6, exact);
     FakeLvgl lvgl;
     display.set_tear_free(true);
     next_vsync = [&] { display.refresh(); };
@@ -466,8 +533,8 @@ void check_rejected_refresh_repaint() {
   next_vsync = {};
 }
 
-void check_generic_dirty_retry() {
-  TestDisplay display;
+void check_generic_dirty_retry(bool exact = false) {
+  TestDisplay display(6, exact);
   display.set_tear_free(true);
   next_vsync = {};
   const uint16_t pixel = 7;
@@ -500,7 +567,176 @@ void check_generic_dirty_retry() {
   next_vsync = {};
 }
 
+void check_one_owner_wrap_releases_source() {
+  TestDisplay display(6, true);
+  display.set_tear_free(true);
+  current_task = 7;
+  const void *selected = display.a;
+  const void *scanning = display.a;
+  on_submit = [&](const void *ptr) {
+    assert(ptr != scanning);
+    selected = ptr;
+  };
+  const uint16_t pixel = 42;
+  display.draw(0, 0, 1, 1, &pixel);
+  const auto submitted = submissions.size();
+  int events = 0;
+  next_vsync = [&] {
+    ++events;
+    interrupt_on(1, [&] { scanning = selected; display.bounce_complete(); });
+  };
+  display.draw(3, 2, 1, 1, &pixel);
+  assert(events == 1 && submissions.size() == submitted + 1);
+  expect_pixels(display, {42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42});
+  next_vsync = {};
+  on_submit = {};
+}
+
+void check_foreign_writer_cannot_modify_refresh() {
+  for (int wrong = 0; wrong < 4; ++wrong) {
+    TestDisplay display(6, true);
+    display.set_tear_free(true);
+    const uint16_t pixel = 42, bad = 99;
+    display.begin_frame();
+    display.draw(0, 0, 1, 1, &pixel);
+    const auto count = submissions.size();
+    if (wrong == 0) current_task = 8;
+    if (wrong == 1) current_core = 0;
+    if (wrong == 2) pinned_core = -1;
+    if (wrong == 3) in_isr = true;
+    display.begin_frame();
+    display.draw(3, 2, 1, 1, &bad);
+    display.fill({0x1234});
+    display.draw_pixel_at(2, 1, {0x1234});
+    display.update();
+    assert(!display.end_frame());
+    assert(submissions.size() == count && !display.dirty());
+    current_task = 7; current_core = pinned_core = 1; in_isr = false;
+    assert(display.end_frame());
+    expect_pixels(display, {42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+  }
+}
+
+void check_pending_irq_cannot_become_stale_ack() {
+  // Pending EOF before pointer store and after pointer store must both execute
+  // the latch after the guard, never callback inside the arm snapshot window.
+  for (bool before_store : {true, false}) {
+    TestDisplay display(6, true);
+    display.set_tear_free(true);
+    const uint16_t *selected = display.a;
+    active_source = display.a;
+    auto wrap = [&] { active_source = selected; display.bounce_complete(); };
+    interrupt_on(1, wrap);  // Old wrap BEFORE entering publication is stale.
+    on_submit = [&](const void *ptr) {
+      if (before_store) interrupt_on(1, wrap);
+      selected = static_cast<const uint16_t *>(ptr);
+      if (!before_store) interrupt_on(1, wrap);
+    };
+    const uint16_t pixel = 42;
+    display.draw(0, 0, 1, 1, &pixel);
+    const auto now = ticks;
+    display.draw(3, 2, 1, 1, &pixel);
+    assert(ticks == now);  // IRQ delivered at unlock is a genuine first ack.
+    expect_pixels(display, {42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42});
+    active_source = nullptr;
+    on_submit = {};
+  }
+}
+
+void check_full_first_chunk_skips_obsolete_repair() {
+  TestDisplay display(6, true);
+  display.set_tear_free(true);
+  next_vsync = [&] { display.refresh(); };
+  uint16_t screen[12];
+  std::fill_n(screen, 12, 42);
+  display.draw(0, 0, 4, 3, screen);
+  const auto copied = copied_bytes;
+  std::fill_n(screen, 12, 99);
+  display.draw(0, 0, 4, 3, screen);
+  assert(copied_bytes - copied == 24);  // Stage only: previous full frame is obsolete.
+  expect_pixels(display, {99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99});
+  // Disjoint chunks' bounding union covers the screen but has holes. They must
+  // NOT skip the repair that preserves the ten unchanged pixels.
+  const auto partial = copied_bytes;
+  display.begin_frame();
+  const uint16_t pixel = 7;
+  display.draw(0, 0, 1, 1, &pixel);
+  display.draw(3, 2, 1, 1, &pixel);
+  display.end_frame();
+  assert(copied_bytes - partial == 28);
+  expect_pixels(display, {7, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 7});
+  next_vsync = {};
+}
+
+void check_unsupported_or_unpinned_setup_keeps_conservative_fence() {
+  // Simulate a migrating setup task: interrupts might be on different cores.
+  for (int affinity : {-1, 1}) {
+#if TEST_EXPECT_EXACT
+    if (affinity == 1) continue;
+#endif
+    pinned_core = affinity;
+    TestDisplay display(6, true);
+    pinned_core = 1;
+    display.set_tear_free(true);
+    const uint16_t pixel = 42;
+    display.draw(0, 0, 1, 1, &pixel);
+    int events = 0;
+    next_vsync = [&] { ++events; display.refresh(); };
+    display.draw(3, 2, 1, 1, &pixel);
+    assert(events == 2);
+    expect_pixels(display, {42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42});
+    next_vsync = {};
+  }
+}
+
+template<typename T> void check_diagnostics_count_work_not_refresh_attempts(T &display) {
+  if constexpr (requires { display.get_diagnostics(); display.reset_diagnostics(); }) {
+    display.set_tear_free(true);
+    display.reset_diagnostics();
+    next_vsync = [&] { display.refresh(); };
+    uint16_t screen[12];
+    std::fill_n(screen, 12, 42);
+    display.draw(0, 0, 4, 3, screen);
+    display.draw(0, 0, 4, 3, screen);
+    display.draw(0, 0, 1, 1, screen);
+    next_vsync = {};
+    display.begin_frame();
+    display.draw(3, 2, 1, 1, screen);  // No callbacks: reject this complete refresh.
+    display.draw(0, 1, 1, 1, screen);
+    assert(!display.end_frame());
+    const auto stats = display.get_diagnostics();
+    assert(stats.submissions == 3 && stats.acknowledgements == 2 && stats.rejected_refreshes == 1);
+    assert(stats.staging_bytes == 50 && stats.repair_bytes == 24 && stats.cache_bytes == 72);
+    assert(stats.wait_us > 0 && stats.repair_us == 9 && stats.staging_us == 21 && stats.cache_us == 15);
+    assert(stats.publish_max_us == 2);
+    display.reset_diagnostics();
+    const auto reset = display.get_diagnostics();
+    assert(reset.submissions == 0 && reset.wait_us == 0 && reset.staging_bytes == 0);
+    // Resetting measurements must not release the still-pending framebuffer.
+    const auto submitted = submissions.size();
+    display.draw(3, 2, 1, 1, screen);
+    assert(submissions.size() == submitted);
+  } else {
+    assert(false && "driver diagnostics must report accepted frames and measured work");
+  }
+}
+
 int main() {
+#ifdef MIPI_RGB_DIAGNOSTICS
+  TestDisplay measured(6, true);
+  check_diagnostics_count_work_not_refresh_attempts(measured);
+#endif
+#if TEST_EXPECT_EXACT
+  check_pending_irq_cannot_become_stale_ack();
+  check_foreign_writer_cannot_modify_refresh();
+  check_one_owner_wrap_releases_source();
+  check_delayed_third_frame_repaint(true);
+  check_atomic_color_refresh(true);
+  check_rejected_refresh_repaint(true);
+  check_generic_dirty_retry(true);
+#endif
+  check_unsupported_or_unpinned_setup_keeps_conservative_fence();
+  check_full_first_chunk_skips_obsolete_repair();
   check_delayed_third_frame_repaint();
   ticks = 0;
   TestDisplay display;

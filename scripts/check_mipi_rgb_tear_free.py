@@ -37,7 +37,7 @@ def check_writer() -> None:
     # Compile the actual class and drawing methods against host peripheral stubs.
     # Setup/dump_config are verified by the firmware build, not source assertions.
     source = (ROOT / "components/mipi_rgb/mipi_rgb.cpp").read_text()
-    start = source.index("void MipiRgb::loop()")
+    start = source.index("void MipiRgb::capture_source_owner_()")
     end = source.index("static const char *get_pin_name", start)
     drawing = source[start:end]
     header = (ROOT / "components/mipi_rgb/mipi_rgb.h").read_text()
@@ -64,14 +64,26 @@ def check_writer() -> None:
             code = value(value(lvgl, event).value[0], "lambda").value
             hooks.append(f"void {function}(TestDisplay &my_display, FakeLvgl &main_lvgl) {{\n{code}\n}}")
         (output / "waveshare_frame_hooks.inc").write_text("\n".join(hooks))
-        binary = output / "mipi_rgb_test"
-        subprocess.run([
-            "c++", "-std=c++20", "-Wall", "-Wextra", "-Werror",
-            "-Wno-unused-parameter", "-I", str(output),
-            str(ROOT / "tests/firmware/mipi_rgb_tear_free_test.cpp"),
-            "-o", str(binary),
-        ], check=True)
-        subprocess.run([str(binary)], check=True)
+        variants = {
+            "exact": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DTEST_EXPECT_EXACT=1"],
+            "diagnostics": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DTEST_EXPECT_EXACT=1", "-DMIPI_RGB_DIAGNOSTICS"],
+            "diagnostics-conservative": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DMIPI_RGB_DIAGNOSTICS", "-DMIPI_RGB_FORCE_CONSERVATIVE_FENCE"],
+            "forced-conservative": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DMIPI_RGB_FORCE_CONSERVATIVE_FENCE"],
+            "other-chip": ["-DUSE_ESP32_VARIANT_ESP32P4"],
+            "other-idf": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DESP_IDF_VERSION=0x050506"],
+            "verbose-idf": ["-DUSE_ESP32_VARIANT_ESP32S3", "-DCONFIG_LOG_MAXIMUM_LEVEL=5"],
+        }
+        sanitizer_flags = ["-fsanitize=address,undefined", "-fno-omit-frame-pointer"] if "--sanitize" in sys.argv else []
+        for name, flags in variants.items():
+            binary = output / name
+            subprocess.run([
+                "c++", "-std=c++20", "-Wall", "-Wextra", "-Werror",
+                "-Wno-unused-parameter", "-I", str(output), *flags, *sanitizer_flags,
+                str(ROOT / "tests/firmware/mipi_rgb_tear_free_test.cpp"),
+                "-o", str(binary),
+            ], check=True)
+            subprocess.run([str(binary)], check=True)
+            print(f"mipi_rgb {name}: ok")
 
 
 if __name__ == "__main__":
