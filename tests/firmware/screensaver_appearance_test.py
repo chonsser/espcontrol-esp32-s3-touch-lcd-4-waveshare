@@ -29,7 +29,8 @@ source = r'''
 #include <iostream>
 #include <map>
 #include <string>
-using lv_coord_t = int;
+// ESP32's int32_t/LVGL coordinate type is long, distinct from int.
+using lv_coord_t = long;
 using lv_color_t = uint32_t;
 struct lv_font_t { int advance, height; };
 struct lv_style_value_t { const void *ptr = nullptr; lv_color_t color = 0; };

@@ -62,6 +62,7 @@ CPP_SOURCE = r'''
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -85,6 +86,7 @@ class StringRef {
 struct lv_event_t;
 using lv_event_cb_t = void (*)(lv_event_t *);
 struct TestEventHandler { lv_event_cb_t callback; int code; void *data; };
+struct lv_style_value_t { int num = 0; int color = 0; const void *ptr = nullptr; };
 struct lv_obj_t {
   lv_obj_t *parent = nullptr;
   std::vector<lv_obj_t *> children;
@@ -93,6 +95,8 @@ struct lv_obj_t {
   int transform_scale_x = 256;
   int transform_scale_y = 256;
   std::string text;
+  int long_mode = 0;
+  std::map<std::pair<int, int>, lv_style_value_t> local_styles;
   int width = 480;
   void *user_data = nullptr;
 };
@@ -127,6 +131,10 @@ static lv_obj_t *lv_active_screen = nullptr;
 inline const char *espcontrol_i18n(const char *text) { return text ? text : ""; }
 inline std::string espcontrol_i18n(const std::string &text) { return text; }
 constexpr int LV_PART_MAIN = 0;
+constexpr int LV_STYLE_TEXT_COLOR = 1;
+constexpr int LV_STYLE_TEXT_FONT = 2;
+constexpr int LV_STYLE_RES_FOUND = 1;
+constexpr int LV_STYLE_RES_NOT_FOUND = 0;
 constexpr int LV_STATE_CHECKED = 1;
 constexpr int LV_STATE_PRESSED = 2;
 constexpr int LV_STATE_DEFAULT = 0;
@@ -149,6 +157,7 @@ constexpr int LV_OBJ_FLAG_CLICKABLE = 1;
 constexpr int LV_OBJ_FLAG_HIDDEN = 2;
 constexpr int LV_GRAD_DIR_HOR = 1;
 inline int lv_color_hex(uint32_t value) { return static_cast<int>(value); }
+inline bool lv_color_eq(lv_color_t left, lv_color_t right) { return left == right; }
 inline int lv_pct(int value) { return value; }
 inline lv_obj_t *lv_scr_act() { return lv_active_screen; }
 inline void lv_obj_set_style_transform_scale_x(lv_obj_t *obj, int scale, int) {
@@ -160,12 +169,30 @@ inline void lv_obj_set_style_transform_scale_y(lv_obj_t *obj, int scale, int) {
 inline void lv_obj_set_style_bg_color(lv_obj_t *, int, lv_style_selector_t) {}
 inline void lv_obj_set_style_bg_grad_color(lv_obj_t *, lv_color_t, lv_style_selector_t) {}
 inline void lv_obj_set_style_bg_grad_dir(lv_obj_t *, int, lv_style_selector_t) {}
-inline void lv_obj_set_style_text_color(lv_obj_t *, lv_color_t, lv_style_selector_t) {}
+inline int lv_obj_get_local_style_prop(lv_obj_t *obj, int prop,
+                                        lv_style_value_t *value, lv_style_selector_t selector) {
+  const auto found = obj->local_styles.find({prop, selector});
+  if (found == obj->local_styles.end()) return LV_STYLE_RES_NOT_FOUND;
+  *value = found->second;
+  return LV_STYLE_RES_FOUND;
+}
+inline void lv_obj_set_style_text_color(lv_obj_t *obj, lv_color_t color, lv_style_selector_t selector) {
+  obj->local_styles[{LV_STYLE_TEXT_COLOR, selector}].color = color;
+}
+inline void lv_obj_set_style_text_font(lv_obj_t *obj, const lv_font_t *font, lv_style_selector_t selector) {
+  obj->local_styles[{LV_STYLE_TEXT_FONT, selector}].ptr = font;
+}
 inline void lv_obj_set_style_text_align(lv_obj_t *, int, lv_style_selector_t) {}
-inline lv_color_t lv_obj_get_style_text_color(lv_obj_t *, lv_style_selector_t) { return 0; }
-inline const lv_font_t *lv_obj_get_style_text_font(lv_obj_t *, lv_style_selector_t) {
+inline lv_color_t lv_obj_get_style_text_color(lv_obj_t *obj, lv_style_selector_t selector) {
+  lv_style_value_t value;
+  return lv_obj_get_local_style_prop(obj, LV_STYLE_TEXT_COLOR, &value, selector) == LV_STYLE_RES_FOUND
+      ? value.color : 0;
+}
+inline const lv_font_t *lv_obj_get_style_text_font(lv_obj_t *obj, lv_style_selector_t selector) {
   static const lv_font_t font;
-  return &font;
+  lv_style_value_t value;
+  return lv_obj_get_local_style_prop(obj, LV_STYLE_TEXT_FONT, &value, selector) == LV_STYLE_RES_FOUND
+      ? static_cast<const lv_font_t *>(value.ptr) : &font;
 }
 inline void lv_obj_set_style_opa(lv_obj_t *, int, int) {}
 inline void lv_obj_set_style_text_opa(lv_obj_t *, int, int) {}
@@ -190,7 +217,8 @@ inline void *lv_obj_get_user_data(lv_obj_t *obj) { return obj ? obj->user_data :
 inline lv_disp_t *lv_disp_get_default() { return lv_test_disp_available ? &lv_test_default_disp : nullptr; }
 inline int lv_disp_get_hor_res(lv_disp_t *) { return lv_test_hor_res; }
 inline int lv_disp_get_ver_res(lv_disp_t *) { return lv_test_ver_res; }
-inline void lv_label_set_long_mode(lv_obj_t *, int) {}
+inline void lv_label_set_long_mode(lv_obj_t *obj, int mode) { obj->long_mode = mode; }
+inline int lv_label_get_long_mode(lv_obj_t *obj) { return obj->long_mode; }
 inline void lv_obj_set_size(lv_obj_t *, int, int) {}
 inline void lv_obj_set_width(lv_obj_t *obj, int width) { if (obj) obj->width = width; }
 inline void lv_obj_set_height(lv_obj_t *, int) {}

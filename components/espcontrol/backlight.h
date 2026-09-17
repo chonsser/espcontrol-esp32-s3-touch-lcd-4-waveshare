@@ -381,10 +381,10 @@ inline void position_clock_screensaver_label(lv_obj_t *overlay, lv_obj_t *label,
   // Preserve the legacy drift where it fits; wide fonts and rotated displays
   // may have less margin. An oversized legacy label has a stable origin rather
   // than an inverted clamp range (its compiled size is intentionally unchanged).
-  const int max_x = std::max(0, static_cast<int>(screen_w - w));
-  const int max_y = std::max(0, static_cast<int>(screen_h - h));
-  lv_obj_set_pos(label, std::clamp(screen_w / 2 + ox - w / 2, 0, max_x),
-                 std::clamp(screen_h / 2 + oy - h / 2, 0, max_y));
+  const lv_coord_t max_x = std::max<lv_coord_t>(0, screen_w - w);
+  const lv_coord_t max_y = std::max<lv_coord_t>(0, screen_h - h);
+  lv_obj_set_pos(label, std::clamp<lv_coord_t>(screen_w / 2 + ox - w / 2, 0, max_x),
+                 std::clamp<lv_coord_t>(screen_h / 2 + oy - h / 2, 0, max_y));
 }
 
 inline const lv_font_t *clock_screensaver_font(
