@@ -364,7 +364,7 @@ text:
                 return id(espcontrol_app).display().current_mode_is(
                     espcontrol::DisplayMode::CLOCK);
             then:
-              - lambda: 'apply_clock_screensaver_text_color(id(clock_label), id(schedule_clock_text_color).state);'
+              - script.execute: clock_screensaver_refresh_appearance
 
   - platform: template
     name: "${entity_screen_brightness_dawn_time}"

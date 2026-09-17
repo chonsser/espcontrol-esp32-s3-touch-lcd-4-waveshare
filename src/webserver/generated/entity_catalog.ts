@@ -229,6 +229,14 @@ export const ENTITY_CATALOG = {
         "screensaver_action"
       ]
     },
+    "screen_saver_clock_font": {
+      "domain": "select",
+      "name": "Screen Saver Clock Font",
+      "objectIds": [
+        "screen_saver_clock_font",
+        "screensaver_clock_font"
+      ]
+    },
     "presence_sensor_entity": {
       "domain": "text",
       "name": "Presence Sensor Entity",
@@ -742,6 +750,7 @@ export const ENTITY_CATALOG = {
       "outdoor_temp_entity",
       "screensaver_mode",
       "screen_saver_action",
+      "screen_saver_clock_font",
       "presence_sensor_entity",
       "screen_schedule_sensor_entity",
       "screen_saver_media_player_sleep_prevention",

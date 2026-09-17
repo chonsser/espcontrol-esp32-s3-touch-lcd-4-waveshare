@@ -502,6 +502,31 @@ switch:
 
 select:
   - platform: template
+    name: "${entity_screen_saver_clock_font}"
+    internal: true
+    id: screensaver_clock_font
+    entity_category: config
+    icon: "mdi:format-font"
+    optimistic: true
+    restore_value: true
+    initial_option: "Roboto Thin"
+    options:
+      - "Roboto Thin"
+      - "Roboto Bold"
+      - "Roboto Mono"
+    web_server:
+      sorting_group_id: sg_screensaver
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                return id(espcontrol_app).display().current_mode_is(
+                    espcontrol::DisplayMode::CLOCK);
+            then:
+              - script.execute: clock_screensaver_refresh_appearance
+
+  - platform: template
     name: "${entity_screen_saver_action}"
     internal: true
     id: screensaver_action

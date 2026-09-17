@@ -1,0 +1,24 @@
+{
+  "Roboto-Bold.ttf": {
+    "family": "Roboto",
+    "style": "Bold",
+    "weight": 700,
+    "version": "Version 3.015; 2026",
+    "source": "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf",
+    "sha256": "35757eaa996b3359022f47f164a67ee9eac04971af24c5b8fbd4b89e844ff190",
+    "license": "roboto-OFL.txt",
+    "license_source": "https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/OFL.txt",
+    "copyright": "Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)"
+  },
+  "RobotoMono-Regular.ttf": {
+    "family": "Roboto Mono",
+    "style": "Regular",
+    "weight": 400,
+    "version": "Version 3.001",
+    "source": "https://fonts.gstatic.com/s/robotomono/v31/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vqPQw.ttf",
+    "sha256": "329949c551e04130eeb43580e149a2d548090e71359d05d925329ae123fac5c9",
+    "license": "robotomono-OFL.txt",
+    "license_source": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/OFL.txt",
+    "copyright": "Copyright 2015 The Roboto Mono Project Authors (https://github.com/googlefonts/robotomono)"
+  }
+}

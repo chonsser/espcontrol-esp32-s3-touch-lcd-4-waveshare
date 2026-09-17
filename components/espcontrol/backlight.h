@@ -17,6 +17,7 @@
 #include <algorithm>
 #include "esphome/components/lvgl/lvgl_esphome.h"
 #include "clock_bar.h"
+#include "display_text.h"
 #include "backlight_fade.h"
 #include "display_mode_controller.h"
 #include "sun_calc.h"
@@ -348,10 +349,13 @@ inline uint32_t parse_clock_screensaver_text_color(const std::string &hex) {
 inline void apply_clock_screensaver_text_color(lv_obj_t *label,
                                                const std::string &hex) {
   if (!label) return;
-  lv_obj_set_style_text_color(
-    label,
-    lv_color_hex(parse_clock_screensaver_text_color(hex)),
-    LV_PART_MAIN);
+  const lv_color_t color = lv_color_hex(parse_clock_screensaver_text_color(hex));
+  lv_style_value_t local;
+  if (lv_obj_get_local_style_prop(label, LV_STYLE_TEXT_COLOR, &local,
+                                 LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
+      !lv_color_eq(local.color, color)) {
+    lv_obj_set_style_text_color(label, color, LV_PART_MAIN);
+  }
 }
 
 inline void position_clock_screensaver_label(lv_obj_t *overlay, lv_obj_t *label,
@@ -374,8 +378,42 @@ inline void position_clock_screensaver_label(lv_obj_t *overlay, lv_obj_t *label,
   lv_coord_t h = lv_obj_get_height(label);
   int ox = (minute * 7) % 61 - 30;
   int oy = (minute * 13) % 41 - 20;
-  lv_obj_set_pos(label, screen_w / 2 + ox - w / 2,
-                 screen_h / 2 + oy - h / 2);
+  // Preserve the legacy drift where it fits; wide fonts and rotated displays
+  // may have less margin. An oversized legacy label has a stable origin rather
+  // than an inverted clamp range (its compiled size is intentionally unchanged).
+  const int max_x = std::max(0, static_cast<int>(screen_w - w));
+  const int max_y = std::max(0, static_cast<int>(screen_h - h));
+  lv_obj_set_pos(label, std::clamp(screen_w / 2 + ox - w / 2, 0, max_x),
+                 std::clamp(screen_h / 2 + oy - h / 2, 0, max_y));
+}
+
+inline const lv_font_t *clock_screensaver_font(
+    const std::string &option, const lv_font_t *thin,
+    const lv_font_t *bold, const lv_font_t *mono) {
+  if (option == "Roboto Bold") return bold;
+  if (option == "Roboto Mono") return mono;
+  return thin;  // Includes missing/unknown restored options and legacy default.
+}
+
+// Shared by CLOCK entry, live appearance edits and the existing 30-second tick.
+// This updates the existing label only: no navigation, reveal, refresh or PWM.
+inline void update_clock_screensaver_appearance(
+    lv_obj_t *overlay, lv_obj_t *label, const std::string &option,
+    const lv_font_t *thin, const lv_font_t *bold, const lv_font_t *mono,
+    const std::string &hex, const char *text, int minute) {
+  if (!label) return;  // Restored settings can arrive before LVGL setup.
+  const lv_font_t *font = clock_screensaver_font(option, thin, bold, mono);
+  lv_style_value_t local;
+  if (lv_obj_get_local_style_prop(label, LV_STYLE_TEXT_FONT, &local,
+                                 LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
+      local.ptr != font) {
+    lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
+  }
+  apply_clock_screensaver_text_color(label, hex);
+  // Invalid time keeps the last label text, not LVGL's explicit nullptr refresh.
+  if (text) lv_label_set_display_text(label, text);
+  // Flush pending font/text geometry before measuring and clamping drift.
+  position_clock_screensaver_label(overlay, label, minute);
 }
 
 // ── Firmware update interval ─────────────────────────────────────────

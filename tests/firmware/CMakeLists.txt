@@ -82,6 +82,10 @@ add_test(NAME i18n_display_titles_test COMMAND ${Python3_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/i18n_display_titles_test.py ${CMAKE_CXX_COMPILER})
 add_test(NAME presentation_writes_test COMMAND ${Python3_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/presentation_writes_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME screensaver_appearance_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/screensaver_appearance_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME screensaver_appearance_wiring_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/screensaver_appearance_wiring_test.py ${CMAKE_CXX_COMPILER})
 
 add_executable(external_memory_allocator_test external_memory_allocator_test.cpp)
 target_compile_features(external_memory_allocator_test PRIVATE cxx_std_17)

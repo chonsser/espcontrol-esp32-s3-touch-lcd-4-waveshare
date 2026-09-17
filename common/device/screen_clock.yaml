@@ -1,7 +1,8 @@
 # =============================================================================
 # CLOCK SCREENSAVER - Full-screen clock overlay for idle display
 # =============================================================================
-# Black overlay with a large thin-font time label. Hidden by default; shown
+# Black overlay with a large configurable time label (legacy Thin by default).
+# Hidden by default; shown
 # by backlight.yaml when the clock screensaver is enabled and the idle
 # timeout fires. The label is positioned absolutely so the interval can
 # drift it for burn-in prevention.
@@ -10,6 +11,22 @@
 font:
   - file: "gfonts://Roboto@Thin"
     id: font_number_clock
+    size: ${clock_font_size}
+    bpp: 4
+    glyphs: " 0123456789:"
+
+  # Pinned static Google Fonts builds; fetched by ESPHome at build time only.
+  # URLs work for builds/, device wrappers and remotely included packages alike.
+  # Exact source copies for reproducible metric tests, provenance and matching
+  # copyright/OFL notices live in common/assets/fonts/.
+  - file: "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf"
+    id: font_number_clock_bold
+    size: ${clock_font_size}
+    bpp: 4
+    glyphs: " 0123456789:"
+
+  - file: "https://fonts.gstatic.com/s/robotomono/v31/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vqPQw.ttf"
+    id: font_number_clock_mono
     size: ${clock_font_size}
     bpp: 4
     glyphs: " 0123456789:"
