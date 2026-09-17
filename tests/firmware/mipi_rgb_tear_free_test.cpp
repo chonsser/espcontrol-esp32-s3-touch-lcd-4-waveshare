@@ -32,6 +32,8 @@ static TickType_t ticks;
 static int warnings;
 static std::function<void()> next_vsync;
 static std::function<void()> before_wait;
+// Optional millisecond scheduler: respects the requested semaphore deadline.
+static std::function<void(TickType_t)> timed_wait;
 TickType_t xTaskGetTickCount() { return ticks; }
 int xSemaphoreGiveFromISR(SemaphoreHandle_t semaphore, BaseType_t *woken) {
   semaphore->ready = true;
@@ -42,7 +44,11 @@ int xSemaphoreTake(SemaphoreHandle_t semaphore, TickType_t timeout) {
   if (before_wait)
     before_wait();
   if (!semaphore->ready) {
-    if (next_vsync) {
+    if (timed_wait) {
+      timed_wait(timeout);
+      if (!semaphore->ready)
+        return pdFALSE;
+    } else if (next_vsync) {
       ++ticks;
       next_vsync();
     } else {
@@ -148,12 +154,12 @@ void MipiRgb::dump_config() {}
 
 class TestDisplay : public esphome::mipi_rgb::MipiRgb {
  public:
-  TestDisplay() : MipiRgb(4, 3) {
+  explicit TestDisplay(TickType_t timeout = 6) : MipiRgb(4, 3) {
     frame_buffers_[0] = a;
     frame_buffers_[1] = b;
     vsync_ = &context;
     context.semaphore = &context.semaphore_storage;
-    swap_timeout_ticks_ = 6;
+    swap_timeout_ticks_ = timeout;
   }
   ~TestDisplay() { delete[] buffer_; }
   void vsync() { on_vsync_(nullptr, nullptr, &context); }
@@ -169,9 +175,43 @@ class TestDisplay : public esphome::mipi_rgb::MipiRgb {
                    esphome::display::COLOR_BITNESS_565, false, xo, yo, pad);
   }
   void finish() { wait_for_swap_(); }
+  std::vector<int64_t> ownership() const {
+    return {front_buffer_, back_buffer_, swap_pending_, swap_vsync_count_, swap_frame_count_,
+            pending_rect_.x, pending_rect_.y, pending_rect_.w, pending_rect_.h};
+  }
+  bool dirty() const { return x_low_ <= x_high_ && y_low_ <= y_high_; }
   uint16_t a[12]{}, b[12]{};
   VsyncContext context;
 };
+
+// Model REFR_READY after LVGL has cleared its invalid-area list and left the
+// rendering critical section. Execute the ACTUAL device YAML lambdas below.
+// The system layer stays fullscreen even when a sliding active screen does not.
+struct FakeLvgl {
+  struct Layer { FakeLvgl *display; int x, y, w, h; } system{this, 0, 0, 4, 3};
+  bool rendering{false};
+  Layer *invalidated{nullptr};
+  FakeLvgl *get_disp() { return this; }
+};
+FakeLvgl::Layer *lv_display_get_layer_sys(FakeLvgl *display) { return &display->system; }
+void lv_obj_invalidate(FakeLvgl::Layer *layer) {
+  assert(!layer->display->rendering);
+  assert(layer->x == 0 && layer->y == 0 && layer->w == 4 && layer->h == 3);
+  layer->display->invalidated = layer;
+}
+#define id(name) name
+#include "waveshare_frame_hooks.inc"
+#undef id
+
+void begin_refresh(TestDisplay &display, FakeLvgl &lvgl) {
+  waveshare_begin_frame(display, lvgl);
+  lvgl.rendering = true;
+}
+void end_refresh(TestDisplay &display, FakeLvgl &lvgl) {
+  lvgl.rendering = false;
+  lvgl.invalidated = nullptr;
+  waveshare_end_frame(display, lvgl);
+}
 
 void expect_pixels(TestDisplay &display, std::initializer_list<uint16_t> values) {
   assert(values.size() == 12);
@@ -295,7 +335,174 @@ void check_atomic_color_refresh() {
   next_vsync = {};
 }
 
+void check_delayed_third_frame_repaint() {
+  TestDisplay display(56);  // Actual Waveshare budget at a 1ms RTOS tick.
+  FakeLvgl lvgl;
+  display.set_tear_free(true);
+  next_vsync = {};
+  ticks = 0;
+  constexpr uint16_t blue = 0x001F, red = 0xF800, green = 0x07E0, white = 0xFFFF;
+  uint16_t initial[12];
+  std::fill_n(initial, 12, blue);
+  const void *scanning = display.a;
+  const void *selected = display.a;
+  on_submit = [&](const void *ptr) {
+    assert(ptr != scanning);
+    selected = ptr;
+  };
+  display.draw(0, 0, 4, 3, initial);
+  // A stale wake token must not affect the post-submit generation fence.
+  display.context.semaphore_storage.ready = true;
+  const auto original_a = std::vector<uint16_t>(display.a, display.a + 12);
+  const auto original_b = std::vector<uint16_t>(display.b, display.b + 12);
+  const auto ownership = display.ownership();
+  const auto submitted = submissions.size();
+  const auto synced = flushes.size();
+  const auto warning_count = warnings;
+
+  // 26.52ms scan periods, rounded UP to ms. IDF's first underrun resets
+  // bounce_pos_px without a wrap/latch callback; only periods two and three
+  // supply the two fresh bounce completions required by the release fence.
+  const TickType_t event_times[] = {27, 54, 80};
+  size_t event = 0;
+  timed_wait = [&](TickType_t budget) {
+    if (event == 3 || event_times[event] - ticks > budget) {
+      ticks += budget;
+      return;
+    }
+    ticks = event_times[event];
+    if (event != 0) {
+      scanning = selected;
+      display.bounce_complete();
+    }
+    display.vsync();
+    ++event;
+  };
+  before_wait = [&] {
+    assert(std::equal(original_a.begin(), original_a.end(), display.a));
+    assert(std::equal(original_b.begin(), original_b.end(), display.b));
+  };
+  // The next16ms LVGL refresh begins before the previous swap is released.
+  ticks = 16;
+  begin_refresh(display, lvgl);
+  uint16_t row[4] = {red, green, red, green};
+  display.draw(0, 0, 4, 1, row);
+  assert(ticks == 72 && event == 2 && warnings == warning_count + 1);
+  assert(!display.is_failed());  // A recoverable third-period delay is not fatal.
+  assert(display.ownership() == ownership);
+  std::fill_n(row, 4, 0xBAD);  // LVGL already considers this chunk consumed.
+
+  // Late QUALIFYING callbacks between chunks may NOT resume an aborted frame.
+  timed_wait(8);
+  assert(ticks == 80 && event == 3);
+  std::fill_n(row, 4, white);
+  display.draw(0, 2, 4, 1, row);
+  display.draw(0, 1, 4, 1, row);
+  end_refresh(display, lvgl);
+  assert(lvgl.invalidated == &lvgl.system);
+  assert(display.ownership() == ownership);
+  assert(submissions.size() == submitted && flushes.size() == synced);
+  assert(std::equal(original_a.begin(), original_a.end(), display.a));
+  assert(std::equal(original_b.begin(), original_b.end(), display.b));
+  before_wait = {};
+  timed_wait = {};
+
+  // Full repaint of the current UI includes the discarded FIRST chunk and all
+  // later dirty areas. No intermediate color may be submitted between chunks.
+  const uint16_t current_ui[] = {red, green, red, green, blue, blue, blue, blue, white, white, white, white};
+  ticks = 88;
+  begin_refresh(display, lvgl);
+  for (int y : {0, 2, 1}) {
+    display.draw(0, y, 4, 1, current_ui + y * 4);
+    assert(ticks == 88 && submissions.size() == submitted);
+    assert(std::equal(original_b.begin(), original_b.end(), display.front()));
+  }
+  end_refresh(display, lvgl);
+  assert(lvgl.invalidated == nullptr);
+  assert(submissions.size() == submitted + 1 && flushes.size() == synced + 1);
+  assert(std::equal(current_ui, current_ui + 12, display.front()));
+  on_submit = {};
+  next_vsync = [&] { display.refresh(); };
+  // A later partial refresh repairs the ENTIRE recovered frame, not its last row.
+  begin_refresh(display, lvgl);
+  display.draw(2, 1, 1, 1, &green);
+  end_refresh(display, lvgl);
+  expect_pixels(display, {red, green, red, green, blue, blue, green, blue, white, white, white, white});
+  const auto done = submissions.size();
+  begin_refresh(display, lvgl);
+  end_refresh(display, lvgl);
+  end_refresh(display, lvgl);
+  assert(submissions.size() == done && lvgl.invalidated == nullptr);
+  next_vsync = {};
+}
+
+void check_rejected_refresh_repaint() {
+  for (int failure = 0; failure < 2; ++failure) {
+    TestDisplay display;
+    FakeLvgl lvgl;
+    display.set_tear_free(true);
+    next_vsync = [&] { display.refresh(); };
+    const uint16_t initial[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    display.draw(0, 0, 4, 3, initial);
+    begin_refresh(display, lvgl);
+    const uint16_t replacement = 55;
+    display.draw(0, 0, 1, 1, &replacement);
+    display.draw(3, 2, 1, 1, &replacement);
+    cache_error = failure == 0;
+    submission_error = failure == 1;
+    end_refresh(display, lvgl);
+    assert(lvgl.invalidated == &lvgl.system);
+    assert(std::equal(initial, initial + 12, display.front()));
+    cache_error = submission_error = 0;
+    uint16_t current_ui[12];
+    std::copy_n(initial, 12, current_ui);
+    current_ui[0] = current_ui[11] = replacement;
+    begin_refresh(display, lvgl);
+    display.draw(0, 0, 4, 3, current_ui);
+    end_refresh(display, lvgl);
+    assert(lvgl.invalidated == nullptr);
+    assert(std::equal(current_ui, current_ui + 12, display.front()));
+  }
+  next_vsync = {};
+}
+
+void check_generic_dirty_retry() {
+  TestDisplay display;
+  display.set_tear_free(true);
+  next_vsync = {};
+  const uint16_t pixel = 7;
+  display.draw(0, 0, 1, 1, &pixel);
+  display.fill({0x1234});
+  display.draw_pixel_at(2, 1, {0x5678});
+  display.update();
+  assert(!display.is_failed() && display.dirty());
+  const auto submitted = submissions.size();
+  const auto timed_out = ticks;
+  display.update();  // No callback, no second blocking wait, dirty data retained.
+  assert(ticks == timed_out && submissions.size() == submitted && display.dirty());
+  display.refresh();
+  display.refresh();
+  display.update();  // Retry the stored pixels without calling fill/draw again.
+  assert(!display.dirty());
+  expect_pixels(display, {0x3412, 0x3412, 0x3412, 0x3412, 0x3412, 0x3412,
+                          0x7856, 0x3412, 0x3412, 0x3412, 0x3412, 0x3412});
+  next_vsync = [&] { display.refresh(); };
+  for (int failure = 0; failure < 2; ++failure) {
+    display.draw_pixel_at(failure, 0, {0xABCD});
+    cache_error = failure == 0;
+    submission_error = failure == 1;
+    display.update();
+    assert(display.dirty());
+    cache_error = submission_error = 0;
+    display.update();
+    assert(!display.dirty() && display.front()[failure] == 0xCDAB);
+  }
+  next_vsync = {};
+}
+
 int main() {
+  check_delayed_third_frame_repaint();
+  ticks = 0;
   TestDisplay display;
   display.set_tear_free(true);
   next_vsync = [&] { display.refresh(); };
@@ -354,23 +561,44 @@ int main() {
     else if (stalled_event == 2)
       next_vsync = [&] { stalled.bounce_complete(); };
     ticks = UINT32_MAX - 2;  // Timeout must work across a FreeRTOS tick wrap.
-    stalled.begin_frame();
+    FakeLvgl lvgl;
+    const auto ownership = stalled.ownership();
+    begin_refresh(stalled, lvgl);
     stalled.draw(0, 1, 1, 1, &pixel);
-    stalled.end_frame();  // Ending a failed refresh cannot submit either buffer.
-    assert(ticks == 3 && warnings == warning_count + 1);
-    assert(std::equal(original_a.begin(), original_a.end(), stalled.a));
-    assert(std::equal(original_b.begin(), original_b.end(), stalled.b));
-    assert(submissions.size() == submitted && flushes.size() == flushed);
-    assert(stalled.is_failed());
-    // A late interrupt does not silently resurrect a failed display, even via
-    // the generic update() path. Reboot/reinitialization is required.
-    next_vsync = [&] { stalled.refresh(); };
-    stalled.refresh();
-    stalled.refresh();
     stalled.draw(0, 2, 1, 1, &pixel);
-    stalled.fill({1});
-    stalled.update();
-    assert(submissions.size() == submitted && ticks == 3);
+    end_refresh(stalled, lvgl);
+    assert(ticks == 3 && warnings == warning_count + 1);
+    assert(lvgl.invalidated == &lvgl.system && !stalled.is_failed());
+    // Permanently absent/one-sided callbacks: retries stay nonblocking, keep
+    // repainting requested, retain the ORIGINAL fence, and never touch buffers.
+    for (int retry = 0; retry < 20; ++retry) {
+      if (stalled_event == 1)
+        stalled.vsync();
+      else if (stalled_event == 2)
+        stalled.bounce_complete();
+      begin_refresh(stalled, lvgl);
+      stalled.draw(0, 1, 1, 1, &pixel);
+      stalled.draw(0, 2, 1, 1, &pixel);
+      end_refresh(stalled, lvgl);
+      assert(lvgl.invalidated == &lvgl.system && !stalled.is_failed());
+      assert(ticks == 3 && warnings == warning_count + 1);
+      assert(stalled.ownership() == ownership);
+      assert(std::equal(original_a.begin(), original_a.end(), stalled.a));
+      assert(std::equal(original_b.begin(), original_b.end(), stalled.b));
+      assert(submissions.size() == submitted && flushes.size() == flushed);
+    }
+    // A subsequent FULL repaint can recover, but only after BOTH real counters
+    // meet the original fence, without resetting any generations at timeout.
+    stalled.refresh();
+    stalled.refresh();
+    uint16_t repaint[12];
+    std::fill_n(repaint, 12, pixel);
+    begin_refresh(stalled, lvgl);
+    stalled.draw(0, 0, 4, 3, repaint);
+    end_refresh(stalled, lvgl);
+    assert(lvgl.invalidated == nullptr && ticks == 3);
+    assert(submissions.size() == submitted + 1);
+    assert(std::equal(repaint, repaint + 12, stalled.front()));
   }
   next_vsync = [&] { display.refresh(); };
 
@@ -416,5 +644,7 @@ int main() {
   assert(submissions.back().ptr == bottom && flushes.size() == flushed);
   check_bounce_latch_race();
   check_atomic_color_refresh();
-  std::cout << "mipi_rgb framebuffer/stride/swap/timeout/atomic-color-refresh/fallback checks: ok\n";
+  check_rejected_refresh_repaint();
+  check_generic_dirty_retry();
+  std::cout << "mipi_rgb framebuffer/stride/swap/timeout/recovery/atomic-color-refresh/fallback checks: ok\n";
 }

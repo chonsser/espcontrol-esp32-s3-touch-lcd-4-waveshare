@@ -33,7 +33,7 @@ class MipiRgb : public display::Display {
   void fill(Color color) override;
   void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                       display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
-  void write_to_display_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int x_offset, int y_offset,
+  bool write_to_display_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int x_offset, int y_offset,
                          int x_pad);
   bool check_buffer_();
 
@@ -41,9 +41,14 @@ class MipiRgb : public display::Display {
   void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
   void set_tear_free(bool tear_free) { this->tear_free_ = tear_free; }
-  // Bracket all LVGL flush chunks in one refresh. No-ops when tear_free is off.
+  // With tear_free, bracket ALL raw draw_pixels_at chunks of a logical refresh.
+  // False from end_frame means the ENTIRE refresh was rejected: the caller must
+  // replay/full-repaint it later (ephemeral source pointers are never retained).
+  // LVGL requests a full-display invalidation at REFR_READY. Generic update()
+  // keeps its own buffered pixels/dirty watermarks for the next update instead.
+  // No-ops, returning true, when tear_free is off or no frame is active.
   void begin_frame();
-  void end_frame();
+  bool end_frame();
 
   void add_data_pin(InternalGPIOPin *data_pin, size_t index) { this->data_pins_[index] = data_pin; };
   void set_de_pin(InternalGPIOPin *de_pin) { this->de_pin_ = de_pin; }
@@ -76,8 +81,8 @@ class MipiRgb : public display::Display {
   void setup_enables_();
   void common_setup_();
   esp_err_t setup_tear_free_();
-  void write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride);
-  void submit_frame_();
+  bool write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride);
+  bool submit_frame_();
   bool wait_for_swap_();
   static bool on_vsync_(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx);
   static bool on_frame_complete_(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data,
@@ -107,11 +112,15 @@ class MipiRgb : public display::Display {
   uint8_t front_buffer_{0};
   uint8_t back_buffer_{1};
   bool swap_pending_{false};
+  // After the first bounded wait, poll the SAME release fence without blocking.
+  bool swap_timed_out_{false};
   // Difference to repair from front into back after release, before the next draw.
   DirtyRect pending_rect_{};
   // All chunks staged since the last submit; never repair over these pixels.
   DirtyRect frame_dirty_{};
   bool frame_active_{false};
+  // A late acknowledgement cannot resume the remaining chunks of this frame.
+  bool frame_aborted_{false};
 
   InternalGPIOPin *de_pin_{nullptr};
   InternalGPIOPin *pclk_pin_{nullptr};

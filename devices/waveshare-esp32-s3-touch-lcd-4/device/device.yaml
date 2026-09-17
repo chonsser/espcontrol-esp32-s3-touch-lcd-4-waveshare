@@ -479,7 +479,13 @@ lvgl:
   on_draw_start:
     - lambda: id(my_display).begin_frame();
   on_draw_end:
-    - lambda: id(my_display).end_frame();
+    - lambda: |-
+        if (!id(my_display).end_frame()) {
+          // REFR_READY runs after LVGL clears invalid areas and exits rendering.
+          // Retry the WHOLE rejected refresh, including its first lost chunk.
+          // The fixed system layer covers background/overlays and moving screens.
+          lv_obj_invalidate(lv_display_get_layer_sys(id(main_lvgl).get_disp()));
+        }
   touchscreens:
     - touchscreen_id: my_touchscreen
       long_press_time: 3s

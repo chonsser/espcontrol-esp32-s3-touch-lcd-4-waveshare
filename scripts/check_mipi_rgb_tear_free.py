@@ -48,6 +48,22 @@ def check_writer() -> None:
         (output / "mipi_rgb_test.inc").write_text(
             header + drawing + "\n}  // namespace esphome::mipi_rgb\n"
         )
+        # Compile the real Waveshare hooks too: recovery must schedule a whole
+        # LVGL repaint, not merely stop failing the driver and lose flush chunks.
+        import yaml
+
+        document = yaml.compose((ROOT / "devices/waveshare-esp32-s3-touch-lcd-4/device/device.yaml").read_text())
+
+        def value(node, key):
+            return next(item for name, item in node.value if name.value == key)
+
+        lvgl = value(document, "lvgl")
+        hooks = []
+        for event, function in (("on_draw_start", "waveshare_begin_frame"),
+                                ("on_draw_end", "waveshare_end_frame")):
+            code = value(value(lvgl, event).value[0], "lambda").value
+            hooks.append(f"void {function}(TestDisplay &my_display, FakeLvgl &main_lvgl) {{\n{code}\n}}")
+        (output / "waveshare_frame_hooks.inc").write_text("\n".join(hooks))
         binary = output / "mipi_rgb_test"
         subprocess.run([
             "c++", "-std=c++20", "-Wall", "-Wextra", "-Werror",

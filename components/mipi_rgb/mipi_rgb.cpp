@@ -227,6 +227,8 @@ esp_err_t MipiRgb::setup_tear_free_() {
   const uint64_t horizontal = this->width_ + this->hsync_pulse_width_ + this->hsync_back_porch_ + this->hsync_front_porch_;
   const uint64_t vertical = this->height_ + this->vsync_pulse_width_ + this->vsync_back_porch_ + this->vsync_front_porch_;
   const uint32_t timeout_ms = (2000ULL * horizontal * vertical + this->pclk_frequency_ - 1) / this->pclk_frequency_;
+  // Per-call wait budget, NOT a deadline for the ownership acknowledgement.
+  // An underrun can abandon a bounce wrap and postpone release to a third frame.
   this->swap_timeout_ticks_ = pdMS_TO_TICKS(timeout_ms) + 2;
   esp_lcd_rgb_panel_event_callbacks_t callbacks{};
   callbacks.on_vsync = MipiRgb::on_vsync_;
@@ -280,42 +282,55 @@ bool MipiRgb::wait_for_swap_() {
     // position without latching a new buffer during sustained DMA underrun.
     if (count - this->swap_vsync_count_ >= 2 && frame_count - this->swap_frame_count_ >= 2)
       break;
+    // Once timed out, later refreshes only poll. Missing callbacks must not
+    // impose another full wait (or warning) on every LVGL refresh attempt.
+    if (this->swap_timed_out_)
+      return false;
     const TickType_t elapsed = xTaskGetTickCount() - start;
     if (elapsed >= this->swap_timeout_ticks_) {
-      // Ownership is unknown. Neither writing nor freeing either framebuffer is
-      // safe here. Keep scan-out alive, but stop all drawing until reboot.
-      ESP_LOGW(TAG, "Timed out waiting for RGB swap; display updates stopped until reboot");
-      this->mark_failed(LOG_STR("RGB framebuffer swap timed out"));
+      // Keep BOTH buffers, indices, dirty repair and original fence untouched.
+      // Only a later real acknowledgement can release back; elapsed time cannot.
+      this->swap_timed_out_ = true;
+      ESP_LOGW(TAG, "RGB swap delayed; retaining buffers and retrying complete refresh");
       return false;
     }
     xSemaphoreTake(this->vsync_->semaphore, this->swap_timeout_ticks_ - elapsed);
   }
   this->swap_pending_ = false;
+  this->swap_timed_out_ = false;
   return true;
 }
 
 void MipiRgb::begin_frame() {
-  if (this->tear_free_ && !this->is_failed())
+  if (this->tear_free_ && !this->is_failed()) {
     this->frame_active_ = true;
+    this->frame_aborted_ = false;
+  }
 }
 
-void MipiRgb::end_frame() {
+bool MipiRgb::end_frame() {
   if (!this->frame_active_)
-    return;
+    return true;
   this->frame_active_ = false;
-  this->submit_frame_();
+  // Never publish a suffix of a rejected refresh, even if its fence arrived
+  // between chunks. The caller must re-invalidate/replay the complete refresh.
+  return !this->frame_aborted_ && this->submit_frame_();
 }
 
-void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride) {
+bool MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride) {
+  if (this->frame_active_ && this->frame_aborted_)
+    return false;
   const int x_end = std::min(x_start + w, static_cast<int>(this->width_));
   const int y_end = std::min(y_start + h, static_cast<int>(this->height_));
   const int x = std::max(x_start, 0);
   const int y = std::max(y_start, 0);
   if (x >= x_end || y >= y_end)
-    return;
+    return true;
   ptr += (y - y_start) * stride + (x - x_start) * sizeof(uint16_t);
-  if (!this->wait_for_swap_())
-    return;
+  if (!this->wait_for_swap_()) {
+    this->frame_aborted_ = true;
+    return false;
+  }
 
   auto *front = static_cast<uint16_t *>(this->frame_buffers_[this->front_buffer_]);
   auto *back = static_cast<uint16_t *>(this->frame_buffers_[this->back_buffer_]);
@@ -337,13 +352,14 @@ void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
   const int top = staged.h == 0 ? y : std::min(y, staged.y);
   this->frame_dirty_ = {left, top, std::max(x_end, staged.x + staged.w) - left,
                         std::max(y_end, staged.y + staged.h) - top};
-  if (!this->frame_active_)
-    this->submit_frame_();
+  return this->frame_active_ || this->submit_frame_();
 }
 
-void MipiRgb::submit_frame_() {
-  if (this->is_failed() || this->frame_dirty_.h == 0)
-    return;
+bool MipiRgb::submit_frame_() {
+  if (this->is_failed())
+    return false;
+  if (this->frame_dirty_.h == 0)
+    return true;
   auto *back = static_cast<uint16_t *>(this->frame_buffers_[this->back_buffer_]);
   const auto changed = this->frame_dirty_;
   const auto previous = this->pending_rect_;
@@ -365,7 +381,7 @@ void MipiRgb::submit_frame_() {
   this->frame_dirty_ = {};
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "RGB framebuffer submission failed: %s", esp_err_to_name(err));
-    return;
+    return false;
   }
 
   // Snapshot AFTER submission, so an earlier/stale semaphore cannot release back.
@@ -376,6 +392,7 @@ void MipiRgb::submit_frame_() {
   this->swap_pending_ = true;
   std::swap(this->front_buffer_, this->back_buffer_);
   this->pending_rect_ = changed;
+  return true;
 }
 
 void MipiRgb::update() {
@@ -398,8 +415,13 @@ void MipiRgb::update() {
   ESP_LOGV(TAG, "x_low %d, y_low %d, x_high %d, y_high %d", this->x_low_, this->y_low_, this->x_high_, this->y_high_);
   int w = this->x_high_ - this->x_low_ + 1;
   int h = this->y_high_ - this->y_low_ + 1;
-  this->write_to_display_(this->x_low_, this->y_low_, w, h, reinterpret_cast<const uint8_t *>(this->buffer_),
-                          this->x_low_, this->y_low_, this->width_ - w - this->x_low_);
+  const bool accepted =
+      this->write_to_display_(this->x_low_, this->y_low_, w, h, reinterpret_cast<const uint8_t *>(this->buffer_),
+                              this->x_low_, this->y_low_, this->width_ - w - this->x_low_);
+  // Keep generic buffered drawing retryable if ownership/submission failed, or
+  // if an enclosing raw frame has not yet been submitted. Option-off unchanged.
+  if (this->tear_free_ && (!accepted || this->frame_active_))
+    return;
   // invalidate watermarks
   this->x_low_ = this->width_;
   this->y_low_ = this->height_;
@@ -424,15 +446,13 @@ void MipiRgb::draw_pixels_at(int x_start, int y_start, int w, int h, const uint8
   }
 }
 
-void MipiRgb::write_to_display_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int x_offset, int y_offset,
+bool MipiRgb::write_to_display_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int x_offset, int y_offset,
                                 int x_pad) {
   esp_err_t err = ESP_OK;
   auto stride = (x_offset + w + x_pad) * 2;
   ptr += y_offset * stride + x_offset * 2;  // skip to the first pixel
-  if (this->tear_free_) {
-    this->write_tear_free_(x_start, y_start, w, h, ptr, stride);
-    return;
-  }
+  if (this->tear_free_)
+    return this->write_tear_free_(x_start, y_start, w, h, ptr, stride);
   // x_ and y_offset are offsets into the source buffer, unrelated to our own offsets into the display.
   if (x_offset == 0 && x_pad == 0) {
     err = esp_lcd_panel_draw_bitmap(this->handle_, x_start, y_start, x_start + w, y_start + h, ptr);
@@ -447,6 +467,7 @@ void MipiRgb::write_to_display_(int x_start, int y_start, int w, int h, const ui
   }
   if (err != ESP_OK)
     ESP_LOGE(TAG, "lcd_lcd_panel_draw_bitmap failed: %s", esp_err_to_name(err));
+  return err == ESP_OK;
 }
 
 bool MipiRgb::check_buffer_() {
