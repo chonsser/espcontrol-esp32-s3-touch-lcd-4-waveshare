@@ -221,6 +221,80 @@ void check_bounce_latch_race() {
   on_submit = {};
 }
 
+void check_atomic_color_refresh() {
+  TestDisplay display;
+  display.set_tear_free(true);
+  next_vsync = [&] { display.refresh(); };
+  constexpr uint16_t blue = 0x001F, red = 0xF800, green = 0x07E0, white = 0xFFFF;
+  uint16_t screen[12];
+  std::fill_n(screen, 12, blue);
+  display.draw(0, 0, 4, 3, screen);
+  display.finish();
+  const auto blue_frame = std::vector<uint16_t>(display.front(), display.front() + 12);
+  const auto submitted = submissions.size();
+  const auto synced = flushes.size();
+  // Model ESPHome on_draw_start/on_draw_end: a full-screen color change may
+  // arrive as several LVGL flush chunks, NOT one atomic draw_pixels_at call.
+  display.begin_frame();
+  uint16_t row[4] = {red, red, red, red};
+  for (int y : {0, 2, 1}) {
+    std::fill_n(row, 4, red);
+    display.draw(0, y, 4, 1, row);
+    std::fill_n(row, 4, 0xBAD);  // LVGL is free to reuse each source chunk.
+    display.refresh();  // A scan boundary between chunks must still show BLUE.
+    assert(std::equal(blue_frame.begin(), blue_frame.end(), display.front()));
+    assert(submissions.size() == submitted && flushes.size() == synced);
+  }
+  display.end_frame();
+  assert(submissions.size() == submitted + 1 && flushes.size() == synced + 1);
+  assert(std::all_of(display.front(), display.front() + 12, [](uint16_t p) { return p == red; }));
+
+  // Multiple disjoint/overlapping dirty areas in one refresh must all survive
+  // the next buffer repair, not just the last area in that refresh.
+  display.begin_frame();
+  display.draw(1, 0, 1, 1, &green);
+  display.draw(3, 2, 1, 1, &white);
+  display.draw(1, 0, 1, 1, &blue);
+  assert(submissions.size() == submitted + 1);
+  display.end_frame();
+  expect_pixels(display, {red, blue, red, red, red, red, red, red, red, red, red, white});
+  display.begin_frame();
+  display.draw(2, 1, 1, 1, &green);
+  display.end_frame();
+  expect_pixels(display, {red, blue, red, red, red, red, green, red, red, red, red, white});
+
+  // Empty/paused refresh and an unmatched end must not publish a stale buffer.
+  const auto nonempty = submissions.size();
+  display.begin_frame();
+  display.end_frame();
+  display.end_frame();
+  assert(submissions.size() == nonempty);
+
+  // Writeback failure discards the whole unpublished frame, not just its last
+  // chunk, and the following frame repairs every discarded dirty area.
+  display.begin_frame();
+  display.draw(0, 0, 1, 1, &white);
+  display.draw(0, 2, 1, 1, &white);
+  cache_error = 1;
+  display.end_frame();
+  cache_error = 0;
+  assert(submissions.size() == nonempty);
+  display.begin_frame();
+  display.draw(3, 0, 1, 1, &green);
+  display.end_frame();
+  expect_pixels(display, {red, blue, red, green, red, red, green, red, red, red, red, white});
+
+  // Frame hooks must be harmless with the option off.
+  TestDisplay legacy;
+  const auto direct = submissions.size();
+  legacy.begin_frame();
+  legacy.draw(0, 0, 1, 1, &red);
+  assert(submissions.size() == direct + 1);
+  legacy.end_frame();
+  assert(submissions.size() == direct + 1);
+  next_vsync = {};
+}
+
 int main() {
   TestDisplay display;
   display.set_tear_free(true);
@@ -280,7 +354,9 @@ int main() {
     else if (stalled_event == 2)
       next_vsync = [&] { stalled.bounce_complete(); };
     ticks = UINT32_MAX - 2;  // Timeout must work across a FreeRTOS tick wrap.
+    stalled.begin_frame();
     stalled.draw(0, 1, 1, 1, &pixel);
+    stalled.end_frame();  // Ending a failed refresh cannot submit either buffer.
     assert(ticks == 3 && warnings == warning_count + 1);
     assert(std::equal(original_a.begin(), original_a.end(), stalled.a));
     assert(std::equal(original_b.begin(), original_b.end(), stalled.b));
@@ -339,5 +415,6 @@ int main() {
   legacy.draw(0, 0, 2, 1, bottom);
   assert(submissions.back().ptr == bottom && flushes.size() == flushed);
   check_bounce_latch_race();
-  std::cout << "mipi_rgb framebuffer/stride/swap/timeout/fallback checks: ok\n";
+  check_atomic_color_refresh();
+  std::cout << "mipi_rgb framebuffer/stride/swap/timeout/atomic-color-refresh/fallback checks: ok\n";
 }

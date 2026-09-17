@@ -473,6 +473,13 @@ lvgl:
   buffer_size: 100%
   displays: my_display
   rotation: 0
+  # One color transition may contain several dirty areas/flush chunks even with
+  # a 100% LVGL buffer. Present them together, never as intermediate half-frames.
+  # ESPHome maps these to LVGL RENDER_START and REFR_READY (not per-chunk events).
+  on_draw_start:
+    - lambda: id(my_display).begin_frame();
+  on_draw_end:
+    - lambda: id(my_display).end_frame();
   touchscreens:
     - touchscreen_id: my_touchscreen
       long_press_time: 3s

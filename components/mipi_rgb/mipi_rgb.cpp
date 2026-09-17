@@ -294,6 +294,18 @@ bool MipiRgb::wait_for_swap_() {
   return true;
 }
 
+void MipiRgb::begin_frame() {
+  if (this->tear_free_ && !this->is_failed())
+    this->frame_active_ = true;
+}
+
+void MipiRgb::end_frame() {
+  if (!this->frame_active_)
+    return;
+  this->frame_active_ = false;
+  this->submit_frame_();
+}
+
 void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uint8_t *ptr, int stride) {
   const int x_end = std::min(x_start + w, static_cast<int>(this->width_));
   const int y_end = std::min(y_start + h, static_cast<int>(this->height_));
@@ -307,21 +319,39 @@ void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
 
   auto *front = static_cast<uint16_t *>(this->frame_buffers_[this->front_buffer_]);
   auto *back = static_cast<uint16_t *>(this->frame_buffers_[this->back_buffer_]);
-  const auto previous = this->pending_rect_;
-  for (int row = previous.y; row < previous.y + previous.h; row++) {
-    const size_t offset = row * this->width_ + previous.x;
-    memcpy(back + offset, front + offset, previous.w * sizeof(uint16_t));
+  // Repair exactly once per frame; repeating this per chunk would overwrite
+  // chunks already staged for this refresh with pixels from the old front.
+  if (this->frame_dirty_.h == 0) {
+    const auto previous = this->pending_rect_;
+    for (int row = previous.y; row < previous.y + previous.h; row++) {
+      const size_t offset = row * this->width_ + previous.x;
+      memcpy(back + offset, front + offset, previous.w * sizeof(uint16_t));
+    }
   }
   for (int row = y; row < y_end; row++) {
     memcpy(back + row * this->width_ + x, ptr, (x_end - x) * sizeof(uint16_t));
     ptr += stride;
   }
+  const auto staged = this->frame_dirty_;
+  const int left = staged.h == 0 ? x : std::min(x, staged.x);
+  const int top = staged.h == 0 ? y : std::min(y, staged.y);
+  this->frame_dirty_ = {left, top, std::max(x_end, staged.x + staged.w) - left,
+                        std::max(y_end, staged.y + staged.h) - top};
+  if (!this->frame_active_)
+    this->submit_frame_();
+}
 
+void MipiRgb::submit_frame_() {
+  if (this->is_failed() || this->frame_dirty_.h == 0)
+    return;
+  auto *back = static_cast<uint16_t *>(this->frame_buffers_[this->back_buffer_]);
+  const auto changed = this->frame_dirty_;
+  const auto previous = this->pending_rect_;
   // Keep the entire modified region repairable if cache sync or submission fails.
-  const int dirty_x = previous.h == 0 ? x : std::min(x, previous.x);
-  const int dirty_y = previous.h == 0 ? y : std::min(y, previous.y);
-  const int dirty_end_x = std::max(x_end, previous.x + previous.w);
-  const int dirty_end_y = std::max(y_end, previous.y + previous.h);
+  const int dirty_x = previous.h == 0 ? changed.x : std::min(changed.x, previous.x);
+  const int dirty_y = previous.h == 0 ? changed.y : std::min(changed.y, previous.y);
+  const int dirty_end_x = std::max(changed.x + changed.w, previous.x + previous.w);
+  const int dirty_end_y = std::max(changed.y + changed.h, previous.y + previous.h);
   this->pending_rect_ = {dirty_x, dirty_y, dirty_end_x - dirty_x, dirty_end_y - dirty_y};
   // Match IDF's C2M writeback flags and full-row range; never invalidate CPU writes.
   // IDF skips framebuffer writeback in bounce mode, where the ISR reads via cache.
@@ -329,10 +359,10 @@ void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
                             (dirty_end_y - dirty_y) * this->width_ * sizeof(uint16_t),
                             ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_UNALIGNED);
   // Passing an IDF-owned full-frame pointer selects it without copying into the
-  // scanned framebuffer. Each call is one presentation; the Display API has no
-  // LVGL "last flush" signal, so multiple areas are serialized, not batched.
+  // scanned framebuffer. Publish only once after ALL chunks of an LVGL refresh.
   if (err == ESP_OK)
     err = esp_lcd_panel_draw_bitmap(this->handle_, 0, 0, this->width_, this->height_, back);
+  this->frame_dirty_ = {};
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "RGB framebuffer submission failed: %s", esp_err_to_name(err));
     return;
@@ -345,7 +375,7 @@ void MipiRgb::write_tear_free_(int x_start, int y_start, int w, int h, const uin
   portEXIT_CRITICAL(&this->vsync_->lock);
   this->swap_pending_ = true;
   std::swap(this->front_buffer_, this->back_buffer_);
-  this->pending_rect_ = {x, y, x_end - x, y_end - y};
+  this->pending_rect_ = changed;
 }
 
 void MipiRgb::update() {
