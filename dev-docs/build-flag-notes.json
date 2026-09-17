@@ -102,5 +102,13 @@
   "LV_USE_BIDI=1": {
     "purpose": "Enables LVGL bidirectional text ordering for right-to-left scripts such as Hebrew and Arabic.",
     "remove_when": "ESPHome enables LVGL bidirectional text for every supported display without this compile definition."
+  },
+  "ESPCONTROL_OPTIMISTIC_TOGGLE=1": {
+    "purpose": "Flips plain toggle cards as soon as the Home Assistant action is sent, with an automatic revert if no state report follows, so the slower RGB panel does not blink between pressed, old, and new colours.",
+    "remove_when": "Optimistic toggles with revert become the default for every panel."
+  },
+  "ESPCONTROL_TOGGLE_TRANSITION_MS=200": {
+    "purpose": "Replaces the LVGL theme's delayed 80 ms colour change on toggle cards with one 200 ms eased fade, which spans enough frames to look smooth at the panel's roughly 38 Hz scan rate.",
+    "remove_when": "Toggle cards get an explicit colour transition on every panel, or the panel scan rate is raised enough for the theme default to look smooth."
   }
 }

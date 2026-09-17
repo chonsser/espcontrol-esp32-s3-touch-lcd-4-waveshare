@@ -410,6 +410,7 @@ inline void subscribe_toggle_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
        slot_has_icon_on, slot_icon_off, slot_icon_on, text_sensor_ctx,
        is_active_state](esphome::StringRef state) {
         bool on = is_active_state(state);
+        optimistic_toggle_settle(btn_ptr);
         set_card_checked_state(btn_ptr, on);
 
         if (text_sensor_ctx) {

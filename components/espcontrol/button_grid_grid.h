@@ -295,6 +295,10 @@ inline bool card_slot_static_child(const BtnSlot &s, lv_obj_t *child) {
 
 inline void reset_card_slot_dynamic_children(BtnSlot &s) {
   if (!s.btn) return;
+  // Slots are reused across card types: drop the previous card's colour
+  // transition and any provisional toggle flip before the slot is rebuilt.
+  clear_push_button_transition(s.btn);
+  optimistic_toggle_settle(s.btn);
   lv_obj_clear_flag(s.btn, LV_OBJ_FLAG_HIDDEN);
   lv_obj_clear_state(s.btn, LV_STATE_CHECKED);
   sync_card_checked_text_color(s.btn);

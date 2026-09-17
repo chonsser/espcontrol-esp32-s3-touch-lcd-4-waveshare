@@ -6,6 +6,7 @@
 
 inline void apply_push_button_transition(lv_obj_t *btn);
 inline void clear_push_button_transition(lv_obj_t *btn);
+inline void apply_toggle_card_transition(lv_obj_t *btn);
 
 inline void setup_garage_card(BtnSlot &s, const ParsedCfg &p) {
   if (garage_command_mode(p.sensor)) {
@@ -95,6 +96,29 @@ inline void clear_push_button_transition(lv_obj_t *btn) {
     static_cast<lv_style_selector_t>(LV_PART_MAIN) | LV_STATE_DEFAULT);
 }
 
+// Toggle cards otherwise inherit the LVGL theme transition: a 70 ms hold and an
+// 80 ms linear fade, which is only about three frames on the slower RGB panels
+// and reads as a stutter. Profiles that set ESPCONTROL_TOGGLE_TRANSITION_MS get
+// one eased fade with no hold for the on/off colour change instead.
+#ifndef ESPCONTROL_TOGGLE_TRANSITION_MS
+#define ESPCONTROL_TOGGLE_TRANSITION_MS 0
+#endif
+
+inline void apply_toggle_card_transition(lv_obj_t *btn) {
+  if (!btn || ESPCONTROL_TOGGLE_TRANSITION_MS <= 0) return;
+  static const lv_style_prop_t toggle_props[] = {
+    LV_STYLE_BG_COLOR, LV_STYLE_RECOLOR_OPA, LV_STYLE_PROP_INV};
+  static lv_style_transition_dsc_t toggle_trans;
+  static bool toggle_trans_inited = false;
+  if (!toggle_trans_inited) {
+    lv_style_transition_dsc_init(&toggle_trans, toggle_props, lv_anim_path_ease_out,
+      ESPCONTROL_TOGGLE_TRANSITION_MS, 0, NULL);
+    toggle_trans_inited = true;
+  }
+  lv_obj_set_style_transition(btn, &toggle_trans,
+    static_cast<lv_style_selector_t>(LV_PART_MAIN) | LV_STATE_DEFAULT);
+}
+
 inline void setup_internal_relay_card(BtnSlot &s, const ParsedCfg &p) {
   bool push_mode = internal_relay_push_mode(p);
   std::string label = internal_relay_label(p);
@@ -114,6 +138,7 @@ inline void setup_internal_relay_card(BtnSlot &s, const ParsedCfg &p) {
 // Set icon and label on a toggle/push button based on its config
 inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
   if (!p.entity.empty()) {
+    apply_toggle_card_transition(s.btn);
     if (!p.label.empty()) {
       lv_label_set_display_text(s.text_lbl, p.label.c_str());
     }

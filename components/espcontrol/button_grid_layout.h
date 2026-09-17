@@ -426,6 +426,77 @@ inline void set_card_checked_state(lv_obj_t *btn, bool checked) {
   sync_card_checked_text_color(btn);
 }
 
+// Optimistic toggle feedback. A plain toggle card normally changes colour only
+// when Home Assistant reports the new state, so a tap shows pressed colour,
+// falls back to the old colour on release, and changes again a moment later.
+// Profiles that define ESPCONTROL_OPTIMISTIC_TOGGLE flip the card as soon as
+// the action is sent. The flip is provisional: the next reported state always
+// wins, and a flip that Home Assistant never answers is undone.
+#ifdef ESPCONTROL_OPTIMISTIC_TOGGLE
+#ifndef ESPCONTROL_OPTIMISTIC_TOGGLE_REVERT_MS
+#define ESPCONTROL_OPTIMISTIC_TOGGLE_REVERT_MS 4000
+#endif
+
+struct OptimisticToggleEntry {
+  lv_obj_t *btn = nullptr;
+  lv_timer_t *revert_timer = nullptr;
+  bool previous_on = false;
+};
+
+inline std::vector<OptimisticToggleEntry> &optimistic_toggle_entries() {
+  static std::vector<OptimisticToggleEntry> entries;
+  return entries;
+}
+
+// Settle a provisional flip without touching the card: the caller is about to
+// apply the reported state, or the card is being reused or deleted.
+inline void optimistic_toggle_settle(lv_obj_t *btn) {
+  auto &entries = optimistic_toggle_entries();
+  for (size_t i = 0; i < entries.size(); i++) {
+    if (entries[i].btn != btn) continue;
+    if (entries[i].revert_timer) lv_timer_delete(entries[i].revert_timer);
+    entries[i] = entries.back();
+    entries.pop_back();
+    return;
+  }
+}
+
+inline void optimistic_toggle_deleted_cb(lv_event_t *event) {
+  optimistic_toggle_settle(static_cast<lv_obj_t *>(lv_event_get_target(event)));
+}
+
+inline void optimistic_toggle_apply(lv_obj_t *btn, bool target_on) {
+  if (!btn) return;
+  const bool previous_on = lv_obj_has_state(btn, LV_STATE_CHECKED);
+  optimistic_toggle_settle(btn);
+  OptimisticToggleEntry entry;
+  entry.btn = btn;
+  entry.previous_on = previous_on;
+  entry.revert_timer = lv_timer_create([](lv_timer_t *timer) {
+    lv_obj_t *target = static_cast<lv_obj_t *>(lv_timer_get_user_data(timer));
+    auto &pending = optimistic_toggle_entries();
+    for (size_t i = 0; i < pending.size(); i++) {
+      if (pending[i].btn != target) continue;
+      const bool restore_on = pending[i].previous_on;
+      // The one-shot timer deletes itself after this callback returns.
+      pending[i] = pending.back();
+      pending.pop_back();
+      set_card_checked_state(target, restore_on);
+      return;
+    }
+  }, ESPCONTROL_OPTIMISTIC_TOGGLE_REVERT_MS, btn);
+  if (!entry.revert_timer) return;
+  lv_timer_set_repeat_count(entry.revert_timer, 1);
+  optimistic_toggle_entries().push_back(entry);
+  // Subpage cards are deleted with their page; never leave a timer behind.
+  lv_obj_remove_event_cb(btn, optimistic_toggle_deleted_cb);
+  lv_obj_add_event_cb(btn, optimistic_toggle_deleted_cb, LV_EVENT_DELETE, nullptr);
+  set_card_checked_state(btn, target_on);
+}
+#else
+inline void optimistic_toggle_settle(lv_obj_t *) {}
+#endif
+
 // Match the main-page button widget label behavior so longer titles wrap
 // instead of running off the edge of the tile.
 inline void configure_button_label_wrap(lv_obj_t *label) {

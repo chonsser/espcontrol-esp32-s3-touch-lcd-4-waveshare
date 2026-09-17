@@ -13,9 +13,25 @@ inline bool is_button_entity(const std::string &entity_id) {
 }
 
 // Press HA button entities; toggle other bound entities.
-inline void send_toggle_action(const std::string &entity_id) {
-  ha_send_entity_action(entity_id,
+inline bool send_toggle_action(const std::string &entity_id) {
+  return ha_send_entity_action(entity_id,
     is_button_entity(entity_id) ? "button.press" : "homeassistant.toggle");
+}
+
+// Toggle from a card tap. Profiles with optimistic toggles flip the card as
+// soon as the action has been sent instead of waiting for the state report.
+inline void send_card_toggle_action(const std::string &entity_id, lv_obj_t *card,
+                                    bool currently_on) {
+  const bool sent = send_toggle_action(entity_id);
+#ifdef ESPCONTROL_OPTIMISTIC_TOGGLE
+  if (sent && card && !is_button_entity(entity_id)) {
+    optimistic_toggle_apply(card, !currently_on);
+  }
+#else
+  (void) sent;
+  (void) card;
+  (void) currently_on;
+#endif
 }
 
 inline void send_turn_off_action(const std::string &entity_id) {
