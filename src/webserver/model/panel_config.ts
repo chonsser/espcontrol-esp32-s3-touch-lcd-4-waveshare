@@ -1,3 +1,5 @@
+import { i18nMark } from "../i18n";
+
 /** Versioned native document for on-device panel configuration. */
 export const PANEL_CONFIG_DOCUMENT_VERSION = 1;
 export const PANEL_CONFIG_HEADER_SIZE = 16;
@@ -53,7 +55,7 @@ function encodeBase64(input: Uint8Array): string {
 function decodeBase64(value: unknown): Uint8Array {
   if (typeof value !== "string" || value.length === 0 || value.length % 4 !== 0 ||
       !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) {
-    fail("PanelConfig backup payload is not valid base64");
+    fail(i18nMark("PanelConfig backup payload is not valid base64"));
   }
   const padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
   const output = new Uint8Array((value.length / 4) * 3 - padding);
@@ -118,18 +120,18 @@ function sortedSlotEntries(values: Record<number, string>, label: string): Array
 }
 
 function sortedSettingEntries(values: Record<string, string>): Array<[string, string]> {
-  if (!values || typeof values !== "object" || Array.isArray(values)) fail("settings must be an object");
+  if (!values || typeof values !== "object" || Array.isArray(values)) fail(i18nMark("settings must be an object"));
   const entries = Object.entries(values);
   for (const [key, value] of entries) {
     encodeString(key, "setting key", PANEL_CONFIG_MAX_SETTING_KEY_BYTES, false);
-    if (typeof value !== "string") fail("setting values must be strings");
+    if (typeof value !== "string") fail(i18nMark("setting values must be strings"));
   }
   entries.sort(([left], [right]) => left.localeCompare(right));
   return entries;
 }
 
 function appendRecord(records: Uint8Array[], type: RecordType, body: Uint8Array): void {
-  if (body.length > PANEL_CONFIG_MAX_RECORD_BODY_BYTES) fail("configuration record exceeds its supported byte length");
+  if (body.length > PANEL_CONFIG_MAX_RECORD_BODY_BYTES) fail(i18nMark("configuration record exceeds its supported byte length"));
   const record = new Uint8Array(3 + body.length);
   record.set(Uint8Array.of(type, body.length & 0xff, body.length >>> 8));
   record.set(body, 3);
@@ -153,7 +155,7 @@ export function encodePanelConfig(document: PanelConfigDocument): Uint8Array {
     const encodedValue = encodeString(value, "setting value", PANEL_CONFIG_MAX_RECORD_BODY_BYTES - 1 - encodedKey.length);
     appendRecord(records, RecordType.Setting, Uint8Array.of(encodedKey.length, ...encodedKey, ...encodedValue));
   }
-  if (records.length > PANEL_CONFIG_MAX_RECORD_COUNT) fail("configuration contains too many records");
+  if (records.length > PANEL_CONFIG_MAX_RECORD_COUNT) fail(i18nMark("configuration contains too many records"));
   const payloadLength = records.reduce((total, record) => total + record.length, 0);
   const output = new Uint8Array(PANEL_CONFIG_HEADER_SIZE + payloadLength);
   output.set(MAGIC, 0);
@@ -175,9 +177,9 @@ export function decodePanelConfig(input: Uint8Array): PanelConfigDocument {
   if (!(input instanceof Uint8Array) || input.length < PANEL_CONFIG_HEADER_SIZE ||
     MAGIC.some((value, index) => input[index] !== value) || readU16(input, 4) !== PANEL_CONFIG_DOCUMENT_VERSION ||
     readU16(input, 6) !== PANEL_CONFIG_HEADER_SIZE || readU16(input, 14) !== 0 ||
-    readU32(input, 8) !== input.length - PANEL_CONFIG_HEADER_SIZE) fail("invalid PanelConfig document header");
+    readU32(input, 8) !== input.length - PANEL_CONFIG_HEADER_SIZE) fail(i18nMark("invalid PanelConfig document header"));
   const recordCount = readU16(input, 12);
-  if (recordCount > PANEL_CONFIG_MAX_RECORD_COUNT) fail("PanelConfig contains too many records");
+  if (recordCount > PANEL_CONFIG_MAX_RECORD_COUNT) fail(i18nMark("PanelConfig contains too many records"));
   const result: PanelConfigDocument = {
     deviceProfile: "",
     buttons: {},
@@ -186,33 +188,33 @@ export function decodePanelConfig(input: Uint8Array): PanelConfigDocument {
   };
   let offset = PANEL_CONFIG_HEADER_SIZE;
   for (let recordIndex = 0; recordIndex < recordCount; recordIndex += 1) {
-    if (offset + 3 > input.length) fail("truncated PanelConfig record");
+    if (offset + 3 > input.length) fail(i18nMark("truncated PanelConfig record"));
     const type = input[offset]!;
     const bodyLength = readU16(input, offset + 1);
     offset += 3;
-    if (bodyLength > PANEL_CONFIG_MAX_RECORD_BODY_BYTES || offset + bodyLength > input.length) fail("invalid PanelConfig record length");
+    if (bodyLength > PANEL_CONFIG_MAX_RECORD_BODY_BYTES || offset + bodyLength > input.length) fail(i18nMark("invalid PanelConfig record length"));
     const body = input.slice(offset, offset + bodyLength);
     offset += bodyLength;
     if (type === RecordType.DeviceProfile) {
-      if (result.deviceProfile || body.length === 0 || body.length > PANEL_CONFIG_MAX_DEVICE_PROFILE_BYTES) fail("invalid device profile record");
+      if (result.deviceProfile || body.length === 0 || body.length > PANEL_CONFIG_MAX_DEVICE_PROFILE_BYTES) fail(i18nMark("invalid device profile record"));
       result.deviceProfile = decodeString(body, "device profile", false);
     } else if (type === RecordType.Button || type === RecordType.Subpage) {
       const slot = body[0] ?? 0;
-      if (body.length < 1 || slot < 1 || slot > PANEL_CONFIG_MAX_SLOT_COUNT) fail("invalid slot record");
+      if (body.length < 1 || slot < 1 || slot > PANEL_CONFIG_MAX_SLOT_COUNT) fail(i18nMark("invalid slot record"));
       const target = type === RecordType.Button ? result.buttons : result.subpages;
-      if (Object.prototype.hasOwnProperty.call(target, slot)) fail("duplicate slot record");
+      if (Object.prototype.hasOwnProperty.call(target, slot)) fail(i18nMark("duplicate slot record"));
       target[slot] = decodeString(body.slice(1), "slot configuration");
     } else if (type === RecordType.Setting) {
       const keyLength = body[0] ?? 0;
-      if (body.length < 2 || keyLength === 0 || keyLength > PANEL_CONFIG_MAX_SETTING_KEY_BYTES || keyLength >= body.length) fail("invalid setting record");
+      if (body.length < 2 || keyLength === 0 || keyLength > PANEL_CONFIG_MAX_SETTING_KEY_BYTES || keyLength >= body.length) fail(i18nMark("invalid setting record"));
       const key = decodeString(body.slice(1, 1 + keyLength), "setting key", false);
-      if (Object.prototype.hasOwnProperty.call(result.settings, key)) fail("duplicate setting record");
+      if (Object.prototype.hasOwnProperty.call(result.settings, key)) fail(i18nMark("duplicate setting record"));
       result.settings[key] = decodeString(body.slice(1 + keyLength), "setting value");
     } else {
-      fail("unsupported PanelConfig record type");
+      fail(i18nMark("unsupported PanelConfig record type"));
     }
   }
-  if (offset !== input.length || !result.deviceProfile) fail("incomplete PanelConfig document");
+  if (offset !== input.length || !result.deviceProfile) fail(i18nMark("incomplete PanelConfig document"));
   return result;
 }
 
@@ -227,17 +229,17 @@ export function createPanelConfigBackupPayload(document: Uint8Array): PanelConfi
 
 export function decodePanelConfigBackupPayload(value: unknown): Uint8Array {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    fail("PanelConfig backup section is invalid");
+    fail(i18nMark("PanelConfig backup section is invalid"));
   }
   const payload = value as Partial<PanelConfigBackupPayload>;
   if (payload.document_version !== PANEL_CONFIG_DOCUMENT_VERSION ||
       typeof payload.device_profile !== "string" || payload.device_profile.length === 0) {
-    fail("PanelConfig backup version or device profile is invalid");
+    fail(i18nMark("PanelConfig backup version or device profile is invalid"));
   }
   const document = decodeBase64(payload.payload);
   const decoded = decodePanelConfig(document);
   if (decoded.deviceProfile !== payload.device_profile) {
-    fail("PanelConfig backup device profile does not match its document");
+    fail(i18nMark("PanelConfig backup device profile does not match its document"));
   }
   return document;
 }

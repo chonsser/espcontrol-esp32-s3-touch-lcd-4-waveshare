@@ -33,6 +33,11 @@
       "kind": "glob",
       "role": "authored"
     },
+    "webTranslations": {
+      "path": "product/v2/translations/web.*.txt",
+      "kind": "glob",
+      "role": "authored"
+    },
     "compatibilityFixtures": {
       "path": "product/v2/product_compatibility.json",
       "kind": "file",

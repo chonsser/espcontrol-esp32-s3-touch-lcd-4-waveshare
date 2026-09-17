@@ -11,6 +11,7 @@ import { iconSlug } from "../application/ui_primitives";
 import type { CardRegistry } from "../application/card_registry";
 import type { ConfigSensorOptionsFeature } from "../application/config_sensor_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerDoorWindowCardTypes(
     registry: CardRegistry,
     sensorOptions: ConfigSensorOptionsFeature,
@@ -28,40 +29,40 @@ export function registerDoorWindowCardTypes(
     // Read-only door/window card: shows a binary sensor with subtype-specific icons.
     const DOOR_WINDOW_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "door-window-type",
             options: [
-                ["door", "Door"],
-                ["window", "Window"],
+                ["door", i18n("Door")],
+                ["window", i18n("Window")],
             ],
             value: function (this: any, b?: any) {
                 return normalizeDoorWindowSubtype(b.precision);
             },
         },
         entity: {
-            label: "Sensor Entity",
+            label: i18n("Sensor Entity"),
             idSuffix: "sensor",
-            placeholder: "e.g. binary_sensor.patio_door",
+            placeholder: i18n("e.g. {example}", { example: "binary_sensor.patio_door" }),
             domains: function (this: any) { return cardContractDomains("door_window"); },
             bindName: "sensor",
             rerender: true,
-            requiredMessage: "Add a door or window sensor before saving.",
+            requiredMessage: i18n("Add a door or window sensor before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "label",
             field: "label",
-            placeholder: "e.g. Patio Door",
+            placeholder: i18n("e.g. Patio Door"),
             rerender: true,
         },
         activeColor: {
-            label: "Lit When Open",
+            label: i18n("Lit When Open"),
             idSuffix: "door-window-active-color",
             checked: doorWindowActiveColorEnabled,
         },
     };
     registry.register("door_window", {
-        label: function (this: any) { return cardContractCardLabel("door_window"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("door_window")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("door_window"); },
         pickerKey: function (this: any) { return cardContractPickerKey("door_window"); },
         hidden: function (this: any) { return cardContractHidden("door_window"); },
@@ -94,13 +95,13 @@ export function registerDoorWindowCardTypes(
                 pickerIdSuffix: "closed-icon-picker",
                 idSuffix: "icon",
                 field: "icon",
-                label: "Closed Icon",
+                label: i18n("Closed Icon"),
                 fallback: function (this: any) { return doorWindowClosedIcon(b.precision); },
             }, {
                 pickerIdSuffix: "open-icon-picker",
                 idSuffix: "icon-on",
                 field: "icon_on",
-                label: "Open Icon",
+                label: i18n("Open Icon"),
                 fallback: function (this: any) { return doorWindowOpenIcon(b.precision); },
             });
             var closedIconPicker: any = iconPickers.off;
@@ -137,7 +138,7 @@ export function registerDoorWindowCardTypes(
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var subtype: any = normalizeDoorWindowSubtype(b.precision);
-            var label: any = b.label || b.sensor || (subtype === "window" ? "Window" : "Door");
+            var label: any = b.label || b.sensor || (subtype === "window" ? i18nDevice("Window") : i18nDevice("Door"));
             return cardBadgePreview(b, helpers, {
                 label: label,
                 iconFallback: doorWindowClosedIcon(subtype),

@@ -5,6 +5,7 @@ import {
   type NativePanelConfigFetch,
   type NativePanelConfigSaveResult,
 } from "../features/native_panel_config";
+import { i18n } from "../i18n";
 import type { PanelConfigDocument } from "../model";
 
 export type NativePanelConfigUpdate = (document: PanelConfigDocument) => PanelConfigDocument;
@@ -61,13 +62,13 @@ export class NativePanelConfigController {
 
   private report(result: NativePanelConfigSaveOutcome): NativePanelConfigSaveOutcome {
     if (result === "conflict") {
-      this.dependencies.showBanner("Configuration changed in another browser. Reload before saving again.", "error");
+      this.dependencies.showBanner(i18n("Configuration changed in another browser. Reload before saving again."), "error");
     } else if (result === "mirror-failed") {
-      this.dependencies.showBanner("The configuration saved, but its older-firmware copy did not. Do not downgrade this panel yet.", "error");
+      this.dependencies.showBanner(i18n("The configuration saved, but its older-firmware copy did not. Do not downgrade this panel yet."), "error");
     } else if (result === "authentication-required") {
-      this.dependencies.showBanner("This firmware requires web authentication for Wifi Sharing passwords. Sign in, enable web_server_auth, or update the panel firmware.", "error");
+      this.dependencies.showBanner(i18n("This firmware requires web authentication for Wifi Sharing passwords. Sign in, enable web_server_auth, or update the panel firmware."), "error");
     } else if (result === "failed") {
-      this.dependencies.showBanner("Could not save the configuration. Check the connection and try again.", "error");
+      this.dependencies.showBanner(i18n("Could not save the configuration. Check the connection and try again."), "error");
     }
     return result;
   }

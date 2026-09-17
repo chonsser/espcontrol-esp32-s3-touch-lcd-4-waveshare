@@ -12,6 +12,7 @@ import type { CardRegistry, CardUiServices } from "../application/card_registry"
 import type { ConfigAccessClimateAlarmOptionsFeature } from "../application/config_access_climate_alarm_options";
 import type { ButtonSettingsRenderQueueFeature } from "../application/button_settings_render_queue";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerAlarmCardTypes(
     registry: CardRegistry,
     accessOptions: ConfigAccessClimateAlarmOptionsFeature,
@@ -47,11 +48,11 @@ export function registerAlarmCardTypes(
     }
     function alarmCardTypeOptions(this: any) {
         var options: any = [
-            { value: alarmControlPanelValue(), label: "All Controls" },
+            { value: alarmControlPanelValue(), label: i18n("All Controls") },
         ];
         var actions: any = alarmActionSpecs();
         for (var i: any = 0; i < actions.length; i++)
-            options.push(actions[i]);
+            options.push({ value: actions[i].value, label: i18nDynamic(actions[i].label) });
         return options;
     }
     function alarmCardTypeOptionsForSettings(this: any) {
@@ -66,6 +67,21 @@ export function registerAlarmCardTypes(
                 return true;
         }
         return false;
+    }
+    // Emulated panel text: the firmware translates an alarm action's default label,
+    // also when that label was saved in English.
+    function alarmActionDeviceLabel(this: any, info?: any) {
+        if (info.value === "away")
+            return i18nDevice("Arm Away");
+        if (info.value === "home")
+            return i18nDevice("Arm Home");
+        if (info.value === "night")
+            return i18nDevice("Arm Night");
+        if (info.value === "vacation")
+            return i18nDevice("Arm Vacation");
+        if (info.value === "disarm")
+            return i18nDevice("Disarm");
+        return info.label;
     }
     function alarmIconIsGenerated(this: any, icon?: any) {
         if (!icon || icon === "Auto" || alarmUsesDefaultIcon(icon))
@@ -131,7 +147,7 @@ export function registerAlarmCardTypes(
     }
     var ALARM_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "alarm-card-type",
             options: alarmCardTypeOptionsForSettings,
             value: function (this: any, b?: any) {
@@ -141,25 +157,25 @@ export function registerAlarmCardTypes(
             },
         },
         entity: {
-            label: "Alarm Entity",
-            placeholder: "e.g. alarm_control_panel.house",
+            label: i18n("Alarm Entity"),
+            placeholder: i18n("e.g. {example}", { example: "alarm_control_panel.house" }),
             domains: function (this: any, b?: any) { return cardContractDomains(b && b.type === "alarm_action" ? "alarm_action" : "alarm"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add an alarm_control_panel entity before saving.",
+            requiredMessage: i18n("Add an alarm_control_panel entity before saving."),
         },
         labelDisplay: {
-            label: "Label Display",
+            label: i18n("Label Display"),
             options: [
-                ["name", "Name"],
-                ["status", "Status"],
+                ["name", i18n("Name")],
+                ["status", i18n("Status")],
             ],
         },
         iconDisplay: {
-            label: "Icon Display",
+            label: i18n("Icon Display"),
             options: [
-                ["static", "Static"],
-                ["status", "Status"],
+                ["static", i18n("Static")],
+                ["status", i18n("Status")],
             ],
         },
     };
@@ -179,7 +195,7 @@ export function registerAlarmCardTypes(
             return null;
         var field: any = document.createElement("div");
         field.className = "sp-field";
-        field.appendChild(helpers.fieldLabel("Visible Actions", helpers.idPrefix + "alarm-visible-actions"));
+        field.appendChild(helpers.fieldLabel(i18n("Visible Actions"), helpers.idPrefix + "alarm-visible-actions"));
         var inputs: any = [];
         function selectedActions(this: any) {
             var selected: any = [];
@@ -200,7 +216,7 @@ export function registerAlarmCardTypes(
         var visible: any = alarmVisibleActions(b);
         for (var i: any = 0; i < actions.length; i++) {
             var action: any = actions[i];
-            var row: any = helpers.toggleRow(action.label, helpers.idPrefix + "alarm-visible-action-" + action.value, visible.indexOf(action.value) >= 0);
+            var row: any = helpers.toggleRow(i18nDynamic(action.label), helpers.idPrefix + "alarm-visible-action-" + action.value, visible.indexOf(action.value) >= 0);
             field.appendChild(row.row);
             inputs.push({ value: action.value, input: row.input });
             row.input.addEventListener("change", function (this: any) {
@@ -216,12 +232,12 @@ export function registerAlarmCardTypes(
         return field;
     }
     registry.register("alarm", {
-        label: function (this: any) { return cardContractCardLabel("alarm"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("alarm")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("alarm"); },
         pickerKey: function (this: any) { return cardContractPickerKey("alarm"); },
         hidden: function (this: any) { return cardContractHidden("alarm"); },
         hideLabel: true,
-        labelPlaceholder: "e.g. House Alarm",
+        labelPlaceholder: i18n("e.g. House Alarm"),
         defaultConfig: function (this: any) { return cardContractDefaultConfig("alarm"); },
         cardMetadata: ALARM_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
@@ -254,16 +270,16 @@ export function registerAlarmCardTypes(
                     idSuffix: "alarm-entity",
                 }),
             });
-            var cardSettingsDisclosure: any = helpers.disclosureSection("Card Settings", helpers.idPrefix + "alarm-card-settings", false);
+            var cardSettingsDisclosure: any = helpers.disclosureSection(i18n("Card Settings"), helpers.idPrefix + "alarm-card-settings", false);
             var cardSettings: any = cardSettingsDisclosure.section;
-            var modalSettingsDisclosure: any = helpers.disclosureSection("Modal Settings", helpers.idPrefix + "alarm-modal-settings", false);
+            var modalSettingsDisclosure: any = helpers.disclosureSection(i18n("Modal Settings"), helpers.idPrefix + "alarm-modal-settings", false);
             var modalSettings: any = modalSettingsDisclosure.section;
             var labelHost: any = condField();
             helpers.renderCardTextField(labelHost, b, helpers, {
-                label: "Label",
+                label: i18n("Label"),
                 idSuffix: "alarm-label",
                 field: "label",
-                placeholder: "e.g. House Alarm",
+                placeholder: i18n("e.g. House Alarm"),
                 rerender: true,
             });
             function setLabelVisible(this: any, value?: any) {
@@ -275,7 +291,7 @@ export function registerAlarmCardTypes(
                 idSuffix: "alarm-icon",
                 field: "icon",
                 fallback: "Security",
-                label: "Icon",
+                label: i18n("Icon"),
             });
             function setIconVisible(this: any, value?: any) {
                 iconHost.classList.toggle("sp-visible", value === "static");
@@ -313,16 +329,16 @@ export function registerAlarmCardTypes(
                 setAlarmPinRequired(b, "disarm", disarmPinToggle.input.checked);
                 helpers.saveField("options", b.options);
             }
-            var pinSettingsDisclosure: any = helpers.disclosureSection("PIN Settings", helpers.idPrefix + "alarm-pin-settings", false);
+            var pinSettingsDisclosure: any = helpers.disclosureSection(i18n("PIN Settings"), helpers.idPrefix + "alarm-pin-settings", false);
             var pinSettings: any = pinSettingsDisclosure.section;
             var armPinToggle: any = helpers.renderCardOptionToggle(pinSettings, b, helpers, {
-                label: "PIN required for arming",
+                label: i18n("PIN required for arming"),
                 idSuffix: "alarm-pin-arm",
                 checked: function (this: any) { return alarmPinRequired(b, "arm"); },
                 onChange: savePinOptions,
             });
             var disarmPinToggle: any = helpers.renderCardOptionToggle(pinSettings, b, helpers, {
-                label: "PIN required for disarming",
+                label: i18n("PIN required for disarming"),
                 idSuffix: "alarm-pin-disarm",
                 checked: function (this: any) { return alarmPinRequired(b, "disarm"); },
                 onChange: savePinOptions,
@@ -331,9 +347,9 @@ export function registerAlarmCardTypes(
             panel.appendChild(modalSettingsDisclosure.panel);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = (b.label && b.label.trim()) || (b.entity && b.entity.trim()) || "Alarm";
+            var label: any = (b.label && b.label.trim()) || (b.entity && b.entity.trim()) || i18nDevice("Alarm");
             if (alarmLabelDisplayMode(b) === "status")
-                label = "Disarmed";
+                label = i18nDevice("Disarmed");
             var iconName: any = iconSlug(b.icon && b.icon !== "Auto" ? b.icon : "Security");
             if (alarmIconDisplayMode(b) === "status")
                 iconName = iconSlug("Shield Off");
@@ -344,9 +360,9 @@ export function registerAlarmCardTypes(
         },
     });
     registry.register("alarm_action", {
-        label: function (this: any) { return cardContractCardLabel("alarm_action"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("alarm_action")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("alarm_action"); },
-        labelPlaceholder: "e.g. Arm Away",
+        labelPlaceholder: i18n("e.g. Arm Away"),
         pickerKey: function (this: any) { return cardContractPickerKey("alarm_action"); },
         hidden: function (this: any) { return cardContractHidden("alarm_action"); },
         defaultConfig: function (this: any) { return cardContractDefaultConfig("alarm_action"); },
@@ -383,11 +399,11 @@ export function registerAlarmCardTypes(
                 idSuffix: "alarm-action-icon",
                 field: "icon",
                 fallback: function (this: any) { return alarmActionInfo(b.sensor).icon; },
-                label: "Icon",
+                label: i18n("Icon"),
             });
             var pinMode: any = b.sensor === "disarm" ? "disarm" : "arm";
             helpers.renderCardOptionToggle(panel, b, helpers, {
-                label: "PIN required",
+                label: i18n("PIN required"),
                 idSuffix: "alarm-action-pin",
                 checked: function (this: any) { return alarmPinRequired(b, pinMode); },
                 onChange: function (this: any, button?: any, cardHelpers?: any, checked?: any) {
@@ -398,7 +414,7 @@ export function registerAlarmCardTypes(
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var info: any = alarmActionInfo(b.sensor) || alarmActionSpecs()[0];
-            var label: any = b.label || info.label;
+            var label: any = !b.label || b.label === info.label ? alarmActionDeviceLabel(info) : b.label;
             var iconName: any = iconSlug(b.icon || info.icon);
             return {
                 iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',

@@ -2,6 +2,7 @@ import type { CardRegistry } from "../application/card_registry";
 import type { WeatherCardRegistration } from "./weather";
 import type { ClockBarFeature } from "../application/clock_bar_state";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n } from "../i18n";
 
 export function registerWeatherForecastCardTypes(
     registry: CardRegistry,
@@ -17,7 +18,7 @@ export function registerWeatherForecastCardTypes(
         preview: weather.previewMetadata,
     };
     registry.register("weather_forecast", {
-        label: "Weather Forecast",
+        label: i18n("Weather Forecast"),
         allowInSubpage: true,
         hideLabel: true,
         cardMetadata: WEATHER_FORECAST_CARD_METADATA,
@@ -38,7 +39,7 @@ export function registerWeatherForecastCardTypes(
         renderPreview: function (this: any, b?: any, helpers?: any) {
             return {
                 iconHtml: cardSensorPreviewHtml(b, helpers, "18/10", temperatureUnitSymbol(), "sp-forecast-preview", "sp-forecast-value"),
-                labelHtml: cardBadgeLabelHtml(helpers, "Temperatures Tomorrow", WEATHER_FORECAST_CARD_METADATA.preview.forecastBadge),
+                labelHtml: cardBadgeLabelHtml(helpers, i18n("Temperatures Tomorrow"), WEATHER_FORECAST_CARD_METADATA.preview.forecastBadge),
             };
         },
     });

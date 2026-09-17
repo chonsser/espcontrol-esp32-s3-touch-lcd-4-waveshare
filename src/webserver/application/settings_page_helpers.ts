@@ -8,6 +8,7 @@ import {
     normalizeHour,
     normalizeTimeOfDay,
 } from "../model/settings";
+import { i18n, i18nDynamic, i18nMark } from "../i18n";
 import { setSelectValue } from "./ui_primitives";
 import { timedSettingLabel, type SettingsUiFeature } from "../features/settings";
 import type { AlarmDelayAudioController } from "../features/alarm_delay_audio_controller";
@@ -72,7 +73,8 @@ export interface SettingsPageHelpersFeature {
 
 export function formatHomeAssistantArtworkEndpointStatus(status: string): string {
     const normalized = String(status || "").trim();
-    return normalized.replace(/^(?:Automatic|Fallback|Manual)\s*[—-]\s*/i, "").trim() || "Discovering";
+    // The device reports either "Discovering" or an endpoint origin; only the former has a translation.
+    return i18nDynamic(normalized.replace(/^(?:Automatic|Fallback|Manual)\s*[—-]\s*/i, "").trim() || i18nMark("Discovering"));
 }
 
 export function createSettingsPageHelpersFeature(
@@ -220,7 +222,7 @@ export function createSettingsPageHelpersFeature(
         if (!(controllers.layout.config.features && controllers.layout.config.features.alarmDelayAudio))
             return null;
         var body: any = document.createElement("div");
-        var master: any = toggleRow("Alarm Delay Audio", "sp-set-alarm-delay-audio", state.alarmDelayAudioOn);
+        var master: any = toggleRow(i18n("Alarm Delay Audio"), "sp-set-alarm-delay-audio", state.alarmDelayAudioOn);
         body.appendChild(master.row);
         els.setAlarmDelayAudioToggle = master.input;
         master.input.addEventListener("change", function (this: any) {
@@ -231,7 +233,7 @@ export function createSettingsPageHelpersFeature(
 
         var options: any = condField();
         els.alarmDelayAudioOptions = options;
-        var tts: any = toggleRow("TTS Announcements", "sp-set-alarm-delay-tts", state.alarmDelayTtsOn);
+        var tts: any = toggleRow(i18n("TTS Announcements"), "sp-set-alarm-delay-tts", state.alarmDelayTtsOn);
         options.appendChild(tts.row);
         els.setAlarmDelayTtsToggle = tts.input;
         tts.input.addEventListener("change", function (this: any) {
@@ -273,20 +275,20 @@ export function createSettingsPageHelpersFeature(
             return input;
         }
         els.setAlarmDelayEntryAnnouncement = announcementInput(
-            "Entry Announcement", "sp-set-alarm-delay-entry-announcement",
+            i18n("Entry Announcement"), "sp-set-alarm-delay-entry-announcement",
             state.alarmDelayEntryAnnouncement, DEFAULT_ALARM_DELAY_ENTRY_ANNOUNCEMENT,
             "alarmDelayEntryAnnouncement",
             "entryAnnouncement",
             postAlarmDelayEntryAnnouncement);
         els.setAlarmDelayExitAnnouncement = announcementInput(
-            "Exit Announcement", "sp-set-alarm-delay-exit-announcement",
+            i18n("Exit Announcement"), "sp-set-alarm-delay-exit-announcement",
             state.alarmDelayExitAnnouncement, DEFAULT_ALARM_DELAY_EXIT_ANNOUNCEMENT,
             "alarmDelayExitAnnouncement",
             "exitAnnouncement",
             postAlarmDelayExitAnnouncement);
         options.appendChild(ttsOptions);
 
-        var volume: any = createRangeSlider("Beep Volume", state.alarmDelayBeepVolume * 100, null);
+        var volume: any = createRangeSlider(i18n("Beep Volume"), state.alarmDelayBeepVolume * 100, null);
         volume.range.id = "sp-set-alarm-delay-beep-volume";
         volume.range.min = "5";
         volume.range.max = "100";
@@ -305,7 +307,7 @@ export function createSettingsPageHelpersFeature(
 
         var countdownField: any = document.createElement("div");
         countdownField.className = "sp-field";
-        countdownField.appendChild(fieldLabel("Faster Beeps During Final Seconds", "sp-set-alarm-delay-final-countdown"));
+        countdownField.appendChild(fieldLabel(i18n("Faster Beeps During Final Seconds"), "sp-set-alarm-delay-final-countdown"));
         var countdown: any = document.createElement("input");
         countdown.type = "number";
         countdown.className = "sp-input";
@@ -325,11 +327,11 @@ export function createSettingsPageHelpersFeature(
         body.appendChild(options);
         body.appendChild(infoPanel(
             "sp-alarm-delay-audio-info",
-            "Entry and exit beeps use the panel speaker. TTS is sent as a Home Assistant announcement event only while Voice Services are enabled."));
-        var badge: any = statusBadge("Alarm audio on");
+            i18n("Entry and exit beeps use the panel speaker. TTS is sent as a Home Assistant announcement event only while Voice Services are enabled.")));
+        var badge: any = statusBadge(i18n("Alarm audio on"));
         els.setAlarmDelayAudioBadge = badge;
         syncAlarmDelayAudioUi();
-        return makeCollapsibleCard("Alarm Audio", body, true, badge);
+        return makeCollapsibleCard(i18n("Alarm Audio"), body, true, badge);
     }
     function coverArtTrackOverlayDurationSupported(this: any) {
         return !!controllers.layout.config.coverArtSquareOverlay;
@@ -494,14 +496,14 @@ export function createSettingsPageHelpersFeature(
     function createScreensaverThenControls(this: any, selectId?: any) {
         var clockField: any = document.createElement("div");
         clockField.className = "sp-field";
-        clockField.appendChild(fieldLabel("Then", selectId));
+        clockField.appendChild(fieldLabel(i18n("Then"), selectId));
         var clockSelect: any = document.createElement("select");
         clockSelect.className = "sp-select";
         clockSelect.id = selectId;
         [
-            { value: "off", label: "Display Off" },
-            { value: "dim", label: "Screen Dimmed" },
-            { value: "clock", label: "Clock" },
+            { value: "off", label: i18n("Display Off") },
+            { value: "dim", label: i18n("Screen Dimmed") },
+            { value: "clock", label: i18n("Clock") },
         ].forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
             o.value = opt.value;
@@ -519,7 +521,7 @@ export function createSettingsPageHelpersFeature(
         var dimBrightnessField: any = document.createElement("div");
         dimBrightnessField.style.display = _screensaverController.uiState(screensaverState()).dimVisible ? "" : "none";
         var manualDimBrightnessField: any = document.createElement("div");
-        var dimSlider: any = createRangeSlider("Dimmed Screen Brightness", state.screensaverDimmedBrightness, postScreensaverDimmedBrightness);
+        var dimSlider: any = createRangeSlider(i18n("Dimmed Screen Brightness"), state.screensaverDimmedBrightness, postScreensaverDimmedBrightness);
         dimSlider.range.id = selectId === "sp-set-sensor-clock-mode"
             ? "sp-set-sensor-dimmed-brightness"
             : "sp-set-dimmed-brightness";
@@ -532,7 +534,7 @@ export function createSettingsPageHelpersFeature(
         manualDimBrightnessField.appendChild(dimSlider.wrap);
         dimBrightnessField.appendChild(manualDimBrightnessField);
         var automaticDimBrightnessField: any = document.createElement("div");
-        var dimDaySlider: any = createRangeSlider("Daytime Dimmed Screen Brightness", state.screensaverDimmedBrightnessDay, postScreensaverDimmedBrightnessDay);
+        var dimDaySlider: any = createRangeSlider(i18n("Daytime Dimmed Screen Brightness"), state.screensaverDimmedBrightnessDay, postScreensaverDimmedBrightnessDay);
         dimDaySlider.range.id = selectId === "sp-set-sensor-clock-mode"
             ? "sp-set-sensor-daytime-dimmed-brightness"
             : "sp-set-daytime-dimmed-brightness";
@@ -543,7 +545,7 @@ export function createSettingsPageHelpersFeature(
             syncClockScreensaverControls();
         });
         automaticDimBrightnessField.appendChild(dimDaySlider.wrap);
-        var dimNightSlider: any = createRangeSlider("Nighttime Dimmed Screen Brightness", state.screensaverDimmedBrightnessNight, postScreensaverDimmedBrightnessNight);
+        var dimNightSlider: any = createRangeSlider(i18n("Nighttime Dimmed Screen Brightness"), state.screensaverDimmedBrightnessNight, postScreensaverDimmedBrightnessNight);
         dimNightSlider.range.id = selectId === "sp-set-sensor-clock-mode"
             ? "sp-set-sensor-nighttime-dimmed-brightness"
             : "sp-set-nighttime-dimmed-brightness";
@@ -558,7 +560,7 @@ export function createSettingsPageHelpersFeature(
         var clockBrightnessField: any = document.createElement("div");
         clockBrightnessField.className = "sp-clock-brightness-field";
         clockBrightnessField.style.display = _screensaverController.uiState(screensaverState()).clockVisible ? "" : "none";
-        var daySlider: any = createRangeSlider("Daytime Clock Brightness", state.clockBrightnessDay, postClockBrightnessDay);
+        var daySlider: any = createRangeSlider(i18n("Daytime Clock Brightness"), state.clockBrightnessDay, postClockBrightnessDay);
         daySlider.range.min = "1";
         daySlider.range.step = "1";
         daySlider.range.addEventListener("input", function (this: any) {
@@ -566,7 +568,7 @@ export function createSettingsPageHelpersFeature(
             syncClockScreensaverControls();
         });
         clockBrightnessField.appendChild(daySlider.wrap);
-        var nightSlider: any = createRangeSlider("Nighttime Clock Brightness", state.clockBrightnessNight, postClockBrightnessNight);
+        var nightSlider: any = createRangeSlider(i18n("Nighttime Clock Brightness"), state.clockBrightnessNight, postClockBrightnessNight);
         nightSlider.range.min = "1";
         nightSlider.range.step = "1";
         nightSlider.range.addEventListener("input", function (this: any) {

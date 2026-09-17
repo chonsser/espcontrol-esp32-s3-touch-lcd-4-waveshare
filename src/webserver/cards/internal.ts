@@ -10,6 +10,7 @@ import { iconSlug } from "../application/ui_primitives";
 import type { CardRegistry } from "../application/card_registry";
 import type { ConfigInternalRelayOptionsFeature } from "../application/config_internal_relay_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDynamic } from "../i18n";
 
 export function registerInternalCardTypes(
     registry: CardRegistry,
@@ -41,9 +42,9 @@ export function registerInternalCardTypes(
     function renderInternalRelayField(this: any, panel?: any, b?: any, helpers?: any) {
         ensureInternalRelaySelection(b);
         var relays: any = internalRelayOptions();
-        var relayField: any = helpers.selectField("Internal Relay", helpers.idPrefix + "internal-relay", relays.length ? relays.map(function (this: any, relay?: any) {
+        var relayField: any = helpers.selectField(i18n("Internal Relay"), helpers.idPrefix + "internal-relay", relays.length ? relays.map(function (this: any, relay?: any) {
             return { value: relay.key, label: relay.label };
-        }) : [["", "No relays"]], relays.length ? b.entity : "");
+        }) : [["", i18n("No relays")]], relays.length ? b.entity : "");
         var relaySelect: any = relayField.select;
         relaySelect.disabled = !relays.length;
         relaySelect.addEventListener("change", function (this: any) {
@@ -54,19 +55,19 @@ export function registerInternalCardTypes(
     }
     const INTERNAL_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             inputId: "internal-mode",
             options: [
-                ["switch", "Switch"],
-                ["push", "Push Button"],
+                ["switch", i18n("Switch")],
+                ["push", i18n("Push Button")],
             ],
             value: internalRelayMode,
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "label",
             field: "label",
-            placeholder: "e.g. Porch Light",
+            placeholder: i18n("e.g. Porch Light"),
             rerender: true,
         },
         preview: {
@@ -75,12 +76,12 @@ export function registerInternalCardTypes(
         },
     };
     registry.register("internal", {
-        label: function (this: any) { return cardContractCardLabel("internal"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("internal")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("internal"); },
         pickerKey: function (this: any) { return cardContractPickerKey("internal"); },
         hidden: function (this: any) { return cardContractHidden("internal"); },
         hideLabel: true,
-        labelPlaceholder: "e.g. Porch Light",
+        labelPlaceholder: i18n("e.g. Porch Light"),
         defaultConfig: function (this: any) { return cardContractDefaultConfig("internal"); },
         cardMetadata: INTERNAL_CARD_METADATA,
         isAvailable: function (this: any) {
@@ -92,10 +93,10 @@ export function registerInternalCardTypes(
             ensureInternalRelaySelection(b);
         },
         renderSettingsBeforeLabel: function (this: any, panel?: any, b?: any, slot?: any, helpers?: any) {
-            var controlsDisclosure: any = helpers.disclosureSection("Controls", helpers.idPrefix + "internal-controls", false);
+            var controlsDisclosure: any = helpers.disclosureSection(i18n("Controls"), helpers.idPrefix + "internal-controls", false);
             renderInternalRelayField(controlsDisclosure.section, b, helpers);
             panel.appendChild(controlsDisclosure.panel);
-            var cardSettingsDisclosure: any = helpers.disclosureSection("Card Settings", helpers.idPrefix + "internal-card-settings", false);
+            var cardSettingsDisclosure: any = helpers.disclosureSection(i18n("Card Settings"), helpers.idPrefix + "internal-card-settings", false);
             panel.appendChild(cardSettingsDisclosure.panel);
         },
         renderSettings: function (this: any, panel?: any, b?: any, slot?: any, helpers?: any) {
@@ -147,14 +148,14 @@ export function registerInternalCardTypes(
             var pushIconCond: any = condField();
             panel.appendChild(switchIconCond);
             panel.appendChild(pushIconCond);
-            var onIcon: any = makeLabeledIconPicker("On Icon", "icon-on", "icon-on-picker", b.icon_on || internalRelayDefaultOnIcon(), function (this: any, opt?: any) {
+            var onIcon: any = makeLabeledIconPicker(i18n("On Icon"), "icon-on", "icon-on-picker", b.icon_on || internalRelayDefaultOnIcon(), function (this: any, opt?: any) {
                 b.icon_on = opt;
                 helpers.saveField("icon_on", opt);
             });
-            var offIcon: any = makeLabeledIconPicker("Off Icon", "icon-off", "icon-off-picker", b.icon || internalRelayDefaultIcon("switch"), function (this: any, opt?: any) {
+            var offIcon: any = makeLabeledIconPicker(i18n("Off Icon"), "icon-off", "icon-off-picker", b.icon || internalRelayDefaultIcon("switch"), function (this: any, opt?: any) {
                 syncIcon(opt);
             });
-            var pushIcon: any = makeLabeledIconPicker("Icon", "icon", "icon-picker", b.icon || internalRelayDefaultIcon("push"), function (this: any, opt?: any) {
+            var pushIcon: any = makeLabeledIconPicker(i18n("Icon"), "icon", "icon-picker", b.icon || internalRelayDefaultIcon("push"), function (this: any, opt?: any) {
                 syncIcon(opt);
             });
             switchIconCond.appendChild(onIcon.section);

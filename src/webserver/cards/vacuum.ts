@@ -14,6 +14,7 @@ import {
 } from "./entity_mode_card";
 import type { ConfigRobotCardOptionsFeature } from "../application/config_robot_card_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 
 export function registerVacuumCardTypes(
     registry: CardRegistry,
@@ -35,7 +36,7 @@ export function registerVacuumCardTypes(
     // Vacuum card: touchscreen-friendly controls for Home Assistant vacuum entities.
     const VACUUM_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "vacuum-type",
             options: vacuumModes,
             value: function (this: any, b?: any) {
@@ -43,23 +44,23 @@ export function registerVacuumCardTypes(
             },
         },
         entity: {
-            label: "Vacuum Entity",
+            label: i18n("Vacuum Entity"),
             idSuffix: "vacuum-entity",
-            placeholder: "e.g. vacuum.kitchen",
+            placeholder: i18n("e.g. {example}", { example: "vacuum.kitchen" }),
             domains: function (this: any) { return cardContractDomains("vacuum"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add a vacuum entity before saving.",
+            requiredMessage: i18n("Add a vacuum entity before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "vacuum-label",
             field: "label",
             rerender: true,
         },
     };
     registry.register("vacuum", {
-        label: function (this: any) { return cardContractCardLabel("vacuum"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("vacuum")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("vacuum"); },
         pickerKey: function (this: any) { return cardContractPickerKey("vacuum"); },
         hidden: function (this: any) { return cardContractHidden("vacuum"); },
@@ -108,14 +109,14 @@ export function registerVacuumCardTypes(
             }));
             helpers.renderCardEntityField(panel, b, helpers, VACUUM_CARD_METADATA);
             helpers.renderCardTextField(panel, b, helpers, Object.assign({}, VACUUM_CARD_METADATA.labelField, {
-                placeholder: mode === "clean_area" ? "e.g. Clean Kitchen" : "e.g. Kitchen Vacuum",
+                placeholder: mode === "clean_area" ? i18n("e.g. Clean Kitchen") : i18n("e.g. Kitchen Vacuum"),
             }));
             if (vacuumModeNeedsArea(mode)) {
                 helpers.renderCardTextField(panel, b, helpers, {
-                    label: "Area ID",
+                    label: i18n("Area ID"),
                     idSuffix: "vacuum-area-id",
                     field: "unit",
-                    placeholder: "e.g. kitchen",
+                    placeholder: i18n("e.g. {example}", { example: "kitchen" }),
                     rerender: false,
                 });
             }
@@ -124,12 +125,12 @@ export function registerVacuumCardTypes(
                 idSuffix: "vacuum-icon",
                 field: "icon",
                 fallback: function (this: any) { return vacuumModeDefaultIcon(mode); },
-                label: "Icon",
+                label: i18n("Icon"),
             });
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var mode: any = normalizeVacuumMode(b.sensor);
-            var label: any = b.label || b.entity || "Vacuum";
+            var label: any = b.label || b.entity || i18nDevice("Vacuum");
             var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : iconSlug(vacuumModeDefaultIcon(mode));
             var stateBadge: any = mode === "status" ? '<span class="sp-sensor-badge mdi mdi-format-text"></span>' : "";
             return {

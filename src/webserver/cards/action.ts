@@ -8,6 +8,7 @@ import {
     SWITCH_CONFIRM_DEFAULT_NO,
     SWITCH_CONFIRM_DEFAULT_YES,
 } from "../application/config_option_core";
+import { i18n, i18nDevice } from "../i18n";
 export function registerActionCardTypes(
     registry: CardRegistry,
     confirmationOptions: ConfigConfirmationOptionsFeature,
@@ -45,7 +46,7 @@ export function registerActionCardTypes(
     } = confirmationOptions;
     var ACTION_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "action",
             options: ACTION_CARD_ACTIONS,
             value: function (this: any, b?: any) {
@@ -56,58 +57,58 @@ export function registerActionCardTypes(
             idSuffix: "entity",
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add an entity before saving.",
+            requiredMessage: i18n("Add an entity before saving."),
         },
         stateMode: {
-            label: "Type",
+            label: i18n("Type"),
             options: [
-                ["icon", "Icon"],
-                ["numeric", "Numeric"],
-                ["text", "Text"],
+                ["icon", i18n("Icon")],
+                ["numeric", i18n("Numeric")],
+                ["text", i18n("Text")],
             ],
         },
         largeNumbers: {
-            label: "Large State Numbers",
+            label: i18n("Large State Numbers"),
             idSuffix: "large-state-numbers",
             supported: function (this: any, b?: any) {
                 return !actionCardIsOptionSelect(b) && !actionCardIsLocal(b) && actionCardStateDisplayMode(b) === "numeric";
             },
         },
         stateUnitField: {
-            label: "Unit",
+            label: i18n("Unit"),
             idSuffix: "action-state-unit",
-            placeholder: "e.g. %",
+            placeholder: i18n("e.g. {example}", { example: "%" }),
             bindName: null,
         },
         confirmationToggle: {
-            label: "Confirmation Required",
+            label: i18n("Confirmation Required"),
             idSuffix: "script-confirm-toggle",
             checked: function (this: any, b?: any) { return actionScriptConfirmationEnabled(b); },
         },
         scriptFields: {
-            label: "Fields",
+            label: i18n("Fields"),
             idSuffix: "script-fields",
-            placeholder: "e.g. mode: night",
+            placeholder: i18n("e.g. {example}", { example: "mode: night" }),
             value: function (this: any, b?: any) { return actionScriptFields(b); },
         },
         confirmationMessage: {
-            label: "Message",
+            label: i18n("Message"),
             idSuffix: "script-confirm-message",
-            placeholder: "Run this script?",
+            placeholder: i18n("Run this script?"),
             bindName: null,
             value: function (this: any, b?: any) { return actionScriptConfirmationMessage(b); },
         },
         confirmationYes: {
-            label: "Confirm Button",
+            label: i18n("Confirm Button"),
             idSuffix: "script-confirm-yes",
-            placeholder: "Yes",
+            placeholder: i18n("Yes"),
             bindName: null,
             value: function (this: any, b?: any) { return actionScriptConfirmationYesText(b); },
         },
         confirmationNo: {
-            label: "Cancel Button",
+            label: i18n("Cancel Button"),
             idSuffix: "script-confirm-no",
-            placeholder: "No",
+            placeholder: i18n("No"),
             bindName: null,
             value: function (this: any, b?: any) { return actionScriptConfirmationNoText(b); },
         },
@@ -117,9 +118,9 @@ export function registerActionCardTypes(
         },
     };
     registry.register("action", {
-        label: "Action",
+        label: i18n("Action"),
         allowInSubpage: true,
-        labelPlaceholder: "e.g. Movie Mode",
+        labelPlaceholder: i18n("e.g. Movie Mode"),
         cardMetadata: ACTION_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
             b.entity = "";
@@ -189,22 +190,22 @@ export function registerActionCardTypes(
             }
             var entityField: any = helpers.renderCardEntityField(panel, b, helpers, {
                 entity: Object.assign({}, ACTION_CARD_METADATA.entity, {
-                    label: isOptionSelect ? "Select Entity" : "Action Entity",
+                    label: isOptionSelect ? i18n("Select Entity") : i18n("Action Entity"),
                     placeholder: info.placeholder,
                     domains: info.domains,
                 }),
             });
             var entityInp: any = entityField.input;
             if (actionCardNeedsExtraValue(b.sensor)) {
-                var valueInput: any = helpers.textInput(helpers.idPrefix + "action-value", b.unit, "e.g. 50");
-                var valueLabel: any = helpers.fieldLabel("Value", helpers.idPrefix + "action-value");
+                var valueInput: any = helpers.textInput(helpers.idPrefix + "action-value", b.unit, i18n("e.g. {example}", { example: "50" }));
+                var valueLabel: any = helpers.fieldLabel(i18n("Value"), helpers.idPrefix + "action-value");
                 var valueField: any = document.createElement("div");
                 valueField.className = "sp-field";
                 valueField.appendChild(valueLabel);
                 valueField.appendChild(valueInput);
                 panel.appendChild(valueField);
                 helpers.bindField(valueInput, "unit", true);
-                helpers.requireField(valueInput, "Enter a value before saving.");
+                helpers.requireField(valueInput, i18n("Enter a value before saving."));
             }
             if (!isOptionSelect) {
                 helpers.renderCardIconPicker(panel, b, helpers, {
@@ -221,8 +222,8 @@ export function registerActionCardTypes(
                     entityInp,
                     info.domains || [],
                     isOptionSelect
-                        ? "Choose a select or input_select entity."
-                        : "Choose the number entity type that matches this action.");
+                        ? i18n("Choose a select or input_select entity.")
+                        : i18n("Choose the number entity type that matches this action."));
             }
             if (isOptionSelect)
                 return;
@@ -307,10 +308,10 @@ export function registerActionCardTypes(
             var textBtn: any = mode.buttons.text;
             var stateEntityField: any = helpers.renderCardEntityField(panel, b, helpers, {
                 entity: {
-                    label: "Sensor Entity",
+                    label: i18n("Sensor Entity"),
                     idSuffix: "action-state-entity",
                     value: function (this: any) { return stateEntity; },
-                    placeholder: "e.g. sensor.printer_percent_complete",
+                    placeholder: i18n("e.g. {example}", { example: "sensor.printer_percent_complete" }),
                     domains: ["sensor", "binary_sensor", "text_sensor"],
                     bindName: null,
                     rerender: false,
@@ -322,7 +323,7 @@ export function registerActionCardTypes(
                 idSuffix: "icon-on",
                 field: "icon_on",
                 fallback: "Auto",
-                label: "On Icon",
+                label: i18n("On Icon"),
             });
             var numericSection: any = condField();
             var stateUnitField: any = helpers.renderCardTextField(numericSection, b, helpers, Object.assign({}, ACTION_CARD_METADATA.stateUnitField, {
@@ -384,8 +385,11 @@ export function registerActionCardTypes(
             });
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || b.entity || (actionCardIsLocal(b) ? "Local Action" : "Action");
+            var label: any = b.label || b.entity || (actionCardIsLocal(b) ? i18nDevice("Local Action") : i18nDevice("Action"));
             if (actionCardIsLocal(b)) {
+                // The panel translates the default label, also when it was saved in English.
+                if (b.label === "Local Action")
+                    label = i18nDevice("Local Action");
                 var localIconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "gesture-tap";
                 return {
                     iconHtml: '<span class="sp-btn-icon mdi mdi-' + localIconName + '"></span>',
@@ -394,7 +398,7 @@ export function registerActionCardTypes(
             }
             if (actionCardIsOptionSelect(b)) {
                 return {
-                    iconHtml: cardSensorPreviewHtml(b, helpers, "Option", null),
+                    iconHtml: cardSensorPreviewHtml(b, helpers, i18nDevice("Option"), null),
                     labelHtml: cardBadgeLabelHtml(helpers, label, ACTION_CARD_METADATA.preview.optionBadge),
                 };
             }
@@ -432,13 +436,13 @@ export function registerActionCardTypes(
         function buildDropdown(this: any, actions?: any) {
             pickerSection.innerHTML = "";
             pickerSection.className = "sp-field";
-            pickerSection.appendChild(helpers.fieldLabel("Local Action", helpers.idPrefix + "action-sel"));
+            pickerSection.appendChild(helpers.fieldLabel(i18n("Local Action"), helpers.idPrefix + "action-sel"));
             var sel: any = document.createElement("select");
             sel.className = "sp-select";
             sel.id = helpers.idPrefix + "action-sel";
             var placeholder: any = document.createElement("option");
             placeholder.value = "";
-            placeholder.textContent = "Choose an action…";
+            placeholder.textContent = i18n("Choose an action…");
             sel.appendChild(placeholder);
             actions.forEach(function (this: any, a?: any) {
                 var opt: any = document.createElement("option");
@@ -451,7 +455,7 @@ export function registerActionCardTypes(
             if (b.entity && !actions.some(function (this: any, a?: any) { return a.key === b.entity; })) {
                 var curOpt: any = document.createElement("option");
                 curOpt.value = b.entity;
-                curOpt.textContent = b.entity + " (current)";
+                curOpt.textContent = i18n("{name} (current)", { name: b.entity });
                 curOpt.selected = true;
                 sel.appendChild(curOpt);
             }
@@ -478,8 +482,7 @@ export function registerActionCardTypes(
             var banner: any = document.createElement("div");
             banner.className = "sp-banner sp-error";
             banner.textContent =
-                "No local actions are registered on this device. " +
-                    "Add register_local_action() calls to your device’s on_boot lambda.";
+                i18n("No local actions are registered on this device. Add register_local_action() calls to your device’s on_boot lambda.");
             pickerSection.appendChild(banner);
         }
         function buildFallback(this: any) {
@@ -487,18 +490,18 @@ export function registerActionCardTypes(
             pickerSection.className = "sp-local-picker-fallback";
             var banner: any = document.createElement("div");
             banner.className = "sp-banner sp-error";
-            banner.textContent = "Could not reach device. Enter the action key manually.";
+            banner.textContent = i18n("Could not reach device. Enter the action key manually.");
             pickerSection.appendChild(banner);
             var kf: any = document.createElement("div");
             kf.className = "sp-field";
-            kf.appendChild(helpers.fieldLabel("Action Key", helpers.idPrefix + "local-key"));
-            var keyInp: any = helpers.textInput(helpers.idPrefix + "local-key", b.entity, "e.g. zoom_mute");
+            kf.appendChild(helpers.fieldLabel(i18n("Action Key"), helpers.idPrefix + "local-key"));
+            var keyInp: any = helpers.textInput(helpers.idPrefix + "local-key", b.entity, i18n("e.g. {example}", { example: "zoom_mute" }));
             kf.appendChild(keyInp);
             pickerSection.appendChild(kf);
             helpers.bindField(keyInp, "entity", true);
-            helpers.requireField(keyInp, "Add an action key before saving.");
+            helpers.requireField(keyInp, i18n("Add an action key before saving."));
         }
-        pickerSection.textContent = "Loading actions…";
+        pickerSection.textContent = i18n("Loading actions…");
         fetch("/local_actions", { credentials: "include" })
             .then(function (this: any, resp?: any) {
             if (!resp.ok)

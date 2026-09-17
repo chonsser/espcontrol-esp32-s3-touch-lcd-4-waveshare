@@ -30,6 +30,7 @@ import type { ControlsShellFeature } from "./controls_shell";
 import type { StateLoaderFeature } from "./state_loader_api";
 import type { GridMigrationFeature } from "./grid_migration";
 import type { AppConfigEventsFeature } from "./app_config_events";
+import { i18n } from "../i18n";
 
 export interface AppEventsFeature {
     connect(): void;
@@ -70,7 +71,7 @@ export function createAppEventsFeature(
                 els.banner.className = "sp-banner";
             els.root.querySelectorAll(".sp-apply-btn").forEach(function (this: any, btn?: any) {
                 btn.disabled = false;
-                btn.textContent = "Apply Configuration";
+                btn.textContent = i18n("Apply Configuration");
             });
             clearTimeout(runtime.migrationTimer as any);
             runtime.migrationTimer = setTimeout(gridMigration.schedule, 5000);
@@ -81,7 +82,7 @@ export function createAppEventsFeature(
         }
         function handleDisconnected(this: any) {
             setConfigLocked(true, "Reconnecting to device\u2026");
-            showBanner("Reconnecting to device\u2026", "offline");
+            showBanner(i18n("Reconnecting to device\u2026"), "offline");
         }
         var sseHandlers: any = stateEventHandlers.createHandlers();
         applySseHandlerAliases(sseHandlers);

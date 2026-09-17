@@ -1,6 +1,8 @@
 import { state } from "../state/app_instance";
+import { i18n } from "../i18n";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
+import { durationMinutesLabel, durationSecondsLabel } from "./screen_schedule_state";
 import type { EntityStateFeature } from "./entity_state";
 import type { AppStatusPreviewFeature } from "./app_status_preview";
 import type { ArtworkPostApiFeature } from "./artwork_post_api";
@@ -36,7 +38,7 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
     // ── Settings Cover Art Section ─────────────────────────────────────
     function buildCoverArtSettingsCard(this: any) {
         var coverArtBody: any = document.createElement("div");
-        var coverArtToggle: any = toggleRow("Show Cover Art", "sp-set-ss-cover-art-enable", state.coverArtScreensaverOn);
+        var coverArtToggle: any = toggleRow(i18n("Show Cover Art"), "sp-set-ss-cover-art-enable", state.coverArtScreensaverOn);
         coverArtBody.appendChild(coverArtToggle.row);
         coverArtToggle.input.addEventListener("change", function (this: any) {
             applyCoverArtScreensaverState(_coverArtScreensaverController.setEnabled(coverArtScreensaverState(), this.checked));
@@ -48,7 +50,7 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         var coverArtOnlyOptions: any = condField();
         var coverArtAdvancedBody: any = document.createElement("div");
         var coverArtScreensaverSettingsBody: any = document.createElement("div");
-        var sleepPreventionToggle: any = toggleRow("Keep Screen Awake During Playback", "sp-set-ss-media-sleep-prevention", state.mediaPlayerSleepPreventionOn);
+        var sleepPreventionToggle: any = toggleRow(i18n("Keep Screen Awake During Playback"), "sp-set-ss-media-sleep-prevention", state.mediaPlayerSleepPreventionOn);
         coverArtScreensaverSettingsBody.appendChild(sleepPreventionToggle.row);
         sleepPreventionToggle.input.addEventListener("change", function (this: any) {
             applyMediaPlaybackState(_mediaPlaybackController.setSleepPreventionEnabled(mediaPlaybackState(), this.checked));
@@ -59,8 +61,8 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         els.setMediaPlayerSleepPreventionToggle = sleepPreventionToggle.input;
         var coverArtEntityField: any = document.createElement("div");
         coverArtEntityField.className = "sp-field";
-        coverArtEntityField.appendChild(fieldLabel("Media Player Entity", "sp-set-ss-cover-art-player"));
-        var coverArtEntityInp: any = entityInput("sp-set-ss-cover-art-player", state.coverArtMediaPlayerEntity, "e.g. media_player.living_room", ["media_player"]);
+        coverArtEntityField.appendChild(fieldLabel(i18n("Media Player Entity"), "sp-set-ss-cover-art-player"));
+        var coverArtEntityInp: any = entityInput("sp-set-ss-cover-art-player", state.coverArtMediaPlayerEntity, i18n("e.g. {example}", { example: "media_player.living_room" }), ["media_player"]);
         coverArtEntityField.appendChild(coverArtEntityInp);
         coverArtOnlyOptions.appendChild(coverArtEntityField);
         bindTextPost(coverArtEntityInp, entityName("screen_saver_cover_art_entity"), {
@@ -75,17 +77,17 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         els.setCoverArtMediaPlayer = coverArtEntityInp;
         var coverArtDelayField: any = document.createElement("div");
         coverArtDelayField.className = "sp-field";
-        coverArtDelayField.appendChild(fieldLabel("Show After", "sp-set-ss-cover-art-delay"));
+        coverArtDelayField.appendChild(fieldLabel(i18n("Show After"), "sp-set-ss-cover-art-delay"));
         var coverArtDelaySelect: any = document.createElement("select");
         coverArtDelaySelect.className = "sp-select";
         coverArtDelaySelect.id = "sp-set-ss-cover-art-delay";
         [
-            { label: "3 seconds", value: 3 },
-            { label: "5 seconds", value: 5 },
-            { label: "10 seconds", value: 10 },
-            { label: "30 seconds", value: 30 },
-            { label: "1 minute", value: 60 },
-            { label: "5 minutes", value: 300 },
+            { label: durationSecondsLabel(3), value: 3 },
+            { label: durationSecondsLabel(5), value: 5 },
+            { label: durationSecondsLabel(10), value: 10 },
+            { label: durationSecondsLabel(30), value: 30 },
+            { label: durationMinutesLabel(1), value: 60 },
+            { label: durationMinutesLabel(5), value: 300 },
         ].forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
             o.value = opt.value;
@@ -102,20 +104,20 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         if (coverArtTrackOverlayDurationSupported()) {
             var trackOverlayField: any = document.createElement("div");
             trackOverlayField.className = "sp-field";
-            trackOverlayField.appendChild(fieldLabel("Show Track Details For", "sp-set-ss-track-overlay"));
+            trackOverlayField.appendChild(fieldLabel(i18n("Show Track Details For"), "sp-set-ss-track-overlay"));
             var trackOverlaySelect: any = document.createElement("select");
             trackOverlaySelect.className = "sp-select";
             trackOverlaySelect.id = "sp-set-ss-track-overlay";
             [
-                { label: "Never", value: 0 },
-                { label: "3 seconds", value: 3 },
-                { label: "5 seconds", value: 5 },
-                { label: "10 seconds", value: 10 },
-                { label: "15 seconds", value: 15 },
-                { label: "20 seconds", value: 20 },
-                { label: "30 seconds", value: 30 },
-                { label: "60 seconds", value: 60 },
-                { label: "Always", value: -1 },
+                { label: i18n("Never"), value: 0 },
+                { label: durationSecondsLabel(3), value: 3 },
+                { label: durationSecondsLabel(5), value: 5 },
+                { label: durationSecondsLabel(10), value: 10 },
+                { label: durationSecondsLabel(15), value: 15 },
+                { label: durationSecondsLabel(20), value: 20 },
+                { label: durationSecondsLabel(30), value: 30 },
+                { label: durationSecondsLabel(60), value: 60 },
+                { label: i18n("Always"), value: -1 },
             ].forEach(function (this: any, opt?: any) {
                 var o: any = document.createElement("option");
                 o.value = opt.value;
@@ -130,12 +132,12 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
             coverArtScreensaverSettingsBody.appendChild(trackOverlayField);
             els.setCoverArtTrackOverlayDuration = trackOverlaySelect;
         }
-        coverArtOnlyOptions.appendChild(inlineDisclosure("Screensaver Settings", coverArtScreensaverSettingsBody, false));
+        coverArtOnlyOptions.appendChild(inlineDisclosure(i18n("Screensaver Settings"), coverArtScreensaverSettingsBody, false));
         var secondaryCoverArtSettingsBody: any = document.createElement("div");
         secondaryCoverArtSettingsBody.appendChild(infoPanel(
             "sp-set-ss-cover-art-secondary-player-info",
-            "Enable if you use an external media player connected to your speakers Line In, TV, or HDMI source. If you add a second media player, cover art, track details, and progress be displayed when the external source is used."));
-        var coverArtShowExternalInputToggle: any = toggleRow("Show external sources", "sp-set-ss-cover-art-show-external-input", !state.coverArtHideExternalInputOn);
+            i18n("Enable if you use an external media player connected to your speakers Line In, TV, or HDMI source. If you add a second media player, cover art, track details, and progress be displayed when the external source is used.")));
+        var coverArtShowExternalInputToggle: any = toggleRow(i18n("Show external sources"), "sp-set-ss-cover-art-show-external-input", !state.coverArtHideExternalInputOn);
         secondaryCoverArtSettingsBody.appendChild(coverArtShowExternalInputToggle.row);
         coverArtShowExternalInputToggle.input.addEventListener("change", function (this: any) {
             applyCoverArtScreensaverState(_coverArtScreensaverController.setShowExternalSources(coverArtScreensaverState(), this.checked));
@@ -146,8 +148,8 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         var secondaryCoverArtEntityOptions: any = condField();
         var secondaryCoverArtEntityField: any = document.createElement("div");
         secondaryCoverArtEntityField.className = "sp-field";
-        secondaryCoverArtEntityField.appendChild(fieldLabel("External Source Media Entity", "sp-set-ss-cover-art-secondary-player"));
-        var secondaryCoverArtEntityInp: any = entityInput("sp-set-ss-cover-art-secondary-player", state.coverArtSecondaryMediaPlayerEntity, "e.g. media_player.apple_tv", ["media_player"]);
+        secondaryCoverArtEntityField.appendChild(fieldLabel(i18n("External Source Media Entity"), "sp-set-ss-cover-art-secondary-player"));
+        var secondaryCoverArtEntityInp: any = entityInput("sp-set-ss-cover-art-secondary-player", state.coverArtSecondaryMediaPlayerEntity, i18n("e.g. {example}", { example: "media_player.apple_tv" }), ["media_player"]);
         secondaryCoverArtEntityField.appendChild(secondaryCoverArtEntityInp);
         secondaryCoverArtEntityOptions.appendChild(secondaryCoverArtEntityField);
         secondaryCoverArtSettingsBody.appendChild(secondaryCoverArtEntityOptions);
@@ -159,9 +161,9 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         });
         els.setCoverArtSecondaryMediaPlayer = secondaryCoverArtEntityInp;
         els.setCoverArtSecondaryMediaPlayerOptions = secondaryCoverArtEntityOptions;
-        coverArtOnlyOptions.appendChild(inlineDisclosure("External sources", secondaryCoverArtSettingsBody, !state.coverArtHideExternalInputOn));
+        coverArtOnlyOptions.appendChild(inlineDisclosure(i18n("External sources"), secondaryCoverArtSettingsBody, !state.coverArtHideExternalInputOn));
         applyCoverArtScreensaverState(_coverArtScreensaverController.initialState(coverArtScreensaverState()));
-        var coverArtFilterToggle: any = toggleRow("Advanced Filtering", "sp-set-ss-cover-art-filtering", state.coverArtFilteringEnabled);
+        var coverArtFilterToggle: any = toggleRow(i18n("Advanced Filtering"), "sp-set-ss-cover-art-filtering", state.coverArtFilteringEnabled);
         coverArtAdvancedBody.appendChild(coverArtFilterToggle.row);
         coverArtFilterToggle.input.addEventListener("change", function (this: any) {
             applyCoverArtScreensaverState(_coverArtScreensaverController.setFilteringEnabled(coverArtScreensaverState(), this.checked));
@@ -175,7 +177,7 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         var coverArtFilterOptions: any = condField();
         var coverArtConditionsField: any = document.createElement("div");
         coverArtConditionsField.className = "sp-field";
-        coverArtConditionsField.appendChild(fieldLabel("Only Show When", "sp-set-ss-cover-art-conditions"));
+        coverArtConditionsField.appendChild(fieldLabel(i18n("Only Show When"), "sp-set-ss-cover-art-conditions"));
         var coverArtConditionsInp: any = document.createElement("input");
         coverArtConditionsInp.className = "sp-input";
         coverArtConditionsInp.id = "sp-set-ss-cover-art-conditions";
@@ -195,15 +197,15 @@ export function createSettingsCoverArtSectionFeature(codec: Pick<ConfigCodecFeat
         });
         els.setCoverArtConditions = coverArtConditionsInp;
         els.setCoverArtFilterOptions = coverArtFilterOptions;
-        coverArtOnlyOptions.appendChild(inlineDisclosure("Advanced Options", coverArtAdvancedBody, !!state.coverArtAttributeConditions));
+        coverArtOnlyOptions.appendChild(inlineDisclosure(i18n("Advanced Options"), coverArtAdvancedBody, !!state.coverArtAttributeConditions));
         els.setCoverArtOnlyOptions = coverArtOnlyOptions;
         coverArtOptions.appendChild(coverArtOnlyOptions);
         els.setCoverArtOptions = coverArtOptions;
         coverArtBody.appendChild(coverArtOptions);
-        var coverArtBadge: any = statusBadge("Media cover art on");
+        var coverArtBadge: any = statusBadge(i18n("Media cover art on"));
         els.setCoverArtBadge = coverArtBadge;
         syncCoverArtScreensaverUi();
-        var coverArtCard: any = makeCollapsibleCard("Cover Art Screen Saver", coverArtBody, true, coverArtBadge);
+        var coverArtCard: any = makeCollapsibleCard(i18n("Cover Art Screen Saver"), coverArtBody, true, coverArtBadge);
         return coverArtCard;
     }
     return {

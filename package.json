@@ -44,6 +44,7 @@
     "check:saved-config-shadow": "python3 scripts/check_tasks.py run-task saved-config-shadow",
     "check:state-contract": "python3 scripts/check_tasks.py run-task state-contract",
     "check:timezones": "python3 scripts/check_tasks.py run-task timezones",
+    "check:translations": "python3 scripts/check_tasks.py run-task translations",
     "check:types": "python3 scripts/check_tasks.py run-task types",
     "check:web-smoke": "python3 scripts/check_tasks.py run-task web-smoke",
     "check:web-asset-manifest": "python3 scripts/check_tasks.py run-task web-asset-manifest",

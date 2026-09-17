@@ -1,6 +1,7 @@
 import type { PanelIdentityBackup } from "../model/panel_identity";
 import type { PanelIdentityFeature } from "./panel_identity";
 import { state } from "../state/app_instance";
+import { i18n, i18nDynamic, i18nMark } from "../i18n";
 import * as EspControlModel from "../model";
 import {
     normalizeBrightnessMode,
@@ -32,7 +33,7 @@ import type { PanelConfigDocument } from "../model";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
-import { syncLanguageSelect } from "./language_state";
+import { holdWebLocaleReload, syncLanguageSelect } from "./language_state";
 import { hasCustomNtpServers, syncNtpServerUi } from "./ntp_state";
 import { syncIdleUi } from "./idle_state";
 import { getActiveScreensaverMode } from "./screensaver_state";
@@ -322,7 +323,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
         } as any);
         downloadBackupConfig(addNativeConfigToBackup(data), identity);
         if (identityUnavailable) controllers.shell.showBanner?.(
-            "Backup exported without the panel name because naming is unavailable.", "warning");
+            i18n("Backup exported without the panel name because naming is unavailable."), "warning");
     }
     function importConfig(this: any) {
         backupFileController.import(function (data: any) {
@@ -380,7 +381,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 }
                 function queueLegacyLayoutRestore() {
                     if (panelConfigDocumentContainsWifiSharing(nativeDocument)) {
-                        const message = "This backup contains Wifi Sharing cards, which require current device firmware. Update the panel before restoring this backup.";
+                        const message = i18nMark("This backup contains Wifi Sharing cards, which require current device firmware. Update the panel before restoring this backup.");
                         rejectBackup(message);
                     }
                     return restoreLegacyLayoutDocument(nativeDocument, {
@@ -407,7 +408,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                     ? await nativeController.waitForDiscovery()
                     : "legacy-fallback";
                 if (nativeAvailability === "failed") {
-                    rejectBackup("Could not confirm that this device can safely restore the layout. Check the connection and try again.");
+                    rejectBackup(i18nMark("Could not confirm that this device can safely restore the layout. Check the connection and try again."));
                 }
                 var layoutRestoreResult: any;
                 if (nativeAvailability === "legacy-fallback") {
@@ -425,7 +426,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                         requestApi.postQueueError = true;
                     }
                     else if (layoutRestoreResult !== "saved") {
-                        rejectBackup("The layout could not be restored. No other backup settings were changed.");
+                        rejectBackup(i18nMark("The layout could not be restored. No other backup settings were changed."));
                     }
                 }
 
@@ -698,8 +699,10 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 if (typeof restoredName === "string" && !requestApi.postQueueError) {
                     try { await controllers.identity?.saveAndRestart(restoredName); }
                     catch (error) {
-                        throw Object.assign(new Error("Configuration restored, but panel naming or restart failed: " + (error as Error).message), {
-                            backupMessage: "Configuration restored, but panel naming or restart failed: " + (error as Error).message,
+                        const namingFailure = i18n("Configuration restored, but panel naming or restart failed: {reason}",
+                            { reason: i18nDynamic((error as Error).message) });
+                        throw Object.assign(new Error(namingFailure), {
+                            backupMessage: namingFailure,
                         });
                     }
                 }
@@ -708,9 +711,14 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 backupRestoreController.restore(data, {
                     device: controllers.layout.deviceId,
                     slots: controllers.layout.numSlots,
-                }, applyBackupRestorePlan);
+                }, function (this: any, plannedImport: any) {
+                    // The restore posts the language select. Hold the web locale reload until the
+                    // queued posts and the optional rename have finished, so it cannot cut them off.
+                    var releaseWebLocaleReload: any = holdWebLocaleReload();
+                    return applyBackupRestorePlan(plannedImport).finally(releaseWebLocaleReload);
+                });
             })().catch((error) => {
-                controllers.shell.showBanner?.((error as Error).message || "Could not restore backup", "error");
+                controllers.shell.showBanner?.((error as Error).message || i18n("Could not restore backup"), "error");
             });
         });
     }

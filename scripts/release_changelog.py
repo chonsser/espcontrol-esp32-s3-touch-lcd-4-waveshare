@@ -41,7 +41,12 @@ class Commit:
 CATEGORIES = (
     Category(
         "User-facing features and setup",
-        paths=("src/webserver/", "docs/public/webserver/", "docs/public/device-profiles.json"),
+        paths=(
+            "src/webserver/",
+            "docs/public/webserver/",
+            "docs/public/device-profiles.json",
+            "product/v2/translations/web.",
+        ),
         keywords=(
             "action",
             "backlight",
@@ -54,6 +59,7 @@ CATEGORIES = (
             "garage",
             "gate",
             "grid",
+            "language",
             "light",
             "lock",
             "modal",
@@ -65,6 +71,7 @@ CATEGORIES = (
             "subpage",
             "switch",
             "timezone",
+            "translation",
             "weather",
         ),
     ),

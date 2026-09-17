@@ -1,3 +1,4 @@
+import { i18nMark } from "../i18n";
 import type { CardConfig } from "../contracts/types";
 import { CARD_CONFIG_FIELDS, cloneCardConfig } from "./card";
 import { CARD_SIZE_DEFINITIONS } from "./grid";
@@ -104,7 +105,7 @@ function normalizeTransferEntry(value: unknown, index: number): CardTransferEntr
   const entry: CardTransferEntry = { ...card, size: value.size as number };
   if (Object.prototype.hasOwnProperty.call(value, "subpage")) {
     if (card.type !== "subpage") {
-      throw transferError("Invalid card code - only a Subpage card can contain a subpage");
+      throw transferError(i18nMark("Invalid card code - only a Subpage card can contain a subpage"));
     }
     entry.subpage = normalizeTransferSubpage(value.subpage, context + " subpage");
   }
@@ -112,26 +113,26 @@ function normalizeTransferEntry(value: unknown, index: number): CardTransferEntr
 }
 
 export function normalizeCardTransferEnvelope(value: unknown): CardTransferEnvelope {
-  if (!isRecord(value)) throw transferError("Invalid card code - expected a JSON object");
+  if (!isRecord(value)) throw transferError(i18nMark("Invalid card code - expected a JSON object"));
   const version = Number(value.version);
   if (!Number.isInteger(version) || version < 1) {
-    throw transferError("Invalid card code - missing a supported version");
+    throw transferError(i18nMark("Invalid card code - missing a supported version"));
   }
   if (version > CARD_TRANSFER_VERSION) {
-    throw transferError("Card code was created by a newer version of EspControl");
+    throw transferError(i18nMark("Card code was created by a newer version of EspControl"));
   }
   if (value.format !== CARD_TRANSFER_FORMAT) {
-    throw transferError("Invalid card code - unsupported format");
+    throw transferError(i18nMark("Invalid card code - unsupported format"));
   }
   if (!isRecord(value.source) || typeof value.source.device !== "string" ||
       typeof value.source.firmware !== "string") {
-    throw transferError("Invalid card code - missing source information");
+    throw transferError(i18nMark("Invalid card code - missing source information"));
   }
   if (!Array.isArray(value.cards) || value.cards.length < 1) {
-    throw transferError("Invalid card code - no cards were found");
+    throw transferError(i18nMark("Invalid card code - no cards were found"));
   }
   if (value.cards.length > CARD_TRANSFER_MAX_CARDS) {
-    throw transferError("Card code contains too many cards");
+    throw transferError(i18nMark("Card code contains too many cards"));
   }
   return {
     format: CARD_TRANSFER_FORMAT,
@@ -156,22 +157,22 @@ export function createCardTransferCode(
   });
   const code = JSON.stringify(envelope);
   if (utf8ByteLength(code) > CARD_TRANSFER_MAX_BYTES) {
-    throw transferError("Card code is too large to copy");
+    throw transferError(i18nMark("Card code is too large to copy"));
   }
   return code;
 }
 
 export function parseCardTransferCode(code: string): CardTransferEnvelope {
   const text = String(code || "").trim();
-  if (!text) throw transferError("Paste a card code first");
+  if (!text) throw transferError(i18nMark("Paste a card code first"));
   if (utf8ByteLength(text) > CARD_TRANSFER_MAX_BYTES) {
-    throw transferError("Card code is too large to import");
+    throw transferError(i18nMark("Card code is too large to import"));
   }
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch (_) {
-    throw transferError("Invalid card code - could not read the JSON");
+    throw transferError(i18nMark("Invalid card code - could not read the JSON"));
   }
   return normalizeCardTransferEnvelope(parsed);
 }

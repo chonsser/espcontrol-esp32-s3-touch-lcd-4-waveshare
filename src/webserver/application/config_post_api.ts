@@ -9,6 +9,7 @@ import type { EntityStateFeature } from "./entity_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { ApplicationApiFeature } from "./api";
 import { serializedConfigContainsWifiSharing } from "../features/wifi_sharing_config";
+import { i18n } from "../i18n";
 
 export interface ConfigPersistenceFeature {
     connectCodec(codec: Pick<ConfigCodecFeature, "serializeButtonConfig" | "serializeSubpageConfig">): void;
@@ -58,7 +59,7 @@ export function createConfigPersistenceFeature(
     }
     function rejectLegacyWifiSharingSave(api: ApplicationApiFeature) {
         api.postQueueError = true;
-        showBanner("Wifi Sharing requires current device firmware. Update the panel before saving this card.", "error");
+        showBanner(i18n("Wifi Sharing requires current device firmware. Update the panel before saving this card."), "error");
         return "unsupported";
     }
     function queueNativeSave(nativeSave: Promise<any>, legacyFallback: () => any) {
@@ -150,7 +151,7 @@ export function createConfigPersistenceFeature(
         var keys: any = subpageEntityKeys();
         var chunks: any = EspControlModel.splitSubpageConfigChunks(full, keys.length, 255);
         if (!chunks) {
-            showBanner("Subpage is too large to save. Shorten labels or entity IDs.", "error");
+            showBanner(i18n("Subpage is too large to save. Shorten labels or entity IDs."), "error");
             return;
         }
         var nativeSave: any = nativePanelConfig

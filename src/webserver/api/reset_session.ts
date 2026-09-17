@@ -1,3 +1,5 @@
+import { i18nMark } from "../i18n";
+
 export type ResetMode = "customization" | "factory";
 export interface ResetStatus { modes: ResetMode[]; epoch: number; pending: boolean }
 
@@ -25,31 +27,31 @@ export class ResetSession {
       await new Promise(resolve => setTimeout(resolve, 2000));
       response = await request();
     }
-    if (!response.ok) throw new Error("Could not check device capabilities. Try again.");
+    if (!response.ok) throw new Error(i18nMark("Could not check device capabilities. Try again."));
     const value = await response.json();
     if (!value || typeof value !== "object" || Array.isArray(value) ||
-        value.api?.version !== 1) throw new Error("Invalid device capabilities");
+        value.api?.version !== 1) throw new Error(i18nMark("Invalid device capabilities"));
     if (!("reset" in value)) return null;
     const reset = value.reset;
     if (!reset || reset.status !== "/api/v1/reset" || !Array.isArray(reset.modes) ||
         !reset.modes.length || !reset.modes.every((mode: unknown) => mode === "customization" || mode === "factory"))
-      throw new Error("Invalid device reset capabilities");
+      throw new Error(i18nMark("Invalid device reset capabilities"));
     return this.loadStatus();
   }
   async loadStatus(): Promise<ResetStatus | null> {
     const response = await this.transport("/api/v1/reset", { credentials: "include", cache: "no-store" });
-    if (!response.ok) throw new Error("Could not check device reset status. Reload the page and try again.");
+    if (!response.ok) throw new Error(i18nMark("Could not check device reset status. Reload the page and try again."));
     const value = await response.json();
     if (!value || !Number.isInteger(value.epoch) || value.epoch < 0 || !Array.isArray(value.modes) ||
         !value.modes.every((mode: unknown) => mode === "customization" || mode === "factory") ||
-        typeof value.pending !== "boolean") throw new Error("Invalid device reset status");
+        typeof value.pending !== "boolean") throw new Error(i18nMark("Invalid device reset status"));
     return value as ResetStatus;
   }
   async fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     const method = (init?.method || "GET").toUpperCase();
     if (method === "GET" || method === "HEAD") return this.transport(input, init);
     const status = await this.discover();
-    if (this.blocked) { this.onStale(); throw new Error("Device reset or stale session: reload before changing settings."); }
+    if (this.blocked) { this.onStale(); throw new Error(i18nMark("Device reset or stale session: reload before changing settings.")); }
     const headers = new Headers(init?.headers);
     if (status) headers.set("X-EspControl-Epoch", String(status.epoch));
     const response = await this.transport(input, { ...init, headers });
@@ -63,8 +65,8 @@ export class ResetSession {
   }
   async reset(mode: ResetMode): Promise<void> {
     const status = await this.discover();
-    if (!status?.modes.includes(mode)) throw new Error("This firmware does not support this reset.");
-    if (this.blocked && !status.pending) throw new Error("Reload the page before resetting.");
+    if (!status?.modes.includes(mode)) throw new Error(i18nMark("This firmware does not support this reset."));
+    if (this.blocked && !status.pending) throw new Error(i18nMark("Reload the page before resetting."));
     this.blocked = true;
     // A network error may mean the accepted request's response was lost. Keep
     // writes blocked until reload instead of replaying queued customization.
@@ -75,7 +77,7 @@ export class ResetSession {
     });
     if (response.status !== 202) {
       const detail = await response.json().catch(() => null);
-      throw new Error(detail?.error || "Reset was not accepted. Reload the page before trying again.");
+      throw new Error(detail?.error || i18nMark("Reset was not accepted. Reload the page before trying again."));
     }
   }
   async restarted(): Promise<boolean> {

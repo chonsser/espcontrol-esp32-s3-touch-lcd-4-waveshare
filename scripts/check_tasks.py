@@ -1979,6 +1979,18 @@ def self_test() -> None:
     if generated_fallback is not None or "generated" not in task_ids(generated_selected):
         raise AssertionError("generated inputs do not select their validation task")
 
+    for translation_input, expected_ids in (
+        ("product/v2/translations/web.pl.txt", {"generated", "translations", "web-unit", "web-smoke"}),
+        ("product/v2/translations/strings.pl.txt", {"generated", "translations", "web-unit", "web-smoke"}),
+        ("product/v2/translations/identical.pl.txt", {"translations"}),
+        ("scripts/web_i18n.py", {"generated", "web-unit", "web-smoke"}),
+    ):
+        translation_selected, _, translation_fallback = changed_plan([translation_input])
+        if translation_fallback is not None or not expected_ids <= task_ids(translation_selected):
+            raise AssertionError(
+                f"translation input {translation_input} does not select {sorted(expected_ids)}"
+            )
+
     unknown_selected, _, unknown_fallback = changed_plan(["unexpected-area/file.xyz"])
     if unknown_fallback is None or task_ids(unknown_selected) != task_ids(plan("fast")):
         raise AssertionError("unknown paths do not fall back to the full fast profile")

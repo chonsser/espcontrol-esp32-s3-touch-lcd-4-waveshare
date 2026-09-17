@@ -10,6 +10,7 @@ import {
 import type { CardRegistry } from "../application/card_registry";
 import type { ConfigDateTimeOptionsFeature } from "../application/config_date_time_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18nDynamic } from "../i18n";
 
 export function registerClockCardTypes(
     registry: CardRegistry,
@@ -20,7 +21,7 @@ export function registerClockCardTypes(
     const { dateTimeCardTimeParts, metadata } = dateTimeOptions;
     // Read-only local clock card: displays the panel's local time only.
     registry.register("clock", {
-        label: function (this: any) { return cardContractCardLabel("clock"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("clock")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("clock"); },
         pickerKey: function (this: any) { return cardContractPickerKey("clock"); },
         hidden: function (this: any) { return cardContractHidden("clock"); },

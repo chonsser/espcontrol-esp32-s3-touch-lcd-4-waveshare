@@ -13,6 +13,7 @@ import { escHtml, iconSlug } from "../application/ui_primitives";
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigSensorOptionsFeature } from "../application/config_sensor_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerSensorCardTypes(
     registry: CardRegistry,
     sensorOptions: ConfigSensorOptionsFeature,
@@ -40,32 +41,32 @@ export function registerSensorCardTypes(
     // Read-only sensor card: displays either numeric data or a text state.
     var SENSOR_CARD_METADATA: any = {
         source: {
-            label: "Source",
+            label: i18n("Source"),
             options: [
                 ["ha", "Home Assistant"],
-                [SENSOR_CARD_LOCAL_SENSOR, "Local Sensor"],
+                [SENSOR_CARD_LOCAL_SENSOR, i18n("Local Sensor")],
             ],
             value: function (this: any, b?: any) {
                 return sensorCardIsLocal(b) ? SENSOR_CARD_LOCAL_SENSOR : "ha";
             },
         },
         entity: {
-            label: "Sensor Entity",
+            label: i18n("Sensor Entity"),
             idSuffix: "sensor",
-            placeholder: "e.g. sensor.living_room_temperature",
+            placeholder: i18n("e.g. {example}", { example: "sensor.living_room_temperature" }),
             domains: function (this: any) { return cardContractDomains("sensor"); },
             bindName: "sensor",
             rerender: true,
-            requiredMessage: "Add a sensor entity before saving.",
+            requiredMessage: i18n("Add a sensor entity before saving."),
         },
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "sensor-type",
             options: [
-                ["numeric", "Numeric"],
-                ["time", "Time"],
-                ["text", "Text"],
-                ["icon", "Icon"],
+                ["numeric", i18n("Numeric")],
+                ["time", i18n("Time")],
+                ["text", i18n("Text")],
+                ["icon", i18n("Icon")],
             ],
             value: function (this: any, b?: any) {
                 if (b.precision === "icon")
@@ -76,14 +77,14 @@ export function registerSensorCardTypes(
             },
         },
         largeNumbers: {
-            label: "Large Sensor Numbers",
+            label: i18n("Large Sensor Numbers"),
             idSuffix: "large-sensor-numbers",
             supported: function (this: any, b?: any) {
                 return !sensorCardIsLocal(b) && b.precision !== "icon" && b.precision !== "text" && b.precision !== "time";
             },
         },
         activeColor: {
-            label: "Lit When Active",
+            label: i18n("Lit When Active"),
             idSuffix: "sensor-active-color",
             checked: sensorActiveColorEnabled,
         },
@@ -94,7 +95,7 @@ export function registerSensorCardTypes(
         },
     };
     registry.register("sensor", {
-        label: function (this: any) { return cardContractCardLabel("sensor"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("sensor")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("sensor"); },
         pickerKey: function (this: any) { return cardContractPickerKey("sensor"); },
         hidden: function (this: any) { return cardContractHidden("sensor"); },
@@ -145,18 +146,18 @@ export function registerSensorCardTypes(
             helpers.renderCardEntityField(panel, b, helpers, SENSOR_CARD_METADATA);
             var numericSection: any = condField();
             var labelField: any = helpers.renderCardTextField(numericSection, b, helpers, {
-                label: "Label",
+                label: i18n("Label"),
                 idSuffix: "label",
                 field: "label",
-                placeholder: "e.g. Living Room",
+                placeholder: i18n("e.g. Living Room"),
                 rerender: true,
             });
             var labelInp: any = labelField.input;
             var unitField: any = helpers.renderCardTextField(numericSection, b, helpers, {
-                label: "Unit",
+                label: i18n("Unit"),
                 idSuffix: "unit",
                 field: "unit",
-                placeholder: "e.g. \u00B0C",
+                placeholder: i18n("e.g. {example}", { example: "\u00B0C" }),
                 rerender: true,
             });
             var unitInp: any = unitField.input;
@@ -171,25 +172,25 @@ export function registerSensorCardTypes(
             panel.appendChild(numericSection);
             var timeSection: any = condField();
             helpers.renderCardTextField(timeSection, b, helpers, {
-                label: "Label",
+                label: i18n("Label"),
                 idSuffix: "time-label",
                 field: "label",
-                placeholder: "e.g. UPS Runtime",
+                placeholder: i18n("e.g. UPS Runtime"),
                 rerender: true,
             });
-            var timeUnitField: any = helpers.selectField("Incoming Value Unit", helpers.idPrefix + "time-unit", [
-                ["", "Auto"],
-                ["seconds", "Seconds"],
-                ["minutes", "Minutes"],
-                ["hours", "Hours"],
-                ["days", "Days"],
+            var timeUnitField: any = helpers.selectField(i18n("Incoming Value Unit"), helpers.idPrefix + "time-unit", [
+                ["", i18n("Auto")],
+                ["seconds", i18n("Seconds")],
+                ["minutes", i18n("Minutes")],
+                ["hours", i18n("Hours")],
+                ["days", i18n("Days")],
             ], sensorTimeUnit(b), function (this: any) {
                 setSensorTimeUnit(b, this.value);
                 helpers.saveField("options", b.options);
             });
             var timeUnitNote: any = document.createElement("div");
             timeUnitNote.className = "sp-apply-note";
-            timeUnitNote.textContent = "Auto uses the unit reported by Home Assistant. A manual choice overrides it.";
+            timeUnitNote.textContent = i18n("Auto uses the unit reported by Home Assistant. A manual choice overrides it.");
             timeUnitField.field.appendChild(timeUnitNote);
             timeSection.appendChild(timeUnitField.field);
             panel.appendChild(timeSection);
@@ -207,19 +208,19 @@ export function registerSensorCardTypes(
                 idSuffix: "icon-off",
                 field: "icon",
                 fallback: "Auto",
-                label: "Icon",
+                label: i18n("Icon"),
             });
             var onIconPicker: any = helpers.renderCardIconPicker(iconSection, b, helpers, {
                 pickerIdSuffix: "icon-on-picker",
                 idSuffix: "icon-on",
                 field: "icon_on",
                 fallback: "Auto",
-                label: "On Icon",
+                label: i18n("On Icon"),
             });
             panel.appendChild(iconSection);
             var activeColorToggle: any = helpers.renderCardActiveColorToggle(panel, b, helpers, SENSOR_CARD_METADATA.activeColor, setSensorActiveColorEnabled);
             var hasStateLabels: any = sensorStateLabelsEnabled(b);
-            var advancedToggleSection: any = helpers.toggleSection("Advanced", helpers.idPrefix + "sensor-advanced-toggle", hasStateLabels);
+            var advancedToggleSection: any = helpers.toggleSection(i18n("Advanced"), helpers.idPrefix + "sensor-advanced-toggle", hasStateLabels);
             var advancedToggle: any = advancedToggleSection.toggle;
             var advanced: any = advancedToggleSection.section;
             panel.appendChild(advancedToggle.row);
@@ -228,16 +229,16 @@ export function registerSensorCardTypes(
             var stateTextGrid: any = document.createElement("div");
             stateTextGrid.className = "sp-state-translation-grid";
             advanced.appendChild(stateTextGrid);
-            var inputTextField: any = helpers.textField("Input Status", helpers.idPrefix + "sensor-state-input", sensorStateInput(b), "e.g. high");
+            var inputTextField: any = helpers.textField(i18n("Input Status"), helpers.idPrefix + "sensor-state-input", sensorStateInput(b), i18n("e.g. {example}", { example: "high" }));
             var inputTextInp: any = inputTextField.input;
             stateTextGrid.appendChild(inputTextField.field);
-            var outputTextField: any = helpers.textField("Display Text", helpers.idPrefix + "sensor-state-output", sensorStateOutput(b), "e.g. Please empty");
+            var outputTextField: any = helpers.textField(i18n("Display Text"), helpers.idPrefix + "sensor-state-output", sensorStateOutput(b), i18n("e.g. Please empty"));
             var outputTextInp: any = outputTextField.input;
             stateTextGrid.appendChild(outputTextField.field);
-            var inputText2Field: any = helpers.textField("Input Status 2", helpers.idPrefix + "sensor-state-input-2", sensorStateInput2(b), "e.g. low");
+            var inputText2Field: any = helpers.textField(i18n("Input Status 2"), helpers.idPrefix + "sensor-state-input-2", sensorStateInput2(b), i18n("e.g. {example}", { example: "low" }));
             var inputText2Inp: any = inputText2Field.input;
             stateTextGrid.appendChild(inputText2Field.field);
-            var outputText2Field: any = helpers.textField("Display Text 2", helpers.idPrefix + "sensor-state-output-2", sensorStateOutput2(b), "e.g. Full");
+            var outputText2Field: any = helpers.textField(i18n("Display Text 2"), helpers.idPrefix + "sensor-state-output-2", sensorStateOutput2(b), i18n("e.g. Full"));
             var outputText2Inp: any = outputText2Field.input;
             stateTextGrid.appendChild(outputText2Field.field);
             function saveStateTranslation(this: any) {
@@ -342,14 +343,14 @@ export function registerSensorCardTypes(
                 var stateIconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "cog";
                 return {
                     iconHtml: '<span class="sp-btn-icon mdi mdi-' + stateIconName + '"></span>',
-                    labelHtml: cardBadgeLabelHtml(helpers, b.label || b.sensor || "Sensor", SENSOR_CARD_METADATA.preview.iconBadge),
+                    labelHtml: cardBadgeLabelHtml(helpers, b.label || b.sensor || i18nDevice("Sensor"), SENSOR_CARD_METADATA.preview.iconBadge),
                 };
             }
             if (b.precision === "text") {
                 var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "cog";
                 return {
                     iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',
-                    labelHtml: cardBadgeLabelHtml(helpers, "State", SENSOR_CARD_METADATA.preview.textBadge),
+                    labelHtml: cardBadgeLabelHtml(helpers, i18n("State"), SENSOR_CARD_METADATA.preview.textBadge),
                 };
             }
             if (b.precision === "time") {
@@ -358,10 +359,10 @@ export function registerSensorCardTypes(
                     : "1h";
                 return {
                     iconHtml: cardSensorPreviewHtml(b, helpers, timeValue, ""),
-                    labelHtml: cardBadgeLabelHtml(helpers, b.label || b.sensor || "Sensor", SENSOR_CARD_METADATA.preview.numericBadge),
+                    labelHtml: cardBadgeLabelHtml(helpers, b.label || b.sensor || i18nDevice("Sensor"), SENSOR_CARD_METADATA.preview.numericBadge),
                 };
             }
-            var label: any = b.label || b.sensor || "Sensor";
+            var label: any = b.label || b.sensor || i18nDevice("Sensor");
             var unit: any = b.unit || "";
             var prec: any = parseInt(b.precision || "0", 10) || 0;
             var sampleVal: any = (0).toFixed(prec);
@@ -379,15 +380,15 @@ export function registerSensorCardTypes(
         var fetchedSensors: any = null;
         var modeField: any = document.createElement("div");
         modeField.className = "sp-field";
-        modeField.appendChild(helpers.fieldLabel("Display"));
+        modeField.appendChild(helpers.fieldLabel(i18n("Display")));
         var modeSeg: any = document.createElement("div");
         modeSeg.className = "sp-segment";
         var numericBtn: any = document.createElement("button");
         numericBtn.type = "button";
-        numericBtn.textContent = "Numeric";
+        numericBtn.textContent = i18n("Numeric");
         var textBtn: any = document.createElement("button");
         textBtn.type = "button";
-        textBtn.textContent = "Text";
+        textBtn.textContent = i18n("Text");
         modeSeg.appendChild(numericBtn);
         modeSeg.appendChild(textBtn);
         modeField.appendChild(modeSeg);
@@ -397,22 +398,22 @@ export function registerSensorCardTypes(
         var numericSection: any = condField();
         var lf: any = document.createElement("div");
         lf.className = "sp-field";
-        lf.appendChild(helpers.fieldLabel("Label", helpers.idPrefix + "label"));
-        var labelInp: any = helpers.textInput(helpers.idPrefix + "label", b.label, "e.g. Living Room");
+        lf.appendChild(helpers.fieldLabel(i18n("Label"), helpers.idPrefix + "label"));
+        var labelInp: any = helpers.textInput(helpers.idPrefix + "label", b.label, i18n("e.g. Living Room"));
         lf.appendChild(labelInp);
         numericSection.appendChild(lf);
         helpers.bindField(labelInp, "label", true);
         var uf: any = document.createElement("div");
         uf.className = "sp-field";
-        uf.appendChild(helpers.fieldLabel("Unit", helpers.idPrefix + "unit"));
-        var unitInp: any = helpers.textInput(helpers.idPrefix + "unit", b.unit, "e.g. \u00B0C");
+        uf.appendChild(helpers.fieldLabel(i18n("Unit"), helpers.idPrefix + "unit"));
+        var unitInp: any = helpers.textInput(helpers.idPrefix + "unit", b.unit, i18n("e.g. {example}", { example: "\u00B0C" }));
         unitInp.className = "sp-input";
         uf.appendChild(unitInp);
         numericSection.appendChild(uf);
         helpers.bindField(unitInp, "unit", true);
         var pf: any = document.createElement("div");
         pf.className = "sp-field";
-        pf.appendChild(helpers.fieldLabel("Unit Precision", helpers.idPrefix + "precision"));
+        pf.appendChild(helpers.fieldLabel(i18n("Unit Precision"), helpers.idPrefix + "precision"));
         var precisionSelect: any = document.createElement("select");
         precisionSelect.className = "sp-select";
         precisionSelect.id = helpers.idPrefix + "precision";
@@ -492,18 +493,18 @@ export function registerSensorCardTypes(
             });
             var sf: any = document.createElement("div");
             sf.className = "sp-field";
-            sf.appendChild(helpers.fieldLabel("Local Sensor", helpers.idPrefix + "sensor-sel"));
+            sf.appendChild(helpers.fieldLabel(i18n("Local Sensor"), helpers.idPrefix + "sensor-sel"));
             var sel: any = document.createElement("select");
             sel.className = "sp-select";
             sel.id = helpers.idPrefix + "sensor-sel";
             var placeholder: any = document.createElement("option");
             placeholder.value = "";
-            placeholder.textContent = "Choose a sensor…";
+            placeholder.textContent = i18n("Choose a sensor…");
             sel.appendChild(placeholder);
             filtered.forEach(function (this: any, s?: any) {
                 var opt: any = document.createElement("option");
                 opt.value = s.key;
-                opt.textContent = s.name + (s.type === "text" ? " (text)" : "");
+                opt.textContent = s.type === "text" ? i18n("{name} (text)", { name: s.name }) : s.name;
                 if (s.key === b.entity)
                     opt.selected = true;
                 sel.appendChild(opt);
@@ -511,7 +512,7 @@ export function registerSensorCardTypes(
             if (b.entity && !filtered.some(function (this: any, s?: any) { return s.key === b.entity; })) {
                 var curOpt: any = document.createElement("option");
                 curOpt.value = b.entity;
-                curOpt.textContent = b.entity + " (current)";
+                curOpt.textContent = i18n("{entity} (current)", { entity: b.entity });
                 curOpt.selected = true;
                 sel.appendChild(curOpt);
             }
@@ -538,7 +539,7 @@ export function registerSensorCardTypes(
             });
             sf.appendChild(sel);
             pickerSection.appendChild(sf);
-            var tog: any = toggleRow("Show internal sensors", helpers.idPrefix + "show-all", showAll);
+            var tog: any = toggleRow(i18n("Show internal sensors"), helpers.idPrefix + "show-all", showAll);
             tog.input.addEventListener("change", function (this: any) {
                 showAll = this.checked;
                 buildDropdown(sensors);
@@ -550,20 +551,20 @@ export function registerSensorCardTypes(
             pickerSection.className = "sp-local-picker-fallback";
             var errDiv: any = document.createElement("div");
             errDiv.className = "sp-banner sp-error";
-            errDiv.textContent = "Could not reach device. Enter sensor key manually.";
+            errDiv.textContent = i18n("Could not reach device. Enter sensor key manually.");
             pickerSection.appendChild(errDiv);
             var kf: any = document.createElement("div");
             kf.className = "sp-field";
-            kf.appendChild(helpers.fieldLabel("Sensor Key", helpers.idPrefix + "local-sensor-key"));
-            var keyInp: any = helpers.textInput(helpers.idPrefix + "local-sensor-key", b.entity, "e.g. room_temp");
+            kf.appendChild(helpers.fieldLabel(i18n("Sensor Key"), helpers.idPrefix + "local-sensor-key"));
+            var keyInp: any = helpers.textInput(helpers.idPrefix + "local-sensor-key", b.entity, i18n("e.g. {example}", { example: "room_temp" }));
             kf.appendChild(keyInp);
             pickerSection.appendChild(kf);
             helpers.bindField(keyInp, "entity", true);
-            helpers.requireField(keyInp, "Add a sensor key before saving.");
+            helpers.requireField(keyInp, i18n("Add a sensor key before saving."));
         }
         var loadingDiv: any = document.createElement("div");
         loadingDiv.className = "sp-field";
-        loadingDiv.textContent = "Loading sensors…";
+        loadingDiv.textContent = i18n("Loading sensors…");
         pickerSection.appendChild(loadingDiv);
         fetch("/local_sensors", { credentials: "include" })
             .then(function (this: any, resp?: any) {
@@ -584,10 +585,10 @@ export function registerSensorCardTypes(
             var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "cog";
             return {
                 iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',
-                labelHtml: cardBadgeLabelHtml(helpers, "State", SENSOR_CARD_METADATA.preview.numericBadge),
+                labelHtml: cardBadgeLabelHtml(helpers, i18n("State"), SENSOR_CARD_METADATA.preview.numericBadge),
             };
         }
-        var label: any = b.label || b.entity || "Local Sensor";
+        var label: any = b.label || b.entity || i18n("Local Sensor");
         var unit: any = b.unit ? helpers.escHtml(b.unit) : "";
         var prec: any = parseInt(b.precision || "0", 10) || 0;
         var sampleVal: any = (0).toFixed(prec);

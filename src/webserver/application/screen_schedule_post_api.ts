@@ -8,6 +8,7 @@ import {
 } from "../model/settings";
 import type { EntityStateFeature } from "./entity_state";
 import type { ApplicationApiFeature } from "./api";
+import { i18nMark } from "../i18n";
 export interface ScreenSchedulePostApiFeature {
     postBrightnessMode(value?: any): void;
     postDisplayBacklightBrightness(value?: any): void;
@@ -39,18 +40,18 @@ export function createScreenSchedulePostApiFeature(
         postSwitchWithObjectIds,
     } = requestApi;
     // ── Screen Schedule Post API ──────────────────────────────────────────
-    var SCREEN_SCHEDULE_UNAVAILABLE: any = "Screen schedule is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_TRIGGER_UNAVAILABLE: any = "The schedule trigger setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_SENSOR_ACTIVATION_UNAVAILABLE: any = "The schedule sensor activation setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_SENSOR_ENTITY_UNAVAILABLE: any = "The schedule sensor setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_WAKE_TIMEOUT_UNAVAILABLE: any = "The schedule wake timeout setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_WAKE_BRIGHTNESS_UNAVAILABLE: any = "The schedule wake brightness setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_MODE_UNAVAILABLE: any = "The schedule mode setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_DIMMED_BRIGHTNESS_UNAVAILABLE: any = "The schedule dimmed brightness setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var SCREEN_SCHEDULE_CLOCK_BRIGHTNESS_UNAVAILABLE: any = "The schedule clock brightness setting is not available on this firmware. Update the device firmware, then reload this page.";
-    var BRIGHTNESS_MODE_UNAVAILABLE: any = "Brightness modes are not available on this firmware. Update the device firmware, then reload this page.";
-    var DISPLAY_BACKLIGHT_UNAVAILABLE: any = "Manual backlight control is not available on this firmware. Update the device firmware, then reload this page.";
-    var BRIGHTNESS_TIME_UNAVAILABLE: any = "Manual brightness times are not available on this firmware. Update the device firmware, then reload this page.";
+    var SCREEN_SCHEDULE_UNAVAILABLE: any = i18nMark("Screen schedule is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_TRIGGER_UNAVAILABLE: any = i18nMark("The schedule trigger setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_SENSOR_ACTIVATION_UNAVAILABLE: any = i18nMark("The schedule sensor activation setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_SENSOR_ENTITY_UNAVAILABLE: any = i18nMark("The schedule sensor setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_WAKE_TIMEOUT_UNAVAILABLE: any = i18nMark("The schedule wake timeout setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_WAKE_BRIGHTNESS_UNAVAILABLE: any = i18nMark("The schedule wake brightness setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_MODE_UNAVAILABLE: any = i18nMark("The schedule mode setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_DIMMED_BRIGHTNESS_UNAVAILABLE: any = i18nMark("The schedule dimmed brightness setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var SCREEN_SCHEDULE_CLOCK_BRIGHTNESS_UNAVAILABLE: any = i18nMark("The schedule clock brightness setting is not available on this firmware. Update the device firmware, then reload this page.");
+    var BRIGHTNESS_MODE_UNAVAILABLE: any = i18nMark("Brightness modes are not available on this firmware. Update the device firmware, then reload this page.");
+    var DISPLAY_BACKLIGHT_UNAVAILABLE: any = i18nMark("Manual backlight control is not available on this firmware. Update the device firmware, then reload this page.");
+    var BRIGHTNESS_TIME_UNAVAILABLE: any = i18nMark("Manual brightness times are not available on this firmware. Update the device firmware, then reload this page.");
     function postBrightnessMode(this: any, value?: any) {
         postSelectWithObjectIds(entityName("screen_brightness_mode"), entityObjectIds("screen_brightness_mode"), brightnessModeOption(value), BRIGHTNESS_MODE_UNAVAILABLE);
     }

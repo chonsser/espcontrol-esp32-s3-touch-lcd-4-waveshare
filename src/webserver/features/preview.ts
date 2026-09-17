@@ -1,3 +1,5 @@
+import { i18n, i18nKey, webLocale } from "../i18n";
+
 export interface Point {
   readonly x: number;
   readonly y: number;
@@ -54,33 +56,33 @@ const INFO_ONLY_CARD_TYPES = new Set([
 ]);
 
 const CARD_TYPE_PICKER_DETAILS: Readonly<Record<string, PickerDetails>> = {
-  "": { icon: "toggle-switch", description: "Toggle lights, switches, helpers, or fans." },
-  action: { icon: "flash", description: "Run a Home Assistant or local action." },
-  alarm: { icon: "shield-home", description: "Control or trigger alarm panel actions." },
-  calendar: { icon: "calendar-clock", description: "Show date, time, or world clock values." },
-  climate: { icon: "thermostat", description: "Show climate status and temperature controls." },
-  cover: { icon: "window-shutter", description: "Control blinds, curtains, or covers." },
-  door_window: { icon: "door-open", description: "Show open or closed sensor state." },
-  presence: { icon: "account", description: "Show person or presence status." },
-  fan_speed: { icon: "fan", description: "Control fan speed, mode, or direction." },
-  garage: { icon: "garage", description: "Show and control a garage door." },
-  gate: { icon: "gate", description: "Show and control a gate." },
-  image: { icon: "image", description: "Display an image card where supported." },
-  wifi_qr: { icon: "wifi", description: "Share a Wifi network using a Connect Card or QR Card." },
-  internal: { icon: "power-plug", description: "Control built-in device relays." },
-  light_brightness: { icon: "lightbulb", description: "Configure light switch, brightness, or temperature controls." },
-  lawn_mower: { icon: "robot-mower", description: "Show or control a robotic lawn mower." },
-  local_sensor: { icon: "gauge", description: "Show a sensor value from this device." },
-  lock: { icon: "lock", description: "Show and control a lock." },
-  media: { icon: "speaker", description: "Control media playback or volume." },
-  media_control: { icon: "music", description: "Open all media controls and volume in a modal." },
-  push: { icon: "gesture-tap-button", description: "Fire a momentary button event." },
-  sensor: { icon: "gauge", description: "Display sensor values or states." },
-  slider: { icon: "tune-vertical", description: "Adjust a numeric or brightness value." },
-  subpage: { icon: "view-grid-plus", description: "Open a nested page of cards." },
-  webhook: { icon: "webhook", description: "Send a direct HTTP request." },
-  vacuum: { icon: "robot-vacuum", description: "Show or control a vacuum cleaner." },
-  weather: { icon: "weather-partly-cloudy", description: "Show weather or forecast data." },
+  "": { icon: "toggle-switch", description: i18n("Toggle lights, switches, helpers, or fans.") },
+  action: { icon: "flash", description: i18n("Run a Home Assistant or local action.") },
+  alarm: { icon: "shield-home", description: i18n("Control or trigger alarm panel actions.") },
+  calendar: { icon: "calendar-clock", description: i18n("Show date, time, or world clock values.") },
+  climate: { icon: "thermostat", description: i18n("Show climate status and temperature controls.") },
+  cover: { icon: "window-shutter", description: i18n("Control blinds, curtains, or covers.") },
+  door_window: { icon: "door-open", description: i18n("Show open or closed sensor state.") },
+  presence: { icon: "account", description: i18n("Show person or presence status.") },
+  fan_speed: { icon: "fan", description: i18n("Control fan speed, mode, or direction.") },
+  garage: { icon: "garage", description: i18n("Show and control a garage door.") },
+  gate: { icon: "gate", description: i18n("Show and control a gate.") },
+  image: { icon: "image", description: i18n("Display an image card where supported.") },
+  wifi_qr: { icon: "wifi", description: i18n("Share a Wifi network using a Connect Card or QR Card.") },
+  internal: { icon: "power-plug", description: i18n("Control built-in device relays.") },
+  light_brightness: { icon: "lightbulb", description: i18n("Configure light switch, brightness, or temperature controls.") },
+  lawn_mower: { icon: "robot-mower", description: i18n("Show or control a robotic lawn mower.") },
+  local_sensor: { icon: "gauge", description: i18n("Show a sensor value from this device.") },
+  lock: { icon: "lock", description: i18n("Show and control a lock.") },
+  media: { icon: "speaker", description: i18n("Control media playback or volume.") },
+  media_control: { icon: "music", description: i18n("Open all media controls and volume in a modal.") },
+  push: { icon: "gesture-tap-button", description: i18n("Fire a momentary button event.") },
+  sensor: { icon: "gauge", description: i18n("Display sensor values or states.") },
+  slider: { icon: "tune-vertical", description: i18n("Adjust a numeric or brightness value.") },
+  subpage: { icon: "view-grid-plus", description: i18n("Open a nested page of cards.") },
+  webhook: { icon: "webhook", description: i18n("Send a direct HTTP request.") },
+  vacuum: { icon: "robot-vacuum", description: i18n("Show or control a vacuum cleaner.") },
+  weather: { icon: "weather-partly-cloudy", description: i18n("Show weather or forecast data.") },
 };
 
 const CARD_TYPE_PICKER_DEFAULTS: Readonly<Record<string, string>> = {
@@ -123,7 +125,7 @@ export function defaultCardTypeForPicker(key: string): string {
 export function cardTypePickerDetails(key: string, label: string): PickerDetails {
   return CARD_TYPE_PICKER_DETAILS[key || ""] || {
     icon: "card-outline",
-    description: `Configure a ${label || "card"} card.`,
+    description: label ? i18n("Configure a {label} card.", { label }) : i18n("Configure a card."),
   };
 }
 
@@ -141,7 +143,7 @@ export function cardTypePickerOptions(
     const rawDefinition = definition as Record<string, unknown>;
     const pickerKey = registryValue(rawDefinition, "pickerKey", "");
     const allowInSubpage = !!registryValue(rawDefinition, "allowInSubpage", false);
-    const label = registryValue(rawDefinition, "label", definition.key || "Toggle");
+    const label = registryValue(rawDefinition, "label", definition.key || i18nKey("toggle__card_type", "Toggle"));
     if (disabledCardTypes.includes(typeKey) || disabledCardTypes.includes(pickerKey)) continue;
     if (!infoOnlyCardVisible(typeKey, infoOnly) || (pickerKey && !infoOnlyCardVisible(pickerKey, infoOnly))) {
       if (hasSelectedType && (selectedTypeKey === typeKey || (pickerKey && selectedTypeKey === pickerKey))) {
@@ -155,7 +157,7 @@ export function cardTypePickerOptions(
     options.push({ key: typeKey, label, disabled: false, ...cardTypePickerDetails(typeKey, label) });
   }
   if (selectedUnsupported) {
-    const label = `${selectedUnsupported.label} (not available)`;
+    const label = i18n("{label} (not available)", { label: selectedUnsupported.label });
     options.push({
       key: selectedUnsupported.key,
       label,
@@ -163,7 +165,7 @@ export function cardTypePickerOptions(
       ...cardTypePickerDetails(selectedUnsupported.key, label),
     });
   }
-  return options.sort((a, b) => a.label.localeCompare(b.label));
+  return options.sort((a, b) => a.label.localeCompare(b.label, webLocale()));
 }
 
 export function closestGridCell(point: Point, cells: readonly PositionedRect[]): number {

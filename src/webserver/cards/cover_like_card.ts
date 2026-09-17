@@ -15,6 +15,7 @@ import {
     SWITCH_CONFIRM_DEFAULT_YES,
     cardContractOptionSpec,
 } from "../application/config_option_core";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 
 export interface CoverLikeCardRegistration {
     register(config: any): void;
@@ -93,7 +94,7 @@ export function createCoverLikeCardRegistration(registry: CardRegistry, renderQu
             return config.commandModes.indexOf(normalizeMode(mode)) >= 0;
         }
         function commandPlaceholder(this: any, mode?: any) {
-            return "e.g. " + config.defaultLabel(mode) + " " + config.shortLabel;
+            return config.commandPlaceholder(mode);
         }
         function syncModeFields(this: any, b?: any, helpers?: any, mode?: any) {
             b.unit = "";
@@ -113,7 +114,7 @@ export function createCoverLikeCardRegistration(registry: CardRegistry, renderQu
             }
         }
         registry.register(config.type, {
-            label: function (this: any) { return cardContractCardLabel(config.type); },
+            label: function (this: any) { return i18nDynamic(cardContractCardLabel(config.type)); },
             allowInSubpage: function (this: any) { return cardContractAllowInSubpage(config.type); },
             pickerKey: function (this: any) { return cardContractPickerKey(config.type); },
             hidden: function (this: any) { return cardContractHidden(config.type); },
@@ -193,7 +194,7 @@ export function createCoverLikeCardRegistration(registry: CardRegistry, renderQu
                         field: "icon",
                         value: b.icon && b.icon !== "Auto" ? b.icon : config.defaultIcon(mode),
                         fallback: config.defaultIcon(mode),
-                        label: "Icon",
+                        label: i18n("Icon"),
                     });
                 }
                 else {
@@ -203,14 +204,14 @@ export function createCoverLikeCardRegistration(registry: CardRegistry, renderQu
                         field: "icon",
                         value: closedIconVal,
                         fallback: config.closedIcon,
-                        label: "Closed Icon",
+                        label: i18n("Closed Icon"),
                     }, {
                         pickerIdSuffix: "icon-on-picker",
                         idSuffix: "icon-on",
                         field: "icon_on",
                         value: iconOnVal,
                         fallback: config.openIcon,
-                        label: "Open Icon",
+                        label: i18n("Open Icon"),
                     });
                 }
                 if (config.confirmation) {
@@ -221,7 +222,7 @@ export function createCoverLikeCardRegistration(registry: CardRegistry, renderQu
                 var mode: any = normalizeMode(b.sensor);
                 var label: any = b.label || (commandMode(mode) ? config.defaultLabel(mode) : b.entity || config.defaultCardLabel);
                 if (config.labelDisplayMode(b) === "status")
-                    label = config.statusLabel || "Closed";
+                    label = config.statusLabel || i18nDevice("Closed");
                 return cardBadgePreview(b, helpers, {
                     label: label,
                     iconFallback: config.defaultIcon(mode),

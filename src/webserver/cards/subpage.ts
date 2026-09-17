@@ -15,6 +15,7 @@ import {
     subpageKindOptions,
     subpagePresetDefaults,
 } from "../application/config_subpage_options";
+import { i18n, i18nDevice, i18nDynamic, i18nMark } from "../i18n";
 export function registerSubpageCardTypes(
     registry: CardRegistry,
     codec: ConfigCodecFeature,
@@ -27,39 +28,65 @@ export function registerSubpageCardTypes(
     const { cardSensorPreviewHtml, condField } = fields;
     const { enterSubpage } = codec;
     const { subpageStateDisplayMode } = core;
+    // Preset labels are saved in English (config_subpage_options.ts) and translated for
+    // display with i18nDynamic(). Most are card names the generator already harvests;
+    // these three are not, so they are marked here for extraction.
+    i18nMark("Lighting");
+    i18nMark("Garage");
+    i18nMark("Camera");
+    // Emulated panel text: the firmware shows a preset label saved in English in the
+    // device language.
+    function subpagePresetDeviceLabel(this: any, label?: any) {
+        if (label === "Switch") return i18nDevice("Switch");
+        if (label === "Lighting") return i18nDevice("Lighting");
+        if (label === "Climate") return i18nDevice("Climate");
+        if (label === "Presence") return i18nDevice("Presence");
+        if (label === "Media") return i18nDevice("Media");
+        if (label === "Alarm") return i18nDevice("Alarm");
+        if (label === "Cover") return i18nDevice("Cover");
+        if (label === "Garage") return i18nDevice("Garage");
+        if (label === "Gate") return i18nDevice("Gate");
+        if (label === "Lock") return i18nDevice("Lock");
+        if (label === "Vacuum") return i18nDevice("Vacuum");
+        if (label === "Lawn Mower") return i18nDevice("Lawn Mower");
+        if (label === "Weather") return i18nDevice("Weather");
+        if (label === "Sensor") return i18nDevice("Sensor");
+        if (label === "Camera") return i18nDevice("Camera");
+        return label;
+    }
     // Navigation folder: tap opens a nested grid screen with its own button layout
     var SUBPAGE_CARD_METADATA: any = {
         kind: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "subpage-kind",
             options: function (this: any) { return subpageKindOptions(); },
         },
         labelField: {
-            label: "Label",
-            placeholder: "e.g. Lighting",
+            label: i18n("Label"),
+            placeholder: i18n("e.g. Lighting"),
         },
         icon: {
             field: "icon",
             fallback: "Auto",
-            label: "Icon",
+            label: i18n("Icon"),
         },
         showState: {
-            label: "Show State",
+            label: i18n("Show State"),
             idSuffix: "state-toggle",
             checked: function (this: any, b?: any) { return subpageStateDisplayMode(b) !== "off"; },
         },
         stateMode: {
-            label: "Type",
+            label: i18n("Type"),
             options: [
-                ["icon", "Icon"],
-                ["numeric", "Numeric"],
-                ["text", "Text"],
+                ["icon", i18n("Icon")],
+                ["numeric", i18n("Numeric")],
+                ["text", i18n("Text")],
             ],
         },
         iconStateEntity: {
-            label: "State Entity",
+            label: i18n("State Entity"),
             idSuffix: "icon-state-entity",
-            placeholder: "e.g. cover.office_blind",
+            placeholder: i18n("e.g. {example}", { example: "cover.office_blind" }),
             domains: ["light", "switch", "input_boolean", "binary_sensor", "cover", "lock", "media_player", "fan", "person", "device_tracker"],
             bindName: null,
             value: function (this: any, b?: any) {
@@ -69,12 +96,12 @@ export function registerSubpageCardTypes(
         presetEntity: {
             label: function (this: any, b?: any) {
                 var defaults: any = subpagePresetDefaults(subpageKind(b));
-                return defaults ? defaults.label + " Entity" : "Entity";
+                return defaults ? i18n("{label} Entity", { label: i18nDynamic(defaults.label) }) : i18n("Entity");
             },
             idSuffix: "preset-state-entity",
             placeholder: function (this: any, b?: any) {
                 var defaults: any = subpagePresetDefaults(subpageKind(b));
-                return defaults ? defaults.placeholder : "e.g. light.living_room";
+                return defaults ? defaults.placeholder : i18n("e.g. {example}", { example: "light.living_room" });
             },
             domains: function (this: any, b?: any) {
                 var defaults: any = subpagePresetDefaults(subpageKind(b));
@@ -84,13 +111,15 @@ export function registerSubpageCardTypes(
             rerender: true,
             requiredMessage: function (this: any, b?: any) {
                 var defaults: any = subpagePresetDefaults(subpageKind(b));
-                return "Add a " + (defaults ? defaults.label.toLowerCase() : "status") + " entity before saving.";
+                return defaults
+                    ? i18n("Add a {label} entity before saving.", { label: i18nDynamic(defaults.label).toLowerCase() })
+                    : i18n("Add a status entity before saving.");
             },
         },
         sensorEntity: {
-            label: "Sensor Entity",
+            label: i18n("Sensor Entity"),
             idSuffix: "sensor",
-            placeholder: "e.g. sensor.open_windows",
+            placeholder: i18n("e.g. {example}", { example: "sensor.open_windows" }),
             domains: ["sensor", "binary_sensor", "text_sensor"],
             bindName: null,
             value: function (this: any, b?: any) {
@@ -100,17 +129,17 @@ export function registerSubpageCardTypes(
         iconOn: {
             field: "icon_on",
             fallback: "Auto",
-            label: "On Icon",
+            label: i18n("On Icon"),
         },
         unitField: {
-            label: "Unit",
+            label: i18n("Unit"),
             idSuffix: "unit",
-            placeholder: "e.g. %",
+            placeholder: i18n("e.g. {example}", { example: "%" }),
             bindName: "unit",
             rerender: false,
         },
         largeNumbers: {
-            label: "Large State Numbers",
+            label: i18n("Large State Numbers"),
             idSuffix: "large-state-numbers",
             supported: function (this: any, b?: any) {
                 return subpageStateDisplayMode(b) === "numeric";
@@ -121,10 +150,10 @@ export function registerSubpageCardTypes(
         },
     };
     registry.register("subpage", {
-        label: "Subpage",
+        label: i18n("Subpage"),
         allowInSubpage: false,
         hideLabel: true,
-        labelPlaceholder: "e.g. Lighting",
+        labelPlaceholder: i18n("e.g. Lighting"),
         cardMetadata: SUBPAGE_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
             b.entity = "";
@@ -193,7 +222,7 @@ export function registerSubpageCardTypes(
                 entity: SUBPAGE_CARD_METADATA.sensorEntity,
             });
             var sensorInp: any = sensorEntityField.input;
-            helpers.requireField(sensorInp, "Add a sensor entity before saving.", function (this: any) {
+            helpers.requireField(sensorInp, i18n("Add a sensor entity before saving."), function (this: any) {
                 return showState && (mode === "numeric" || mode === "text");
             });
             function saveSensorEntity(this: any) {
@@ -249,7 +278,7 @@ export function registerSubpageCardTypes(
                 showStateToggle.input.checked = showState;
                 var iconLabel: any = iconSectionMain.querySelector(".sp-field-label");
                 if (iconLabel)
-                    iconLabel.textContent = mode === "icon" ? "Off Icon" : "Icon";
+                    iconLabel.textContent = mode === "icon" ? i18n("Off Icon") : i18n("Icon");
                 stateCond.classList.toggle("sp-visible", showState);
                 iconBtn.classList.toggle("active", mode === "icon");
                 numericBtn.classList.toggle("active", mode === "numeric");
@@ -322,7 +351,10 @@ export function registerSubpageCardTypes(
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var defaults: any = subpagePresetDefaults(subpageKind(b));
-            var label: any = b.label || (defaults && defaults.label) || b.entity || "Configure";
+            var presetLabel: any = defaults && defaults.label;
+            var label: any = presetLabel && (!b.label || b.label === presetLabel)
+                ? subpagePresetDeviceLabel(presetLabel)
+                : b.label || b.entity || i18nDevice("Configure");
             var mode: any = subpageStateDisplayMode(b);
             if (mode === "icon") {
                 var stateIconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) :
@@ -338,14 +370,14 @@ export function registerSubpageCardTypes(
                 var sampleVal: any = (0).toFixed(prec);
                 return {
                     iconHtml: cardSensorPreviewHtml(b, helpers, sampleVal, unit),
-                    labelHtml: subpageBadgeLabelHtml(helpers, b.label || b.sensor || "Subpage"),
+                    labelHtml: subpageBadgeLabelHtml(helpers, b.label || b.sensor || i18nDevice("Subpage")),
                 };
             }
             if (mode === "text") {
                 var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "cog";
                 return {
                     iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',
-                    labelHtml: subpageBadgeLabelHtml(helpers, "State"),
+                    labelHtml: subpageBadgeLabelHtml(helpers, i18n("State")),
                 };
             }
             return {
@@ -353,7 +385,7 @@ export function registerSubpageCardTypes(
             };
         },
         contextMenuItems: function (this: any, slot?: any, b?: any, helpers?: any) {
-            helpers.addCtxItem("cog", "Edit Subpage", function (this: any) { enterSubpage(slot); });
+            helpers.addCtxItem("cog", i18n("Edit Subpage"), function (this: any) { enterSubpage(slot); });
         },
     });
     function subpageBadgeLabelHtml(this: any, helpers?: any, label?: any) {
@@ -366,7 +398,7 @@ export function registerSubpageCardTypes(
     function appendEditSubpageButton(this: any, panel?: any, slot?: any) {
         var configBtn: any = document.createElement("button");
         configBtn.className = "sp-action-btn sp-edit-subpage-btn";
-        configBtn.textContent = "Edit Subpage";
+        configBtn.textContent = i18n("Edit Subpage");
         configBtn.addEventListener("click", function (this: any) { selection.closeSettings(); enterSubpage(slot); });
         panel.appendChild(configBtn);
     }

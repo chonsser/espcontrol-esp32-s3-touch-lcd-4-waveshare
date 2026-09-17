@@ -1,5 +1,6 @@
 import type { AppState } from "../state/types";
 import type { UiRuntimeState } from "./state";
+import { i18n, i18nDynamic } from "../i18n";
 
 export function renderPanelBrand(brand: Element, document: Document, name?: string): void {
     brand.textContent = "EspControl";
@@ -89,7 +90,7 @@ export function createControlsShellFeature(
     function showBanner(this: any, msg?: any, type?: any) {
         if (!els.banner)
             return;
-        els.banner.textContent = msg;
+        els.banner.textContent = i18nDynamic(msg);
         els.banner.className = "sp-banner sp-" + type;
         if (type === "error" || type === "success" || type === "warning") {
             dependencies.cancelSchedule(els._bannerTimer);
@@ -127,10 +128,10 @@ export function createControlsShellFeature(
         header.appendChild(brand);
         var nav: any = document.createElement("nav");
         nav.className = "sp-nav";
-        nav.setAttribute("aria-label", "Primary");
+        nav.setAttribute("aria-label", i18n("Primary"));
         var tabs: any = [
-            { id: "screen", label: "Screen" },
-            { id: "settings", label: "Settings" },
+            { id: "screen", label: i18n("Screen") },
+            { id: "settings", label: i18n("Settings") },
         ];
         tabs.forEach(function (this: any, t?: any) {
             var tab: any = document.createElement("div");
@@ -147,7 +148,7 @@ export function createControlsShellFeature(
         docsLink.href = "https://jtenniswood.github.io/espcontrol/";
         docsLink.target = "_blank";
         docsLink.rel = "noopener";
-        docsLink.appendChild(document.createTextNode("Docs "));
+        docsLink.appendChild(document.createTextNode(i18n("Docs") + " "));
         docsLink.appendChild(createMdiIcon("arrow-top-right"));
         nav.appendChild(docsLink);
         header.appendChild(nav);
@@ -182,10 +183,10 @@ export function createControlsShellFeature(
         els.clockBarItems = {};
         els.previewMain = wrap.querySelector(".sp-main");
         els.previewMain.setAttribute("role", "grid");
-        els.previewMain.setAttribute("aria-label", "Button grid");
+        els.previewMain.setAttribute("aria-label", i18n("Button grid"));
         var hint: any = document.createElement("div");
         hint.className = "sp-hint";
-        hint.textContent = "tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage";
+        hint.textContent = i18n("tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage");
         els.previewHint = hint;
         page.appendChild(hint);
         var overlay: any = document.createElement("div");
@@ -197,7 +198,7 @@ export function createControlsShellFeature(
         closeBtn.innerHTML = '<svg class="sp-settings-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
             '<path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.29 19.7 2.88 18.29 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"></path>' +
             '</svg>';
-        closeBtn.setAttribute("aria-label", "Close settings");
+        closeBtn.setAttribute("aria-label", i18n("Close settings"));
         closeBtn.addEventListener("click", dependencies.closeSettings);
         modal.appendChild(closeBtn);
         var config: any = document.createElement("div");
@@ -217,7 +218,7 @@ export function createControlsShellFeature(
         bar.className = "sp-apply-bar";
         var btn: any = document.createElement("button");
         btn.className = "sp-apply-btn";
-        btn.textContent = "Apply Configuration";
+        btn.textContent = i18n("Apply Configuration");
         btn.addEventListener("click", function (this: any) {
             if (isConfigLocked())
                 return;
@@ -239,7 +240,7 @@ export function createControlsShellFeature(
         bar.appendChild(btn);
         var note: any = document.createElement("div");
         note.className = "sp-apply-note";
-        note.textContent = "Restarts the device to apply changes";
+        note.textContent = i18n("Restarts the device to apply changes");
         bar.appendChild(note);
         return bar;
     }
@@ -271,12 +272,12 @@ export function createControlsShellFeature(
             els.previewMain.setAttribute("aria-disabled", isConfigLocked() ? "true" : "false");
         }
         if (els.root) {
-            var text: any = "Waiting for device\u2026";
+            var text: any = i18n("Waiting for device\u2026");
             if ((state.configLockReason || "").indexOf("Restarting") !== -1)
-                text = "Restarting\u2026";
+                text = i18n("Restarting\u2026");
             els.root.querySelectorAll(".sp-apply-btn").forEach(function (this: any, btn?: any) {
                 btn.disabled = isConfigLocked();
-                btn.textContent = isConfigLocked() ? text : "Apply Configuration";
+                btn.textContent = isConfigLocked() ? text : i18n("Apply Configuration");
             });
         }
         dependencies.updatePreviewHint();

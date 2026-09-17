@@ -19,6 +19,7 @@ import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { GridFeature } from "./grid";
 import type { ButtonSettingsSelectionFeature } from "./button_settings_selection";
+import { i18nDevice } from "../i18n";
 export interface PreviewRenderDependencies {
     readonly updateClockBarItemUi: () => void;
     readonly document: Document;
@@ -110,6 +111,8 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 var backBtn: any = document.createElement("div");
                 var bkSz: any = c.sizes[-2];
                 var backLabel: any = c.isSub ? (getSubpage(state.editingSubpage).backLabel || "Back") : "Back";
+                if (backLabel === "Back")
+                    backLabel = i18nDevice("Back");
                 backBtn.className = "sp-btn sp-back-btn" + sizeClass(bkSz) +
                     (c.selected.indexOf(-2) !== -1 ? " sp-selected" : "");
                 backBtn.innerHTML =
@@ -140,7 +143,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                     continue;
                 }
                 var iconName: any = resolveIcon(b);
-                var label: any = b.label || b.entity || "Configure";
+                var label: any = b.label || b.entity || i18nDevice("Configure");
                 var color: any = (b.type === "sensor" || b.type === "local_sensor" || b.type === "door_window" || b.type === "presence" || b.type === "weather" || b.type === "weather_forecast" || b.type === "calendar" || b.type === "clock" || b.type === "timezone")
                     ? WEB_UI_COLORS.tertiary : WEB_UI_COLORS.secondary;
                 var previewTypeDef: any = dependencies.cards.definitions[b.type || ""] || null;

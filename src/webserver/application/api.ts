@@ -5,6 +5,8 @@ import { screensaverActionOption } from "../model/settings";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
 import type { EntityStateFeature } from "./entity_state";
 import type { ControlsShellFeature } from "./controls_shell";
+import { i18n, i18nMark } from "../i18n";
+import { holdWebLocaleReload } from "./language_state";
 
 export interface ApplicationApiFeature {
     postQueue: Promise<any>;
@@ -80,10 +82,15 @@ export function createApplicationApiFeature(
     function postQueueHadError(this: any) {
         return _postQueueHadError;
     }
+    function holdLocaleUntilSettled<T>(operation: Promise<T>): Promise<T> {
+        // Count every operation, not just the latest queue tail: quiet requests and
+        // native writes can overlap, and an SSE language echo can arrive mid-POST.
+        return operation.finally(holdWebLocaleReload());
+    }
     function postQuiet(this: any, url?: any) {
-        return deviceApiClient.postQuiet(url).then(function (this: any, result?: any) {
+        return holdLocaleUntilSettled(deviceApiClient.postQuiet(url).then(function (this: any, result?: any) {
             return result.ok || result.kind === "http-error" ? result.value : null;
-        });
+        }));
     }
     function post(this: any, url?: any, fallbackUrl?: any, errorMessage?: any) {
         var urls: any = Array.isArray(url) ? url.slice() : [url];
@@ -93,7 +100,7 @@ export function createApplicationApiFeature(
         return _postQueue;
     }
     function enqueuePost(this: any, urls?: any, errorMessage?: any) {
-        return deviceApiClient.enqueuePost(urls).then(function (this: any, result?: any) {
+        return holdLocaleUntilSettled(deviceApiClient.enqueuePost(urls).then(function (this: any, result?: any) {
             var failure: any = requestFailureInfo(result, errorMessage);
             if (failure && failure.reconnect) {
                 _postQueueHadError = true;
@@ -107,7 +114,7 @@ export function createApplicationApiFeature(
                 showBanner(failure.message, "error");
             }
             return result.value;
-        });
+        }));
     }
     function postTextLegacy(this: any, name?: any, value?: any) {
         var encodedValue: any = encodeURIComponent(value);
@@ -115,7 +122,7 @@ export function createApplicationApiFeature(
     }
     function postOptional(this: any, url?: any) {
         var urls: any = Array.isArray(url) ? url.slice() : [url];
-        _postQueue = deviceApiClient.enqueuePost(urls).then(function (this: any, result?: any) {
+        _postQueue = holdLocaleUntilSettled(deviceApiClient.enqueuePost(urls).then(function (this: any, result?: any) {
             var failure: any = requestFailureInfo(result);
             if (failure && failure.reconnect) {
                 _postQueueHadError = true;
@@ -125,28 +132,28 @@ export function createApplicationApiFeature(
                 return null;
             }
             return result.value;
-        });
+        }));
         return _postQueue;
     }
     function postFirstAvailable(this: any, urls?: any) {
-        return deviceApiClient.postFirstAvailable(urls).then(function (this: any, result?: any) {
+        return holdLocaleUntilSettled(deviceApiClient.postFirstAvailable(urls).then(function (this: any, result?: any) {
             if (result.kind === "network-error")
                 throw result.error;
             return result.value;
-        });
+        }));
     }
     function postText(this: any, name?: any, value?: any) {
         var nativeSave: any = nativePanelConfig
             ? nativePanelConfig.writeText(String(name || ""), String(value || ""))
             : null;
         if (nativeSave) {
-            _postQueue = _postQueue.then(function () { return nativeSave; }).then(function (result: any) {
+            _postQueue = holdLocaleUntilSettled(_postQueue.then(function () { return nativeSave; }).then(function (result: any) {
                 if (result === "legacy-fallback")
                     return postTextLegacy(name, value);
                 if (result !== "saved")
                     _postQueueHadError = true;
                 return result;
-            });
+            }));
             return _postQueue;
         }
         var encodedValue: any = encodeURIComponent(value);
@@ -199,13 +206,13 @@ export function createApplicationApiFeature(
     }
     function postScreensaverTimeout(this: any, value?: any) {
         if (!screensaverTimeoutSupported(value)) {
-            showBanner("Update the device firmware before using shorter screensaver timers.", "error");
+            showBanner(i18n("Update the device firmware before using shorter screensaver timers."), "error");
             syncScreensaverTimeoutUi();
             return;
         }
         postNumberWithObjectIds(entityName("screensaver_timeout"), entityObjectIds("screensaver_timeout"), value);
     }
-    const SCREENSAVER_ACTION_UNAVAILABLE = "Screen dimmed screensaver is not available on this firmware. Update the device firmware, then reload this page.";
+    const SCREENSAVER_ACTION_UNAVAILABLE = i18nMark("Screen dimmed screensaver is not available on this firmware. Update the device firmware, then reload this page.");
     function postScreensaverAction(this: any, value?: any) {
         postSelectWithObjectIds(entityName("screen_saver_action"), entityObjectIds("screen_saver_action"), screensaverActionOption(value), SCREENSAVER_ACTION_UNAVAILABLE);
     }
@@ -263,7 +270,7 @@ export function createApplicationApiFeature(
     }
     return {
         get postQueue() { return _postQueue; },
-        set postQueue(value: Promise<any>) { _postQueue = value; },
+        set postQueue(value: Promise<any>) { _postQueue = holdLocaleUntilSettled(value); },
         get postQueueError() { return _postQueueHadError; },
         set postQueueError(value: boolean) { _postQueueHadError = value; },
         connectReconnect,

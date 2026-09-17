@@ -1,4 +1,5 @@
 import { iconOptions as ICON_OPTIONS, iconSlug, mdiIcon, textSpan } from "./ui_primitives";
+import { i18n } from "../i18n";
 
 export interface ButtonSettingsIconPickerFeature {
     init(picker: any, currentIcon: any, onSelect: (icon: any) => void): void;
@@ -38,7 +39,7 @@ export function createButtonSettingsIconPickerFeature(
             });
             emptyEl = document.createElement("div");
             emptyEl.className = "sp-icon-option sp-icon-option--empty";
-            emptyEl.textContent = "No matches";
+            emptyEl.textContent = i18n("No matches");
             emptyEl.style.display = "none";
             frag.appendChild(emptyEl);
             dropdown.appendChild(frag);

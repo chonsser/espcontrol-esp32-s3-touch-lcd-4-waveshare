@@ -1,6 +1,8 @@
 import type { AppState } from "../state/types";
 import { CARD_SIZE_LARGE, CARD_SIZE_SINGLE, CARD_SIZE_WIDE } from "../model/grid";
+import { normalizeLanguage } from "../model/settings";
 import { cardContractOptionSpec } from "./config_option_core";
+import { i18n, i18nDevice } from "../i18n";
 
 export interface ConfigDateTimeOptionsDependencies {
     readonly state: AppState;
@@ -22,10 +24,10 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
 
     function dateTimeLargeNumbersLabel(this: any, button?: any) {
         const mode = dateTimeCardMode(button);
-        if (mode === "clock") return "Large Clock";
-        if (mode === "datetime") return "Large Time";
-        if (mode === "timezone") return "Large World Clock";
-        return "Large Date";
+        if (mode === "clock") return i18n("Large Clock");
+        if (mode === "datetime") return i18n("Large Time");
+        if (mode === "timezone") return i18n("Large World Clock");
+        return i18n("Large Date");
     }
 
     function defaultTimezoneCardEntity(this: any) {
@@ -90,9 +92,19 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
 
     function timezoneCardCityLabel(this: any, timezoneOption?: any) {
         const timezoneId = dependencies.timezoneId(dependencies.effectiveTimezoneOption(timezoneOption || ""));
-        if (!timezoneId) return "World Clock";
+        if (!timezoneId) return i18nDevice("World Clock");
         if (timezoneId === "UTC") return "UTC";
         return timezoneId.substring(timezoneId.lastIndexOf("/") + 1).replace(/_/g, " ");
+    }
+
+    // Emulated panel text follows the device language, like monthNameForIndex().
+    function timezoneCardTimeLocale(this: any) {
+        try {
+            return Intl.DateTimeFormat.supportedLocalesOf([normalizeLanguage(dependencies.state.language)])[0] || "en-US";
+        }
+        catch (_error) {
+            return "en-US";
+        }
     }
 
     function timezoneCardTimeParts(this: any, timezoneOption?: any) {
@@ -102,7 +114,7 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
             const options: any = { timeZone: timezoneId, hour: "numeric", minute: "2-digit" };
             if (use12h) options.hour12 = true;
             else options.hourCycle = "h23";
-            const parts = new Intl.DateTimeFormat("en-US", options).formatToParts(dependencies.now());
+            const parts = new Intl.DateTimeFormat(timezoneCardTimeLocale(), options).formatToParts(dependencies.now());
             let hour = "";
             let minute = "";
             for (const part of parts) {
@@ -119,13 +131,13 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
 
     const metadata: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "calendar-mode",
             options: [
-                { value: "clock", label: "Clock" },
-                { value: "datetime", label: "Time & Date" },
-                { value: "", label: "Date" },
-                { value: "timezone", label: "World Clock" },
+                { value: "clock", label: i18n("Clock") },
+                { value: "datetime", label: i18n("Time & Date") },
+                { value: "", label: i18n("Date") },
+                { value: "timezone", label: i18n("World Clock") },
             ],
             value: function (button?: any) { return dateTimeCardMode(button); },
             onChange: function (this: any, button?: any, helpers?: any) {

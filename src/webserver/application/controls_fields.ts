@@ -9,6 +9,7 @@ import {
     SENSOR_LARGE_NUMBERS_OPTION,
     largeNumbersExplicitlyDisabled,
 } from "./config_option_core";
+import { i18n, i18nDevice } from "../i18n";
 export interface ControlsFieldsFeature {
     makeCollapsibleCard(...args: any[]): any;
     fieldLabel(text?: any, forId?: any): any;
@@ -215,7 +216,7 @@ export function createControlsFieldsFeature(
                 continue;
             var button: any = child.querySelector(".sp-disclosure-button");
             var label: any = button && button.firstElementChild;
-            if (label && String(label.textContent || "").trim() === "Card Settings") {
+            if (label && String(label.textContent || "").trim() === i18n("Card Settings")) {
                 return {
                     panel: child,
                     button: button,
@@ -253,7 +254,7 @@ export function createControlsFieldsFeature(
             return cardSettingsDisclosureIn(panel);
         var disclosure: any = cardSettingsDisclosureIn(panel);
         if (!disclosure) {
-            disclosure = disclosureSection("Card Settings", (idPrefix || "sp-inp-") + "card-settings", false);
+            disclosure = disclosureSection(i18n("Card Settings"), (idPrefix || "sp-inp-") + "card-settings", false);
             panel.insertBefore(disclosure.panel, firstDisclosure);
         }
         movable.forEach(function (this: any, child?: any) {
@@ -277,7 +278,7 @@ export function createControlsFieldsFeature(
         inp.className = "sp-input";
         inp.id = id;
         inp.value = value;
-        inp.placeholder = "6-digit hex e.g. 0073FF";
+        inp.placeholder = i18n("6-digit hex e.g. {example}", { example: "0073FF" });
         row.appendChild(inp);
         picker.addEventListener("input", function (this: any) {
             var hex: any = this.value.replace("#", "").toUpperCase();
@@ -379,7 +380,7 @@ export function createControlsFieldsFeature(
     function renderCardModeSelector(this: any, panel?: any, b?: any, helpers?: any, metadata?: any) {
         metadata = metadata || {};
         var mode: any = metadata.mode || {};
-        var field: any = helpers.selectField(mode.label || "Type", helpers.idPrefix + (mode.idSuffix || "mode"), cardMetadataValue(mode.options, b, helpers) || [], cardMetadataValue(mode.value, b, helpers) || "", function (this: any) {
+        var field: any = helpers.selectField(mode.label || i18n("Type"), helpers.idPrefix + (mode.idSuffix || "mode"), cardMetadataValue(mode.options, b, helpers) || [], cardMetadataValue(mode.value, b, helpers) || "", function (this: any) {
             if (mode.onChange)
                 mode.onChange.call(this, b, helpers);
         });
@@ -394,7 +395,7 @@ export function createControlsFieldsFeature(
             return null;
         if (large.isVisible && !large.isVisible(b, helpers))
             return null;
-        var toggle: any = helpers.toggleRow(cardMetadataValue(large.label, b, helpers) || "Large Numbers", helpers.idPrefix + (large.idSuffix || "large-numbers"), cardLargeNumbersActiveForCardSize(b, helpers, metadata));
+        var toggle: any = helpers.toggleRow(cardMetadataValue(large.label, b, helpers) || i18n("Large Numbers"), helpers.idPrefix + (large.idSuffix || "large-numbers"), cardLargeNumbersActiveForCardSize(b, helpers, metadata));
         panel.appendChild(toggle.row);
         toggle.input.addEventListener("change", function (this: any) {
             setSensorLargeNumbersEnabled(b, this.checked);
@@ -421,7 +422,7 @@ export function createControlsFieldsFeature(
         var bindName: any = Object.prototype.hasOwnProperty.call(entity, "bindName") ? entity.bindName : "entity";
         var value: any = entity.value != null ? cardMetadataValue(entity.value, b, helpers) : (bindName ? b[bindName] : "");
         var domains: any = cardMetadataValue(entity.domains, b, helpers) || [];
-        var field: any = helpers.entityField(cardMetadataValue(entity.label, b, helpers) || "Entity", helpers.idPrefix + (entity.idSuffix || "entity"), value || "", cardMetadataValue(entity.placeholder, b, helpers) || "", domains, bindName, entity.rerender !== false, cardMetadataValue(entity.requiredMessage, b, helpers) || "");
+        var field: any = helpers.entityField(cardMetadataValue(entity.label, b, helpers) || i18n("Entity"), helpers.idPrefix + (entity.idSuffix || "entity"), value || "", cardMetadataValue(entity.placeholder, b, helpers) || "", domains, bindName, entity.rerender !== false, cardMetadataValue(entity.requiredMessage, b, helpers) || "");
         panel.appendChild(field.field);
         markCardPrimaryField(field.field, "entity");
         return field;
@@ -432,7 +433,7 @@ export function createControlsFieldsFeature(
         var hasBindName: any = Object.prototype.hasOwnProperty.call(text, "bindName");
         var bindName: any = hasBindName ? text.bindName : (text.field || "label");
         var value: any = text.value != null ? cardMetadataValue(text.value, b, helpers) : b[bindName];
-        var control: any = helpers.textField(text.label || "Label", helpers.idPrefix + (text.idSuffix || bindName), value || "", cardMetadataValue(text.placeholder, b, helpers) || "", bindName, text.rerender !== false);
+        var control: any = helpers.textField(text.label || i18n("Label"), helpers.idPrefix + (text.idSuffix || bindName), value || "", cardMetadataValue(text.placeholder, b, helpers) || "", bindName, text.rerender !== false);
         panel.appendChild(control.field);
         return control;
     }
@@ -442,7 +443,7 @@ export function createControlsFieldsFeature(
         var inputId: any = helpers.idPrefix + (number.idSuffix || "number");
         var field: any = document.createElement("div");
         field.className = "sp-field";
-        field.appendChild(helpers.fieldLabel(number.label || "Number", inputId));
+        field.appendChild(helpers.fieldLabel(number.label || i18n("Number"), inputId));
         var input: any = document.createElement("input");
         input.type = "number";
         input.className = "sp-input";
@@ -470,14 +471,14 @@ export function createControlsFieldsFeature(
             helpers.saveField(fieldName, b[fieldName]);
             if (icon.onChange)
                 icon.onChange(b, helpers, b[fieldName]);
-        }, icon.label || "Icon");
+        }, icon.label || i18n("Icon"));
         panel.appendChild(picker);
         return picker;
     }
     function renderCardOptionToggle(this: any, panel?: any, b?: any, helpers?: any, metadata?: any) {
         metadata = metadata || {};
         var toggle: any = metadata.toggle || metadata;
-        var row: any = helpers.toggleRow(toggle.label || "Enabled", helpers.idPrefix + (toggle.idSuffix || "toggle"), !!cardMetadataValue(toggle.checked, b, helpers));
+        var row: any = helpers.toggleRow(toggle.label || i18n("Enabled"), helpers.idPrefix + (toggle.idSuffix || "toggle"), !!cardMetadataValue(toggle.checked, b, helpers));
         panel.appendChild(row.row);
         row.input.addEventListener("change", function (this: any) {
             if (toggle.onChange)
@@ -521,7 +522,7 @@ export function createControlsFieldsFeature(
             if (segment.onSelect)
                 segment.onSelect(b, helpers, value, button, control);
         });
-        panel.appendChild(helpers.fieldWithControl(segment.label || "Type", segment.inputId || null, control.segment));
+        panel.appendChild(helpers.fieldWithControl(segment.label || i18n("Type"), segment.inputId || null, control.segment));
         if (segment.primary)
             markCardPrimaryField(control.segment.parentNode, segment.primary === true ? "type" : segment.primary);
         return control;
@@ -553,7 +554,7 @@ export function createControlsFieldsFeature(
         options = options || {};
         return {
             iconHtml: cardIconHtml(cardIconSlug(b, helpers, options.iconFallback, options.iconField), options.iconExtraHtml || ""),
-            labelHtml: cardBadgeLabelHtml(helpers, options.label || "Configure", options.badge),
+            labelHtml: cardBadgeLabelHtml(helpers, options.label || i18nDevice("Configure"), options.badge),
         };
     }
     function condField(this: any) {

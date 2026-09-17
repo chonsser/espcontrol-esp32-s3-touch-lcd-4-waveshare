@@ -1,4 +1,5 @@
 import { cardContractOptionSpec } from "./config_option_core";
+import { i18nDevice } from "../i18n";
 
 export function createConfigLockOptionsFeature() {
     function lockCommandMode(this: any, mode?: any) {
@@ -20,7 +21,7 @@ export function createConfigLockOptionsFeature() {
     }
 
     function lockModeDefaultLabel(this: any, mode?: any) {
-        return mode === "unlock" ? "Unlock" : "Lock";
+        return mode === "unlock" ? i18nDevice("Unlock") : i18nDevice("Lock");
     }
 
     function lockUsesDefaultIcon(this: any, icon?: any) {

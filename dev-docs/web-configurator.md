@@ -15,7 +15,8 @@ plus small per-device loader files.
 | `src/webserver/model/*.ts` | Typed model sources. |
 | `src/webserver/state/*.ts` | Typed device configuration, application state factory, event aliases, and event parsing. |
 | `src/webserver/api/*.ts` | Injectable HTTP transport, ordered POST queue, typed request results, and failure classification. |
-| `src/webserver/generated/*.ts` | Typed card metadata, entity catalogue, and icon data generated from their shared sources. |
+| `src/webserver/generated/*.ts` | Typed card metadata, entity catalogue, icon data, and translation tables generated from their shared sources. |
+| `src/webserver/i18n/` | Translation runtime: the page language, `i18n()` and its sibling lookup functions, and the reload that follows a panel language change. It imports only the generated translation tables, so every other module may import it. |
 | `src/webserver/testing/*.ts` | Browser test hooks, included only in test bundles. |
 | `docs/public/webserver/<slug>/www.js` | Generated per-device compatibility loader for older hosted URLs. |
 | `docs/public/webserver/embedded/www.js` | Generated offline editor included by current firmware build entry points. |
@@ -56,6 +57,74 @@ https://jtenniswood.github.io/espcontrol/webserver/<slug>/www.js
 The fallback hosted bundle URL is set as `js_url` in
 `common/device/core_infra.yaml`. Keep that path stable for older installed
 firmware and imported configs.
+
+## Translations
+
+Configurator text is translated from `product/v2/translations/web.*.txt`, with
+`web.en.txt` as the key master. `python3 scripts/build.py web-i18n` turns those
+catalogs, the card labels in `product/v2/card_contract.json`, and the firmware
+values named by `i18nDevice(...)` into `src/webserver/generated/i18n.ts`. Only
+languages that have a `web.<lang>.txt` file are translated; every other panel
+language renders the configurator in English. The
+[translations skill](../.agents/skills/translations/SKILL.md) owns the call-site
+rules, the catalog workflow, and the list of text that stays English by design.
+
+| Function | Use |
+|---|---|
+| `i18n("English", params?)` | Text whose only destination is the configurator page. The argument must be a string literal. |
+| `i18nKey("context_key", "English")` | A homonym that needs its own wording. |
+| `i18nPlural("family", count, { one, other })` | Counted text; each language supplies its own plural categories. |
+| `i18nDynamic(value)` | A runtime value whose possible texts were registered with `i18nMark("...")`. |
+| `i18nMark("English")` | Marks a literal for extraction and returns it unchanged, for errors thrown in `model/` and `api/` and translated where the banner shows them. |
+| `i18nDevice("English")` | Text in the preview that imitates the panel. It reads the firmware catalogs, so the preview matches the display. |
+| `webLocale()` | The page language, for `Intl` formatting and `localeCompare`. |
+
+Never wrap a value that is saved, sent to the device, or compared in code. The
+English rendering must stay byte-identical, because the browser and smoke checks
+locate elements by their English text.
+
+### Page language
+
+The page is built once, before the panel language is known, and many labels
+live in tables created when a module loads. The page language is therefore
+fixed for each page load:
+
+1. When `src/webserver/i18n/` first loads, it reads the `espcontrol_lang` URL
+   parameter (and removes it from the address bar), then the
+   `espcontrol.web.locale` entry in `localStorage`, and otherwise uses English.
+   A language without a web catalog resolves to English.
+2. `init()` sets `document.documentElement.lang` to that language.
+3. When the panel reports `Screen: Language`, or the user picks a language on
+   the Settings tab and the POST has completed, `requestWebLocale()` stores the
+   language as the hint for the next visit. If it differs from the page
+   language, the page reloads once after a short delay.
+4. The reload waits while `webLocaleReloadAllowed()` in
+   `src/webserver/application/language_state.ts` is false: during a config lock,
+   or while a caller such as backup import holds `holdWebLocaleReload()`. A
+   `sessionStorage` marker stops a reload loop, and when `localStorage` is
+   unavailable the reload carries the language in the `espcontrol_lang`
+   parameter instead.
+
+A browser reloads when it meets a panel set to a different supported language.
+Dirty or new card drafts, locked configuration operations, pending POSTs and
+backup imports defer that reload. Imports hold it until their queued settings
+have settled, so a language change does not interrupt the rest of the restore.
+The device replays its full state when the event stream reconnects.
+
+### Hosted and embedded bundles
+
+Translations ship inside the bundle, so a panel shows a translated configurator
+only when the bundle it loads contains that language. Entry points that set
+`js_url: ""` (`builds/<slug>.yaml` and `devices/<slug>/dev.yaml`) always serve
+the embedded bundle of the checkout they were built from. Entry points that
+keep the hosted `js_url` from `common/device/core_infra.yaml`, which the released
+factory builds do, load the upstream hosted bridge. It serves the upstream
+bundle whenever the upstream `web-assets.json` lists the panel's device slug and
+firmware version, and falls back to the embedded bundle otherwise. To test
+unpublished translations on a factory build, open the panel with
+`?espcontrol_fallback=1` to select its embedded bundle. Keep the factory build
+for provisioned panels that rely on stored Wi-Fi credentials and dynamic API
+encryption; switching to a development/non-factory image can break access.
 
 ## Device API Shape
 

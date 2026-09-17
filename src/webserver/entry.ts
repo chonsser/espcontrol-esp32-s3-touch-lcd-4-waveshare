@@ -1,3 +1,4 @@
+import { i18n } from "./i18n";
 import { resetAwareFetch } from "./api/reset_session";
 import * as DeviceConfig from "./device_config";
 import * as Model from "./model";
@@ -273,12 +274,12 @@ function composeApplicationContext(): ApplicationContext {
     },
     restart: async () => {
       const response = await requestApi.postButtonPress("Apply Configuration");
-      if (!response?.ok) throw new Error("Name saved, but the panel could not restart. Try again.");
+      if (!response?.ok) throw new Error(i18n("Name saved, but the panel could not restart. Try again."));
     },
     beforeSave: async () => {
-      if (shell.isConfigLocked()) throw new Error("Wait for the current panel operation to finish before renaming.");
+      if (shell.isConfigLocked()) throw new Error(i18n("Wait for the current panel operation to finish before renaming."));
       await requestApi.postQueue;
-      if (requestApi.postQueueError) throw new Error("Some configuration changes failed. Reload the page before renaming.");
+      if (requestApi.postQueueError) throw new Error(i18n("Some configuration changes failed. Reload the page before renaming."));
     },
     makeCard: (title, body) => fields.makeCollapsibleCard(title, body, true),
     infoPanel: (id, text) => settingsUi.infoPanel(id, text),
@@ -368,7 +369,7 @@ function composeApplicationContext(): ApplicationContext {
   );
   dom.document.addEventListener("espcontrol-reset-stale", () => {
     shell.setConfigLocked(true, "Device reset — reload this page before editing.");
-    shell.showBanner("The device was reset. Reload this page before making changes.", "error");
+    shell.showBanner(i18n("The device was reset. Reload this page before making changes."), "error");
   });
   const nativePanelConfig = createNativePanelConfigMigrationController({
     deviceProfile: () => layout.deviceId,

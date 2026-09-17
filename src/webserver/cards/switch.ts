@@ -16,6 +16,7 @@ import {
     SWITCH_CONFIRM_DEFAULT_NO,
     SWITCH_CONFIRM_DEFAULT_YES,
 } from "../application/config_option_core";
+import { i18n, i18nDevice, i18nDynamic, i18nKey, i18nMark } from "../i18n";
 export function registerSwitchCardTypes(
     registry: CardRegistry,
     confirmationOptions: ConfigConfirmationOptionsFeature,
@@ -36,92 +37,98 @@ export function registerSwitchCardTypes(
         switchConfirmationNoText,
         switchConfirmationYesText,
     } = confirmationOptions;
+    // The confirmation defaults are saved in English (config_option_core.ts). Their
+    // placeholders are translated with i18nDynamic(), so the texts are marked here
+    // for extraction.
+    i18nMark("Turn off this device?");
+    i18nMark("Yes");
+    i18nMark("No");
     // Default button type: HA entity toggle (on/off switch)
     const SWITCH_CARD_METADATA: any = {
         entity: {
-            label: "Entity",
-            placeholder: "e.g. light.kitchen",
+            label: i18n("Entity"),
+            placeholder: i18n("e.g. {example}", { example: "light.kitchen" }),
             domains: function (this: any) { return cardContractDomains(""); },
-            requiredMessage: "Add an entity before saving.",
+            requiredMessage: i18n("Add an entity before saving."),
         },
         labelField: {
-            label: "Label",
-            placeholder: "e.g. Kitchen",
+            label: i18n("Label"),
+            placeholder: i18n("e.g. Kitchen"),
         },
         iconOff: {
             field: "icon",
             fallback: "Auto",
-            label: "Off Icon",
+            label: i18n("Off Icon"),
         },
         iconOn: {
             field: "icon_on",
             fallback: "Auto",
-            label: "On Icon",
+            label: i18n("On Icon"),
         },
         activeDisplay: {
-            label: "Active Display",
+            label: i18n("Active Display"),
             idSuffix: "sensor-when-on-toggle",
             checked: function (this: any, b?: any) { return !!b.sensor; },
         },
         largeNumbers: {
-            label: "Large Active Display Numbers",
+            label: i18n("Large Active Display Numbers"),
             idSuffix: "large-active-display-numbers",
             supported: function (this: any, b?: any) {
                 return !!(b && b.sensor && b.precision !== "text");
             },
         },
         sensorMode: {
-            label: "Type",
+            label: i18n("Type"),
             options: [
-                ["numeric", "Numeric"],
-                ["text", "Text"],
+                ["numeric", i18n("Numeric")],
+                ["text", i18n("Text")],
             ],
         },
         sensorEntity: {
-            label: "Sensor Entity",
+            label: i18n("Sensor Entity"),
             idSuffix: "sensor",
-            placeholder: "e.g. sensor.printer_percent_complete",
+            placeholder: i18n("e.g. {example}", { example: "sensor.printer_percent_complete" }),
             domains: ["sensor", "binary_sensor", "text_sensor"],
             bindName: "sensor",
         },
         unitField: {
-            label: "Unit",
+            label: i18n("Unit"),
             idSuffix: "unit",
-            placeholder: "e.g. %",
+            placeholder: i18n("e.g. {example}", { example: "%" }),
             bindName: "unit",
             rerender: false,
         },
         confirmationToggle: {
-            label: "Confirmation Required",
+            label: i18n("Confirmation Required"),
             idSuffix: "confirm-toggle",
             checked: function (this: any, b?: any) { return switchConfirmationEnabled(b); },
         },
         confirmationMode: {
-            label: "When",
+            label: i18n("When"),
             options: [
-                ["off", "Off"],
-                ["on", "On"],
-                ["both", "Both"],
+                ["off", i18nKey("off__confirm_when", "Off")],
+                ["on", i18nKey("on__confirm_when", "On")],
+                ["both", i18n("Both")],
             ],
         },
         confirmationMessage: {
-            label: "Message",
+            label: i18n("Message"),
             idSuffix: "confirm-message",
-            placeholder: SWITCH_CONFIRM_DEFAULT_MESSAGE,
+            placeholder: i18nDynamic(SWITCH_CONFIRM_DEFAULT_MESSAGE),
             bindName: null,
             value: function (this: any, b?: any) { return switchConfirmationMessage(b); },
         },
         confirmationYes: {
-            label: "Confirm Button",
+            label: i18n("Confirm Button"),
             idSuffix: "confirm-yes",
-            placeholder: SWITCH_CONFIRM_DEFAULT_YES,
+            placeholder: i18nDynamic(SWITCH_CONFIRM_DEFAULT_YES),
             bindName: null,
             value: function (this: any, b?: any) { return switchConfirmationYesText(b); },
         },
         confirmationNo: {
-            label: "Cancel Button",
+            label: i18n("Cancel Button"),
             idSuffix: "confirm-no",
-            placeholder: SWITCH_CONFIRM_DEFAULT_NO,
+            placeholder: i18nDynamic(SWITCH_CONFIRM_DEFAULT_NO),
             bindName: null,
             value: function (this: any, b?: any) { return switchConfirmationNoText(b); },
         },
@@ -134,31 +141,31 @@ export function registerSwitchCardTypes(
     const LIGHT_SWITCH_CARD_METADATA: any = {
         mode: LIGHT_CONTROL_TYPE_METADATA.mode,
         entity: {
-            label: "Entity",
-            placeholder: "e.g. light.living_room",
+            label: i18n("Entity"),
+            placeholder: i18n("e.g. {example}", { example: "light.living_room" }),
             domains: function (this: any) { return cardContractDomains("light_switch"); },
-            requiredMessage: "Add a light entity before saving.",
+            requiredMessage: i18n("Add a light entity before saving."),
         },
         labelField: {
-            label: "Label",
-            placeholder: "e.g. Living Room",
+            label: i18n("Label"),
+            placeholder: i18n("e.g. Living Room"),
         },
         iconOff: {
             field: "icon",
             fallback: "Auto",
-            label: "Off Icon",
+            label: i18n("Off Icon"),
         },
         iconOn: {
             field: "icon_on",
             fallback: "Auto",
-            label: "On Icon",
+            label: i18n("On Icon"),
         },
         preview: {
             badge: "lightbulb",
         },
     };
     registry.register("", {
-        label: function (this: any) { return cardContractCardLabel(""); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage(""); },
         pickerKey: function (this: any) { return cardContractPickerKey(""); },
         hidden: function (this: any) { return cardContractHidden(""); },
@@ -169,7 +176,7 @@ export function registerSwitchCardTypes(
             var showSensor: any = !!b.sensor;
             var sensorMode: any = b.precision === "text" ? "text" : "numeric";
             helpers.renderCardEntityField(panel, b, helpers, SWITCH_CARD_METADATA);
-            var cardSettingsDisclosure: any = helpers.disclosureSection("Card Settings", helpers.idPrefix + "switch-card-settings", false);
+            var cardSettingsDisclosure: any = helpers.disclosureSection(i18n("Card Settings"), helpers.idPrefix + "switch-card-settings", false);
             var cardSettings: any = cardSettingsDisclosure.section;
             helpers.renderBasicCardFields(cardSettings, b, helpers, SWITCH_CARD_METADATA, {
                 entity: false,
@@ -290,7 +297,7 @@ export function registerSwitchCardTypes(
             });
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || b.entity || "Configure";
+            var label: any = b.label || b.entity || i18nDevice("Configure");
             var badgeIcon: any = b.sensor
                 ? (b.precision === "text" ? SWITCH_CARD_METADATA.preview.textBadge : SWITCH_CARD_METADATA.preview.numericBadge)
                 : SWITCH_CARD_METADATA.preview.switchBadge;
@@ -305,7 +312,7 @@ export function registerSwitchCardTypes(
         },
     });
     registry.register("light_switch", {
-        label: function (this: any) { return cardContractCardLabel("light_switch"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("light_switch")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("light_switch"); },
         hideLabel: true,
         pickerKey: function (this: any) { return cardContractPickerKey("light_switch"); },
@@ -314,7 +321,7 @@ export function registerSwitchCardTypes(
         isAvailable: function (this: any) {
             return false;
         },
-        labelPlaceholder: "e.g. Living Room",
+        labelPlaceholder: i18n("e.g. Living Room"),
         cardMetadata: LIGHT_SWITCH_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
             b.sensor = "";
@@ -329,7 +336,7 @@ export function registerSwitchCardTypes(
             helpers.renderBasicCardFields(panel, b, helpers, LIGHT_SWITCH_CARD_METADATA);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || b.entity || "Configure";
+            var label: any = b.label || b.entity || i18nDevice("Configure");
             return {
                 labelHtml: cardBadgeLabelHtml(helpers, label, LIGHT_SWITCH_CARD_METADATA.preview.badge),
             };

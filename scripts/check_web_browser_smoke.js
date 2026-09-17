@@ -6077,10 +6077,142 @@ async function assertPanelNaming(browser) {
   } finally { await context.close(); }
 }
 
+async function assertPolishUi(browser, embeddedFallback = false) {
+  const testCase = ACTIVE_CASES[0];
+  const context = await browser.newContext({ viewport: testCase.viewport });
+  await installRoutes(context, testCase.slug, { offlineFallback: embeddedFallback });
+  const page = await context.newPage();
+  const errors = [];
+  const posts = [];
+  let navigations = 0;
+  let pausedPost = null;
+  let pauseCardSave = true;
+  let pauseBackupSetting = false;
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("framenavigated", frame => { if (frame === page.mainFrame()) navigations++; });
+  await installFakeEventSource(page);
+  // Only the device transport is mocked: the UI, SSE dispatch, queues, backup
+  // controller, locale startup and real browser navigation all run unchanged.
+  await page.route("**/*", async route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (request.method() !== "POST" || url.hostname !== "espcontrol.test") {
+      await route.fallback();
+      return;
+    }
+    posts.push(postRecord(request.url()));
+    if (url.pathname === "/select/screen__language/set") {
+      const language = url.searchParams.get("option");
+      await page.evaluate(language => window.__seedEspState([
+        { id: "select-screen__language", state: language, value: language, option: ["en", "pl"] },
+      ]), language);
+    }
+    if ((pauseCardSave && /^\/text\/button_1_config\/set$/.test(url.pathname)) ||
+        (pauseBackupSetting && url.pathname === "/select/screen__clock_format/set")) {
+      await new Promise(resolve => { pausedPost = resolve; });
+      pausedPost = null;
+    }
+    await route.fallback();
+  });
+  async function seed(language) {
+    await page.waitForSelector("#sp-app");
+    await page.waitForFunction(() => window.__eventSources?.length > 0);
+    await page.evaluate(events => window.__seedEspState(events), seededEvents().map(event =>
+      event.id === "select-screen__language"
+        ? { ...event, state: language, value: language, option: ["en", "pl"] } : event));
+    await page.waitForSelector('.sp-main [data-slot="1"]');
+  }
+  async function waitForPausedPost(label) {
+    const deadline = Date.now() + 10000;
+    while (!pausedPost && Date.now() < deadline)
+      await new Promise(resolve => setTimeout(resolve, 25));
+    assert(pausedPost, `${label}: expected device POST did not arrive`);
+  }
+  async function uploadPolishBackup(data, name) {
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
+    if (!await page.getByRole("button", { name: "Importuj", exact: true }).isVisible())
+      await page.getByText("Kopia zapasowa", { exact: true }).click();
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Importuj", exact: true }).click();
+    const file = writeJsonFixture(name, data);
+    try { await (await chooser).setFiles(file); }
+    finally { fs.rmSync(file, { force: true }); }
+  }
+  try {
+    await page.goto(`http://espcontrol.test/${testCase.slug}?events=1${embeddedFallback ? "&espcontrol_fallback=1" : ""}`, { waitUntil: "domcontentloaded" });
+    await seed("en");
+    await page.locator('.sp-main [data-slot="1"]').click();
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await page.locator(".sp-settings-modal .sp-disclosure").filter({ hasText: "Card Settings" })
+      .first().locator(".sp-disclosure-button").click();
+    await page.locator("#sp-inp-label").fill("Żółta kuchnia");
+    const beforeDraft = navigations;
+    await page.evaluate(() => window.__seedEspState([
+      { id: "select-screen__language", state: "pl", value: "pl", option: ["en", "pl"] },
+    ]));
+    // Two 400ms reload checks must pass without navigation or draft loss.
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeDraft, "Polish language echo must not discard an English editor draft");
+    assert.strictEqual(await page.locator("#sp-inp-label").inputValue(), "Żółta kuchnia");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await waitForPausedPost("paused card POST");
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeDraft, "locale reload must not interrupt the pending card save");
+    pauseCardSave = false;
+    pausedPost();
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).waitFor();
+    assert.strictEqual(navigations, beforeDraft + 1, "exactly one reload activates Polish");
+    await seed("pl");
+    assert.strictEqual(await page.locator(".sp-support-link").textContent(), "Postaw mi kawę");
+    assert.strictEqual(await page.locator('.sp-main [data-slot="2"] .sp-btn-label').textContent(), "Energy", "user labels are not translated");
+    for (const [slot, expected] of [
+      [1, "Wybrano 1 kartę"], [2, "Wybrano 2 karty"], [3, "Wybrano 3 karty"],
+      [4, "Wybrano 4 karty"], [5, "Wybrano 5 kart"],
+    ]) {
+      await page.locator(`.sp-main [data-slot="${slot}"]`).click({ modifiers: slot === 1 ? [] : ["ControlOrMeta"], position: { x: 8, y: 8 } });
+      await page.waitForFunction(expected => document.querySelector(".sp-selection-label")?.textContent === expected, expected);
+      assert.strictEqual(await page.locator(".sp-selection-label").textContent(), expected, "Polish selection plural interpolates the count");
+    }
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
+    assert.strictEqual(await page.locator('label[for="sp-set-language"]').textContent(), "Język");
+    await uploadPolishBackup("{", "polish-invalid-backup");
+    await page.getByText("Nieprawidłowy plik – nie można odczytać JSON", { exact: true }).waitFor();
+    const backup = backupFixture(testCase.slug, testCase.slots);
+    backup.settings.language = "pl";
+    await uploadPolishBackup(backup, "polish-backup");
+    await page.getByText("Konfiguracja została zaimportowana", { exact: true }).waitFor();
+    assert(posts.some(post => post.domain === "select" && post.name === "screen__language" && post.option === "pl"), "backup preserves the language protocol token");
+    assert(posts.some(post => post.domain === "text" && post.name === "button_1_config" && post.value.startsWith("light.kitchen;Kitchen;")), "backup preserves entity ids and user labels");
+
+    // Restoring another language must wait for ALL imported settings, not just
+    // the language POST/SSE echo that appears near the beginning of the restore.
+    backup.settings.language = "en";
+    pauseBackupSetting = true;
+    const beforeRestore = navigations;
+    const beforePosts = posts.length;
+    await uploadPolishBackup(backup, "english-backup-from-polish");
+    await waitForPausedPost("paused backup setting POST");
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeRestore, "backup locale echo cannot reload halfway through restore");
+    pauseBackupSetting = false;
+    pausedPost();
+    await page.getByRole("tab", { name: "Settings", exact: true }).waitFor();
+    assert.strictEqual(navigations, beforeRestore + 1, "backup reloads once after the queue drains");
+    assert(posts.slice(beforePosts).some(post => post.domain === "select" && post.name === "screen__rotation" && post.option === "90"), "the final restore setting posts before locale navigation");
+    assert.deepStrictEqual(errors, [], "Polish UI journey has no browser errors");
+  } finally {
+    if (pausedPost) pausedPost();
+    await context.close();
+  }
+}
+
 (async function main() {
   const browser = await chromium.launch();
   const acceptanceOnly = process.env.ESPCONTROL_BROWSER_ACCEPTANCE_ONLY === "1";
   try {
+    await assertPolishUi(browser);
+    await assertPolishUi(browser, true);
+    if (process.env.ESPCONTROL_I18N_ONLY === "1") { console.log("Polish UI browser checks passed."); return; }
     await assertNamingOfflineBackups(browser);
     await assertPanelNaming(browser);
     if (process.env.ESPCONTROL_NAMING_ONLY === "1") { console.log("Panel naming browser checks passed."); return; }

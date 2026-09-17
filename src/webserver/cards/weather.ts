@@ -11,6 +11,7 @@ import type { CardRegistry, CardUiServices } from "../application/card_registry"
 import type { ConfigWeatherOptionsFeature } from "../application/config_weather_options";
 import type { ClockBarFeature } from "../application/clock_bar_state";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 
 export interface WeatherCardRegistration {
     readonly entityMetadata: any;
@@ -36,7 +37,7 @@ export function registerWeatherCardTypes(
     // Read-only weather card: displays either current conditions or high / low temperatures.
     const WEATHER_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "weather-display",
             options: weatherModeOptions,
             value: function (this: any, b?: any) {
@@ -49,23 +50,23 @@ export function registerWeatherCardTypes(
             },
         },
         entity: {
-            label: "Weather Entity",
+            label: i18n("Weather Entity"),
             idSuffix: "entity",
-            placeholder: "e.g. weather.forecast_home",
+            placeholder: i18n("e.g. {example}", { example: "weather.forecast_home" }),
             domains: function (this: any) { return cardContractDomains("weather"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add an entity before saving.",
+            requiredMessage: i18n("Add an entity before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "label",
             placeholder: function (this: any, b?: any) {
-                return "e.g. " + weatherCardDefaultForecastLabel(b);
+                return i18n("e.g. {example}", { example: weatherCardDefaultForecastLabel(b) });
             },
         },
         largeNumbers: {
-            label: "Large Temperature Numbers",
+            label: i18n("Large Temperature Numbers"),
             idSuffix: "large-weather-numbers",
             supported: weatherCardIsForecastMode,
         },
@@ -75,7 +76,7 @@ export function registerWeatherCardTypes(
         },
     };
     registry.register("weather", {
-        label: function (this: any) { return cardContractCardLabel("weather"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("weather")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("weather"); },
         pickerKey: function (this: any) { return cardContractPickerKey("weather"); },
         hidden: function (this: any) { return cardContractHidden("weather"); },
@@ -98,7 +99,7 @@ export function registerWeatherCardTypes(
                 return;
             var labelControl: any = helpers.renderCardTextField(panel, b, helpers, WEATHER_CARD_METADATA.labelField);
             var labelInp: any = labelControl.input;
-            labelInp.placeholder = "e.g. " + weatherCardDefaultForecastLabel(b);
+            labelInp.placeholder = i18n("e.g. {example}", { example: weatherCardDefaultForecastLabel(b) });
             helpers.renderCardLargeNumbersToggle(panel, b, helpers, WEATHER_CARD_METADATA);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
@@ -112,7 +113,7 @@ export function registerWeatherCardTypes(
             }
             return {
                 iconHtml: '<span class="sp-btn-icon mdi mdi-weather-cloudy"></span>',
-                labelHtml: cardBadgeLabelHtml(helpers, "Cloudy", WEATHER_CARD_METADATA.preview.currentBadge),
+                labelHtml: cardBadgeLabelHtml(helpers, i18nDevice("Cloudy"), WEATHER_CARD_METADATA.preview.currentBadge),
             };
         },
     });

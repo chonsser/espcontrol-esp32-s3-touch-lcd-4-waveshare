@@ -66,6 +66,7 @@ RELEASE = ("release",)
 MAINTAINER_DOCS = ("dev-docs/**", "DEVELOPERS.md", "README.md", "product/README.md")
 WEB_SOURCE_HELPERS = ("scripts/web_source.js", "scripts/build_web_bundle.js")
 WEB_BUNDLE_INPUTS = ("devices/**", "common/addon/time.yaml")
+WEB_I18N_INPUTS = ("product/v2/translations/**", "scripts/web_i18n.py")
 WEB_BUNDLE_BUILD_HELPERS = (
     "scripts/build.py",
     "scripts/check_timezones.py",
@@ -125,7 +126,7 @@ TASKS = (
          ), parallel_safe=True,
          cache="never"),
     task("web-unit", ("node", "--test", "tests/web/unit/**/*.test.js"), profiles=FAST + RELEASE,
-         domains=("web",), inputs=("tests/web/unit/**", "tests/web/*.test.ts", "src/webserver/**", "product/v2/product_compatibility.json", "compatibility/fixtures/panel_config_migration_v1.json", "devices/manifest.json", "scripts/load_typescript_module.js", "package-lock.json"), parallel_safe=True,
+         domains=("web",), inputs=("tests/web/unit/**", "tests/web/*.test.ts", "src/webserver/**", "product/v2/product_compatibility.json", "compatibility/fixtures/panel_config_migration_v1.json", "devices/manifest.json", "scripts/load_typescript_module.js", "package-lock.json") + WEB_I18N_INPUTS, parallel_safe=True,
          cache_tools=("node",)),
     task("mutations", ("python3", "scripts/run_mutations.py"),
          domains=("firmware", "web"),
@@ -133,7 +134,7 @@ TASKS = (
          cache="never"),
     task("generated", ("python3", "scripts/build.py", "--check"),
          ("python3", "scripts/build.py", "--self-test"), profiles=PRODUCT,
-         domains=("product", "firmware", "web", "docs"), inputs=("common/**", "devices/**", "builds/**", "components/espcontrol/**", "src/webserver/**", "compatibility/**", "scripts/build.py", "scripts/build_web_bundle.js", "scripts/web_source.js"),
+         domains=("product", "firmware", "web", "docs"), inputs=("common/**", "devices/**", "builds/**", "components/espcontrol/**", "src/webserver/**", "compatibility/**", "scripts/build.py", "scripts/build_web_bundle.js", "scripts/web_source.js") + WEB_I18N_INPUTS,
          generated_inputs=("components/espcontrol/*_generated.h", "docs/generated/**", "docs/public/**", "product/product_snapshot.json"),
          parallel_safe=True, cache="never"),
     task("device-manifest", ("python3", "scripts/check_device_manifest.py"),
@@ -191,7 +192,7 @@ TASKS = (
          parallel_safe=True, cache_tools=("c++",)),
     task("web-smoke", ("node", "scripts/run_web_compat_check.js", "web-smoke"),
         ("node", "scripts/check_web_migration_baseline.js"), dependencies=("generated", "device-manifest-output"), profiles=PRODUCT,
-        domains=("web", "product"), inputs=("src/webserver/**", "tests/web/*.test.ts", "tests/web/unit/**", "scripts/check_web_smoke.js", "scripts/run_web_compat_check.js", "scripts/load_typescript_module.js", "scripts/check_web_migration_baseline.js", "product/v2/product_compatibility.json", "compatibility/fixtures/web_migration_baseline.json", "devices/manifest.json") + WEB_SOURCE_HELPERS, generated_inputs=("docs/public/webserver/**",), parallel_safe=True),
+        domains=("web", "product"), inputs=("src/webserver/**", "tests/web/*.test.ts", "tests/web/unit/**", "scripts/check_web_smoke.js", "scripts/run_web_compat_check.js", "scripts/load_typescript_module.js", "scripts/check_web_migration_baseline.js", "product/v2/product_compatibility.json", "compatibility/fixtures/web_migration_baseline.json", "devices/manifest.json") + WEB_SOURCE_HELPERS + WEB_I18N_INPUTS, generated_inputs=("docs/public/webserver/**",), parallel_safe=True),
     task("web-asset-manifest", ("node", "scripts/check_web_asset_manifest.js"), dependencies=("generated", "device-manifest-output"), profiles=PRODUCT,
          domains=("web", "firmware", "product"), inputs=("devices/manifest.json", "scripts/check_web_asset_manifest.js", "scripts/build.py", "scripts/build_web_bundle.js"), generated_inputs=("docs/public/webserver/**",), parallel_safe=True),
     task("types", ("npm", "exec", "--", "tsc", "--noEmit"), profiles=FAST,
@@ -274,6 +275,10 @@ TASKS = (
     task("status-icon-glyphs", ("python3", "scripts/check_status_icon_glyphs.py"), profiles=FAST,
          domains=("firmware",),
          inputs=("common/assets/network_status_glyphs.yaml", "components/espcontrol/*_status.h", "scripts/check_status_icon_glyphs.py"), parallel_safe=True),
+    task("translations", ("python3", "scripts/check_translations.py", "--self-test"),
+         ("python3", "scripts/check_translations.py"), profiles=PRODUCT,
+         domains=("product", "firmware", "web"),
+         inputs=("product/v2/translations/**", "common/assets/*_glyphs.yaml", "components/espcontrol/*.h", "common/device/*.yaml", "common/addon/*.yaml", "src/webserver/state/app_state.ts", "scripts/check_translations.py"), parallel_safe=True),
     task("timezones", ("python3", "scripts/check_timezones.py"),
          ("python3", "scripts/check_timezones.py", "--self-test"), profiles=FAST,
          domains=("firmware", "web"), inputs=("common/**", "src/webserver/**", "components/espcontrol/sun_calc.h", "scripts/check_timezones.py"),
@@ -281,7 +286,7 @@ TASKS = (
     task("public-firmware-script", ("python3", "scripts/check_public_firmware.py", "--self-test"), profiles=PRODUCT,
          domains=("firmware", "workflow"), inputs=("scripts/**", "docs/public/**"), parallel_safe=True),
     task("web-browser-smoke", ("node", "scripts/check_web_browser_smoke.js"), dependencies=("generated", "device-manifest-output"), profiles=("all", "release"),
-         domains=("web",), inputs=("src/webserver/**", "devices/**", "common/addon/time.yaml", "scripts/check_web_browser_smoke.js", "package-lock.json") + WEB_SOURCE_HELPERS,
+         domains=("web",), inputs=("src/webserver/**", "devices/**", "common/addon/time.yaml", "scripts/check_web_browser_smoke.js", "package-lock.json") + WEB_SOURCE_HELPERS + WEB_I18N_INPUTS,
          generated_inputs=("docs/public/webserver/**",),
          cache_env=("PLAYWRIGHT_BROWSERS_PATH", "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD")),
     task("docs-build", ("npm", "run", "docs:build"), dependencies=("generated",), profiles=("all", "release"),

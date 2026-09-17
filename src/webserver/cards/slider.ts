@@ -19,6 +19,7 @@ import type { ConfigModalTabOptionsFeature } from "../application/config_modal_t
 import type { LightCardRegistration } from "./light_temperature";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
 import type { SettingsUiFeature } from "../features/settings";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerSliderCardTypes(
     registry: CardRegistry,
     modalTabs: ConfigModalTabOptionsFeature,
@@ -53,18 +54,18 @@ export function registerSliderCardTypes(
     function sliderCardMetadata(this: any, opts?: any) {
         return {
             entity: {
-                label: "Entity",
+                label: i18n("Entity"),
                 idSuffix: "entity",
                 placeholder: opts.entityPlaceholder,
                 domains: function (this: any) { return cardContractDomains(opts.type); },
                 bindName: "entity",
                 rerender: true,
-                requiredMessage: "Add an entity before saving.",
+                requiredMessage: i18n("Add an entity before saving."),
                 validateDomains: opts.type === "slider",
-                domainValidationMessage: "Choose a light, fan, number, or input_number entity.",
+                domainValidationMessage: i18n("Choose a light, fan, number, or input_number entity."),
             },
             labelField: {
-                label: "Label",
+                label: i18n("Label"),
                 idSuffix: "label",
                 field: "label",
                 placeholder: opts.placeholder,
@@ -72,7 +73,7 @@ export function registerSliderCardTypes(
             },
             coverInteraction: {
                 mode: {
-                    label: "Type",
+                    label: i18n("Type"),
                     idSuffix: "cover-interaction",
                     options: function (this: any, b?: any) { return coverModeOptionsForSettings(normalizeCoverMode(b && b.sensor, true)); },
                     value: function (this: any, b?: any) {
@@ -81,12 +82,12 @@ export function registerSliderCardTypes(
                 },
             },
             coverPosition: {
-                label: "Position",
+                label: i18n("Position"),
                 idSuffix: "cover-position",
                 min: 0,
                 max: 100,
                 step: 1,
-                placeholder: "e.g. 50",
+                placeholder: i18n("e.g. {example}", { example: "50" }),
                 value: function (this: any, b?: any) {
                     return normalizeCoverPosition(b.unit);
                 },
@@ -99,7 +100,7 @@ export function registerSliderCardTypes(
     function sliderTypeFactory(this: any, opts?: any) {
         var metadata: any = sliderCardMetadata(opts);
         return {
-            label: function (this: any) { return cardContractCardLabel(opts.type); },
+            label: function (this: any) { return i18nDynamic(cardContractCardLabel(opts.type)); },
             allowInSubpage: function (this: any) { return cardContractAllowInSubpage(opts.type); },
             pickerKey: function (this: any) { return cardContractPickerKey(opts.type); },
             hidden: function (this: any) { return cardContractHidden(opts.type); },
@@ -272,8 +273,8 @@ export function registerSliderCardTypes(
                 if (opts.coverControlTabs) {
                     cardSettingsPanel = document.createElement("div");
                     modalSettingsPanel = document.createElement("div");
-                    panel.appendChild(inlineDisclosure("Card Settings", cardSettingsPanel, false));
-                    modalSettingsDisclosure = inlineDisclosure("Modal Settings", modalSettingsPanel, b._modalSettingsOpen === true);
+                    panel.appendChild(inlineDisclosure(i18n("Card Settings"), cardSettingsPanel, false));
+                    modalSettingsDisclosure = inlineDisclosure(i18n("Modal Settings"), modalSettingsPanel, b._modalSettingsOpen === true);
                     panel.appendChild(modalSettingsDisclosure);
                     panel = cardSettingsPanel;
                 }
@@ -301,9 +302,9 @@ export function registerSliderCardTypes(
                     var offIconVal: any = b.icon && b.icon !== "Auto" ? b.icon : opts.defaultIcon;
                     var onIconDefault: any = opts.onIconInheritsOff ? offIconVal : opts.defaultIconOn;
                     var onIconVal: any = b.icon_on && b.icon_on !== "Auto" ? b.icon_on : onIconDefault;
-                    singleIconSection = iconField("Icon", "cover-icon", "icon", offIconVal, opts.defaultIcon);
-                    offIconSection = iconField(opts.iconOffFieldLabel || "Closed Icon", "icon", "icon", offIconVal, opts.defaultIcon);
-                    var onIconSection: any = iconField(opts.iconOnFieldLabel || "Open Icon", "icon-on", "icon_on", onIconVal, opts.defaultIconOn);
+                    singleIconSection = iconField(i18n("Icon"), "cover-icon", "icon", offIconVal, opts.defaultIcon);
+                    offIconSection = iconField(opts.iconOffFieldLabel || i18n("Closed Icon"), "icon", "icon", offIconVal, opts.defaultIcon);
+                    var onIconSection: any = iconField(opts.iconOnFieldLabel || i18n("Open Icon"), "icon-on", "icon_on", onIconVal, opts.defaultIconOn);
                     syncCoverIconUi = function (this: any) {
                         var singleIcon: any = opts.interactionMode && coverCommandMode(coverMode);
                         singleIconSection.style.display = singleIcon ? "" : "none";
@@ -321,7 +322,7 @@ export function registerSliderCardTypes(
                         idSuffix: "icon",
                         field: "icon",
                         fallback: "Auto",
-                        label: "Icon",
+                        label: i18n("Icon"),
                     });
                 }
                 if (!opts.interactionMode && b.sensor) {
@@ -386,17 +387,17 @@ export function registerSliderCardTypes(
     }
     registry.register("light_brightness", sliderTypeFactory({
         type: "light_brightness",
-        placeholder: "e.g. Living Room",
-        entityPlaceholder: "e.g. light.living_room",
+        placeholder: i18n("e.g. Living Room"),
+        entityPlaceholder: i18n("e.g. {example}", { example: "light.living_room" }),
         defaultIcon: "Lightbulb Outline",
         defaultIconOn: "Lightbulb",
-        fallbackLabel: "Brightness",
+        fallbackLabel: i18nDevice("Brightness"),
         fallbackIcon: "lightbulb",
         badgeIcon: "tune-vertical-variant",
         alwaysShowIconPair: true,
         onIconInheritsOff: false,
-        iconOffFieldLabel: "Off Icon",
-        iconOnFieldLabel: "On Icon",
+        iconOffFieldLabel: i18n("Off Icon"),
+        iconOnFieldLabel: i18n("On Icon"),
         hideLabel: true,
         renderLabelInSettings: true,
         labelAfterEntity: true,
@@ -404,25 +405,25 @@ export function registerSliderCardTypes(
     }));
     registry.register("slider", sliderTypeFactory({
         type: "slider",
-        placeholder: "e.g. Living Room",
-        entityPlaceholder: "e.g. light.living_room",
+        placeholder: i18n("e.g. Living Room"),
+        entityPlaceholder: i18n("e.g. {example}", { example: "light.living_room" }),
         defaultIcon: "Auto",
         defaultIconOn: "Auto",
-        fallbackLabel: "Slider",
+        fallbackLabel: i18n("Slider"),
         fallbackIcon: "lightbulb",
         badgeIcon: "tune-vertical-variant",
         alwaysShowIconPair: true,
         onIconInheritsOff: true,
-        iconOffFieldLabel: "Off Icon",
-        iconOnFieldLabel: "On Icon",
+        iconOffFieldLabel: i18n("Off Icon"),
+        iconOnFieldLabel: i18n("On Icon"),
     }));
     registry.register("cover", sliderTypeFactory({
         type: "cover",
-        placeholder: "e.g. Office Blind",
-        entityPlaceholder: "e.g. cover.office_blind",
+        placeholder: i18n("e.g. Office Blind"),
+        entityPlaceholder: i18n("e.g. {example}", { example: "cover.office_blind" }),
         defaultIcon: "Blinds",
         defaultIconOn: "Blinds Open",
-        fallbackLabel: "Cover",
+        fallbackLabel: i18nDevice("Cover"),
         fallbackIcon: "blinds",
         badgeIcon: "blinds-horizontal",
         alwaysShowIconPair: true,

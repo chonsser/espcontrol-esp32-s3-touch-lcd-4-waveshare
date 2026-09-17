@@ -1,0 +1,1010 @@
+# Web configurator strings - pl.
+# Keys, order and {placeholders} mirror web.en.txt. New keys arrive with the
+# English value from `python3 scripts/build.py web-i18n --extract`; translate the value only.
+
+# src/webserver/api/request_failure.ts
+cannot_reach_device_is_it_connected=Brak połączenia z urządzeniem – czy jest podłączone?
+device_returned_an_invalid_response=Urządzenie zwróciło nieprawidłową odpowiedź.
+
+# src/webserver/api/reset_session.ts
+could_not_check_device_capabilities_try_again=Nie można sprawdzić możliwości urządzenia. Spróbuj ponownie.
+invalid_device_capabilities=Nieprawidłowe dane o możliwościach urządzenia
+invalid_device_reset_capabilities=Nieprawidłowe dane o możliwościach resetu urządzenia
+could_not_check_device_reset_status_reload_the_page_and_try_agai=Nie można sprawdzić stanu resetu urządzenia. Odśwież stronę i spróbuj ponownie.
+invalid_device_reset_status=Nieprawidłowy stan resetu urządzenia
+device_reset_or_stale_session_reload_before_changing_settings=Urządzenie zostało zresetowane lub sesja jest nieaktualna: odśwież stronę przed zmianą ustawień.
+this_firmware_does_not_support_this_reset=Ta wersja firmware nie obsługuje tego resetu.
+reload_the_page_before_resetting=Odśwież stronę przed resetowaniem.
+reset_was_not_accepted_reload_the_page_before_trying_again=Reset nie został przyjęty. Odśwież stronę, zanim spróbujesz ponownie.
+
+# src/webserver/application/api.ts
+update_the_device_firmware_before_using_shorter_screensaver_time=Zaktualizuj firmware urządzenia przed użyciem krótszych czasów wygaszacza ekranu.
+screen_dimmed_screensaver_is_not_available_on_this_firmware_upda=Wygaszacz z przyciemnionym ekranem nie jest dostępny w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+
+# src/webserver/application/app.ts
+buy_me_a_coffee=Postaw mi kawę
+
+# src/webserver/application/app_backup.ts
+backup_exported_without_the_panel_name_because_naming_is_unavail=Kopia zapasowa została wyeksportowana bez nazwy panelu, ponieważ nadawanie nazwy jest niedostępne.
+this_backup_contains_wifi_sharing_cards_which_require_current_de=Ta kopia zapasowa zawiera karty udostępniania Wi-Fi, które wymagają aktualnej wersji firmware urządzenia. Zaktualizuj panel przed przywróceniem tej kopii zapasowej.
+could_not_confirm_that_this_device_can_safely_restore_the_layout=Nie można potwierdzić, że to urządzenie może bezpiecznie przywrócić układ. Sprawdź połączenie i spróbuj ponownie.
+the_layout_could_not_be_restored_no_other_backup_settings_were_c=Nie można przywrócić układu. Pozostałe ustawienia kopii zapasowej nie zostały zmienione.
+configuration_restored_but_panel_naming_or_restart_failed_reason=Konfiguracja została przywrócona, ale nadawanie nazwy panelu lub ponowne uruchomienie nie powiodło się: {reason}
+could_not_restore_backup=Nie można przywrócić kopii zapasowej
+
+# src/webserver/application/app_events.ts
+apply_configuration=Zastosuj konfigurację
+reconnecting_to_device=Ponowne łączenie z urządzeniem…
+
+# src/webserver/application/app_state_event_handlers.ts
+12_hour=12-godzinny
+24_hour=24-godzinny
+
+# src/webserver/application/app_status_preview.ts
+auto_home_assistant=Auto (Home Assistant)
+temperature=Temperatura
+clock=Zegar
+voice_services=Usługi głosowe
+connectivity=Łączność
+clock_bar=Pasek zegara
+sunrise_time=Wschód słońca: {time}
+sunset_time=Zachód słońca: {time}
+
+# src/webserver/application/backup_contract.ts
+this_controller_does_not_support_the_label_card_type_in_this_bac=Ten panel nie obsługuje kart typu {label} zawartych w tej kopii zapasowej.
+
+# src/webserver/application/button_settings.ts
+back_button=Przycisk Wstecz
+label=Etykieta
+back=Wstecz
+done=Gotowe
+settings=Ustawienia
+add_an_entity_before_saving=Dodaj encję przed zapisaniem.
+choose_a_compatible_entity_before_saving=Wybierz zgodną encję przed zapisaniem.
+card_settings_are_too_large_to_save_shorten_confirmation_text_la=Ustawienia karty są zbyt duże, aby je zapisać. Skróć tekst potwierdzenia, etykiety lub identyfikatory encji.
+that_grid_space_is_no_longer_available_close_this_window_and_try=To miejsce w siatce nie jest już dostępne. Zamknij to okno i spróbuj ponownie.
+could_not_save_the_configuration_check_the_connection_and_try_ag=Nie można zapisać konfiguracji. Sprawdź połączenie i spróbuj ponownie.
+on_icon=Ikona włączenia
+icon=Ikona
+search_icons=Szukaj ikon…
+unit_precision=Dokładność jednostki
+card=Karta
+name_card_type=Typ karty: {name}
+active_display=Wyświetlanie stanu aktywnego
+numeric=Wartość liczbowa
+sensor_entity=Encja czujnika
+e_g_example=np. {example}
+unit=Jednostka
+e_g_kitchen=np. Kuchnia
+entity=Encja
+off_icon=Ikona wyłączenia
+on_state_pattern=Wzór stanu włączenia
+solid=Jednolity
+stripes=Paski
+save=Zapisz
+
+# src/webserver/application/button_settings_icon_picker.ts
+no_matches=Brak wyników
+
+# src/webserver/application/button_settings_selection.ts
+editing_is_paused_while_the_device_reconnects=Edycja jest wstrzymana podczas ponownego łączenia z urządzeniem
+name_selected=Wybrano: {name}
+buttons_selected_hint.one=Wybrano {count} przycisk • kliknij prawym przyciskiem, aby skopiować, wyciąć lub usunąć
+buttons_selected_hint.few=Wybrano {count} przyciski • kliknij prawym przyciskiem, aby skopiować, wyciąć lub usunąć
+buttons_selected_hint.many=Wybrano {count} przycisków • kliknij prawym przyciskiem, aby skopiować, wyciąć lub usunąć
+buttons_selected_hint.other=Wybrano {count} przycisku • kliknij prawym przyciskiem, aby skopiować, wyciąć lub usunąć
+tap_to_select_shift_ctrl_tap_to_multi_select_right_click_to_mana=dotknij, aby wybrać • Shift/Ctrl + dotknięcie, aby wybrać wiele • kliknij prawym przyciskiem, aby zarządzać
+edit=Edytuj
+hide=Ukryj
+show=Pokaż
+back_button_selected=Wybrano przycisk Wstecz
+cards_selected.one=Wybrano {count} kartę
+cards_selected.few=Wybrano {count} karty
+cards_selected.many=Wybrano {count} kart
+cards_selected.other=Wybrano {count} karty
+card_actions=Akcje karty
+show_degree_symbol=Pokaż symbol stopni
+
+# src/webserver/application/c6_firmware_ui.ts
+unknown=Nieznana
+installing=Instalowanie…
+checking=Sprawdzanie…
+update_wifi_firmware=Aktualizuj firmware Wi-Fi
+check_for_update=Sprawdź aktualizacje
+
+# src/webserver/application/card_registry.ts
+toggle__card_type=Przełączanie
+
+# src/webserver/application/clock_bar_post_api.ts
+clock_bar_setting_is_not_available_on_this_firmware_update_the_d=Ustawienie paska zegara nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+clock_bar_time_setting_is_not_available_on_this_firmware_update=Ustawienie godziny na pasku zegara nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+clock_bar_night_mode_icon_setting_is_not_available_on_this_firmw=Ustawienie ikony trybu nocnego na pasku zegara nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+network_status_icon_setting_is_not_available_on_this_firmware_up=Ustawienie ikony stanu sieci nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+battery_status_setting_is_not_available_on_this_firmware_update=Ustawienie stanu baterii nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+voice_services_setting_is_not_available_on_this_firmware_update=Ustawienie usług głosowych nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+temperature_degree_symbol_setting_is_not_available_on_this_firmw=Ustawienie symbolu stopni temperatury nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+subpage_chevron_setting_is_not_available_on_this_firmware_update=Ustawienie strzałki podstrony nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+
+# src/webserver/application/config_confirmation_options.ts
+run_scene=Aktywuj scenę
+run_script=Uruchom skrypt
+trigger_automation=Wyzwól automatyzację
+press_button=Naciśnij przycisk
+press_input_button=Naciśnij przycisk wejściowy
+toggle_helper=Przełącz pomocnika
+set_number=Ustaw liczbę
+set_number_helper=Ustaw pomocnika liczbowego
+option_select=Wybór opcji
+local_action=Akcja lokalna
+
+# src/webserver/application/config_cover_contract.ts
+all_controls=Wszystkie elementy sterujące
+slider_position=Suwak: pozycja
+slider_tilt=Suwak: nachylenie
+toggle=Przełącz
+open=Otwórz
+close=Zamknij
+stop=Zatrzymaj
+set_position=Ustaw pozycję
+
+# src/webserver/application/config_date_time_options.ts
+large_clock=Duży zegar
+large_time=Duża godzina
+large_world_clock=Duży zegar światowy
+large_date=Duża data
+type=Typ
+time_date=Godzina i data
+date=Data
+world_clock=Zegar światowy
+
+# src/webserver/application/config_image_options.ts
+image_cards_are_not_available_on_this_display=Karty obrazu nie są dostępne na tym wyświetlaczu.
+image_slots_camera_cards.one=Ten wyświetlacz obsługuje maksymalnie {count} kartę kamery na ekranie głównym i podstronach.
+image_slots_camera_cards.few=Ten wyświetlacz obsługuje maksymalnie {count} karty kamery na ekranie głównym i podstronach.
+image_slots_camera_cards.many=Ten wyświetlacz obsługuje maksymalnie {count} kart kamery na ekranie głównym i podstronach.
+image_slots_camera_cards.other=Ten wyświetlacz obsługuje maksymalnie {count} karty kamery na ekranie głównym i podstronach.
+image_slots_media_cover_art_cards.one=Ten wyświetlacz obsługuje maksymalnie {count} kartę okładki.
+image_slots_media_cover_art_cards.few=Ten wyświetlacz obsługuje maksymalnie {count} karty okładki.
+image_slots_media_cover_art_cards.many=Ten wyświetlacz obsługuje maksymalnie {count} kart okładki.
+image_slots_media_cover_art_cards.other=Ten wyświetlacz obsługuje maksymalnie {count} karty okładki.
+image_and_media_cover_art_cards_use_shared_image_slots_you_can_s=Karty obrazu i karty okładki korzystają ze wspólnej puli miejsc na obrazy. Łączna liczba takich kart na ekranie głównym i podstronach nie może przekroczyć {count}.
+
+# src/webserver/application/config_media_options.ts
+home_assistant_media_source=Źródło multimediów Home Assistant
+web_url=Adres URL
+custom_full_uri=Własny / pełny adres URI
+enter_the_type_id=Wpisz identyfikator ({type})
+playlist=Playlista
+music=Muzyka
+album=Album
+artist=Wykonawca
+track=Utwór
+channel=Kanał
+episode=Odcinek
+podcast=Podcast
+tv_show=Serial
+video=Wideo
+movie=Film
+app=Aplikacja
+custom=Niestandardowy
+
+# src/webserver/application/config_modal_tab_options.ts
+power=Zasilanie
+brightness=Jasność
+colour_temperature=Temperatura barwowa
+colour_presets=Presety kolorów
+position=Pozycja
+controls=Sterowanie
+tilt=Nachylenie
+presets=Presety
+mode=Tryb
+preset=Preset
+fan=Wentylator
+swing=Ruch wahadłowy
+speed=Prędkość
+oscillation=Oscylacja
+direction=Kierunek
+light=Światło
+qr_code=Kod QR
+connection_details=Szczegóły połączenia
+guest_wi_fi=Wi-Fi dla gości
+modal_tabs=Zakładki okna
+drag_name=Przeciągnij zakładkę {name}
+move_name_up=Przesuń zakładkę {name} w górę
+move_name_down=Przesuń zakładkę {name} w dół
+
+# src/webserver/application/config_post_api.ts
+wifi_sharing_requires_current_device_firmware_update_the_panel_b=Udostępnianie Wi-Fi wymaga aktualnej wersji firmware urządzenia. Zaktualizuj panel przed zapisaniem tej karty.
+subpage_is_too_large_to_save_shorten_labels_or_entity_ids=Podstrona jest za duża, aby ją zapisać. Skróć etykiety lub identyfikatory encji.
+
+# src/webserver/application/config_robot_card_options.ts
+status=Status
+start_mowing=Rozpocznij koszenie
+dock=Dokuj
+pause_resume=Wstrzymaj / Wznów
+start_stop=Start / Stop
+start_dock=Start / Dokuj
+spot_clean=Czyszczenie punktowe
+locate=Zlokalizuj
+clean_area=Wyczyść obszar
+
+# src/webserver/application/config_subpage_options.ts
+generic=Ogólna
+switch=Przełącznik
+lights=Światła
+climate=Klimat
+presence=Obecność
+media=Media
+alarm=Alarm
+cover=Osłona
+garage_door=Brama garażowa
+gate=Brama
+lock=Zamek
+vacuum=Odkurzacz
+lawn_mower=Kosiarka
+weather=Pogoda
+sensor=Czujnik
+camera_image=Kamera/obraz
+
+# src/webserver/application/config_weather_options.ts
+current_conditions=Aktualne warunki
+temperatures_today=Temperatury dziś
+temperatures_tomorrow=Temperatury jutro
+
+# src/webserver/application/controls_fields.ts
+card_settings=Ustawienia karty
+6_digit_hex_e_g_example=6 cyfr szesnastkowych, np. {example}
+large_numbers=Duże cyfry
+number=Liczba
+enabled=Włączone
+
+# src/webserver/application/controls_shell.ts
+primary=Nawigacja główna
+screen=Ekran
+docs=Dokumentacja
+button_grid=Siatka przycisków
+close_settings=Zamknij ustawienia
+restarts_the_device_to_apply_changes=Uruchamia ponownie urządzenie, aby zastosować zmiany
+waiting_for_device=Oczekiwanie na urządzenie…
+restarting=Ponowne uruchamianie…
+
+# src/webserver/application/firmware_update_post_api.ts
+could_not_start_firmware_update=Nie można rozpocząć aktualizacji firmware.
+could_not_check_for_firmware_update=Nie można sprawdzić aktualizacji firmware.
+could_not_start_wifi_firmware_update=Nie można rozpocząć aktualizacji firmware Wi-Fi.
+could_not_check_wifi_firmware_update=Nie można sprawdzić aktualizacji firmware Wi-Fi.
+
+# src/webserver/application/firmware_update_state.ts
+could_not_download_firmware_file_status=Nie można pobrać pliku firmware ({status}).
+device_rejected_firmware_upload_status=Urządzenie odrzuciło przesłany firmware ({status}).
+firmware_update_failed_reason=Aktualizacja firmware nie powiodła się: {reason}
+install=Zainstaluj
+not_checked=Nie sprawdzono
+install_update=Zainstaluj aktualizację
+
+# src/webserver/application/firmware_version_state.ts
+checking_version=Sprawdzanie wersji…
+dev_build=Wersja dev
+version_unknown=Wersja nieznana
+
+# src/webserver/application/panel_identity.ts
+could_not_read_the_panel_name_check_the_connection_and_try_again=Nie można odczytać nazwy panelu. Sprawdź połączenie i spróbuj ponownie.
+could_not_save_the_panel_name_check_the_connection_and_try_again=Nie można zapisać nazwy panelu. Sprawdź połączenie i spróbuj ponownie.
+invalid_panel_identity_response=Nieprawidłowa odpowiedź z danymi identyfikacyjnymi panelu.
+could_not_read_panel_naming_support_try_again=Nie można sprawdzić obsługi nadawania nazwy panelu. Spróbuj ponownie.
+panel_name_saved=Zapisano nazwę panelu
+the_panel_is_restarting_reopen_it_at_the_new_address_home_assist=Panel uruchamia się ponownie. Otwórz go ponownie pod nowym adresem. Nazwy akcji w Home Assistant mogą wymagać aktualizacji.
+a_panel_name_change_is_already_in_progress=Zmiana nazwy panelu jest już w toku.
+panel_naming_is_unavailable=Nadawanie nazwy panelu jest niedostępne.
+name_saved_but_the_restart_failed_reopen_settings_and_choose_sav=Zapisano nazwę, ale nie można było ponownie uruchomić panelu. Otwórz ponownie Ustawienia i wybierz „Zapisz i uruchom ponownie”, aby spróbować jeszcze raz.
+device_name=Nazwa urządzenia
+save_restart=Zapisz i uruchom ponownie
+your_device_will_show_as_address_on_your_network=Urządzenie będzie widoczne w sieci jako {address}
+your_device_will_use_its_original_firmware_name_and_address_on_y=Urządzenie będzie widoczne w sieci pod oryginalną nazwą i adresem z firmware
+try_again=Spróbuj ponownie
+restore_backup=Przywróć kopię zapasową
+also_restore_panel_name=Przywróć także nazwę panelu
+restore_the_name_name_with_this_panel_s_address_hostname_local_t=Przywróć nazwę „{name}” wraz z adresem tego panelu {hostname}.local. Spowoduje to ponowne uruchomienie panelu i zmianę nazw akcji ESPHome.
+restore_this_panel_s_original_firmware_name_and_address_this_may=Przywróć oryginalną nazwę i adres tego panelu z firmware. Może to wymagać ponownego uruchomienia.
+restore=Przywróć
+cancel=Anuluj
+
+# src/webserver/application/preview_clipboard.ts
+this_controller_does_not_support_the_type_card_type=Ten panel nie obsługuje kart typu {type}.
+subpage_cards_cannot_be_placed_inside_another_subpage=Kart podstrony nie można umieszczać wewnątrz innej podstrony.
+the_type_card_type_cannot_be_placed_inside_a_subpage=Kart typu {type} nie można umieszczać w podstronie.
+a_copied_subpage_has_more_cards_than_this_controller_can_display=Skopiowana podstrona ma więcej kart, niż ten panel może wyświetlić.
+a_copied_subpage_does_not_fit_on_this_controller=Skopiowana podstrona nie mieści się na tym panelu.
+subpage_cards_can_only_be_pasted_onto_the_home_screen=Karty podstrony można wklejać tylko na ekranie głównym.
+there_is_not_enough_room_to_paste_every_card=Brak miejsca na wklejenie wszystkich kart.
+a_copied_card_s_settings_are_too_large_for_this_controller=Ustawienia skopiowanej karty są zbyt duże dla tego panelu.
+a_copied_subpage_is_too_large_for_this_controller=Skopiowana podstrona jest zbyt duża dla tego panelu.
+the_updated_subpage_is_too_large_to_save_on_this_controller=Zaktualizowana podstrona jest zbyt duża, aby zapisać ją na tym panelu.
+configuration_is_locked=Konfiguracja jest zablokowana.
+no_copied_cards_are_available=Brak skopiowanych kart.
+cards_pasted_some_were_resized_to_fit=Wklejono karty. Rozmiar niektórych został dopasowany.
+could_not_create_card_code=Nie można utworzyć kodu karty.
+copy_code=Kopiuj kod
+copy_this_code_to_another_controller=Skopiuj ten kod i wklej go na innym panelu.
+card_transfer_code=Kod przenoszenia kart
+copy=Kopiuj
+copied=Skopiowano
+could_not_copy_automatically_copy_the_selected_code_manually=Nie można skopiować automatycznie. Skopiuj zaznaczony kod ręcznie.
+paste_code=Wklej kod
+paste_the_code_below_nothing_is_changed_until_you_choose_paste=Wklej kod poniżej. Nic się nie zmieni, dopóki nie wybierzesz „Wklej”.
+paste_the_code_here=Wklej kod tutaj
+paste=Wklej
+the_cards_could_not_be_pasted=Nie można wkleić kart.
+cards_pasted.one=Wklejono kartę.
+cards_pasted.few=Wklejono {count} karty.
+cards_pasted.many=Wklejono {count} kart.
+cards_pasted.other=Wklejono {count} karty.
+some_were_resized_to_fit=Rozmiar niektórych został dopasowany.
+review_local_device_references_on_this_controller=Sprawdź odwołania do urządzenia lokalnego na tym panelu.
+a_subpage_layout_was_resized_to_fit=Rozmiar układu podstrony został dopasowany.
+invalid_card_code=Nieprawidłowy kod karty.
+
+# src/webserver/application/preview_context_menu.ts
+copy_cards.one=Kopiuj {count} kartę
+copy_cards.few=Kopiuj {count} karty
+copy_cards.many=Kopiuj {count} kart
+copy_cards.other=Kopiuj {count} karty
+copy_cards_as_code.one=Kopiuj {count} kartę jako kod
+copy_cards_as_code.few=Kopiuj {count} karty jako kod
+copy_cards_as_code.many=Kopiuj {count} kart jako kod
+copy_cards_as_code.other=Kopiuj {count} karty jako kod
+cut_cards.one=Wytnij {count} kartę
+cut_cards.few=Wytnij {count} karty
+cut_cards.many=Wytnij {count} kart
+cut_cards.other=Wytnij {count} karty
+delete_cards.one=Usuń {count} kartę
+delete_cards.few=Usuń {count} karty
+delete_cards.many=Usuń {count} kart
+delete_cards.other=Usuń {count} karty
+single_1x1=Pojedyncza (1x1)
+tall_2x1=Wysoka (2x1)
+extra_tall_3x1=Bardzo wysoka (3x1)
+wide_1x2=Szeroka (1x2)
+extra_wide_1x3=Bardzo szeroka (1x3)
+ultra_wide_1x5=Ultraszeroka (1x5)
+large_2x2=Duża (2x2)
+extra_large_3x3=Bardzo duża (3x3)
+max_tall_2x3=Maks. wysoka (2x3)
+massive_3x4=Ogromna (3x4)
+max_wide_3x2=Maks. szeroka (3x2)
+max_tall_2x3_2=Maks. wysoka (2x3)
+massive_wide_3x4=Ogromna szeroka (3x4)
+massive_4x3=Ogromna (4x3)
+edit_card=Edytuj kartę
+size=Rozmiar
+duplicate=Duplikuj
+cut=Wytnij
+delete=Usuń
+edit_temperature=Edytuj temperaturę
+edit_voice_services=Edytuj usługi głosowe
+hide_name=Ukryj {name}
+show_name=Pokaż {name}
+edit_label=Edytuj etykietę
+exit_subpage=Opuść podstronę
+create_card=Utwórz kartę
+create_subpage=Utwórz podstronę
+paste_cards.one=Wklej {count} kartę
+paste_cards.few=Wklej {count} karty
+paste_cards.many=Wklej {count} kart
+paste_cards.other=Wklej {count} karty
+
+# src/webserver/application/public_firmware_install.ts
+firmware_file_is_not_available_yet=Plik firmware nie jest jeszcze dostępny.
+device_reported_that_the_firmware_upload_failed=Urządzenie zgłosiło, że przesyłanie firmware nie powiodło się.
+firmware_uploaded_waiting_for_device_to_restart=Przesłano firmware. Oczekiwanie na ponowne uruchomienie urządzenia…
+could_not_upload_firmware_update=Nie można przesłać aktualizacji firmware.
+
+# src/webserver/application/screen_rotation_state.ts
+degrees_deg={degrees}°
+
+# src/webserver/application/screen_schedule_post_api.ts
+screen_schedule_is_not_available_on_this_firmware_update_the_dev=Harmonogram ekranu nie jest dostępny w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_trigger_setting_is_not_available_on_this_firmware_u=Ustawienie wyzwalacza harmonogramu nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_sensor_activation_setting_is_not_available_on_this=Ustawienie aktywacji harmonogramu przez czujnik nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_sensor_setting_is_not_available_on_this_firmware_up=Ustawienie czujnika harmonogramu nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_wake_timeout_setting_is_not_available_on_this_firmw=Ustawienie limitu czasu wybudzenia w harmonogramie nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_wake_brightness_setting_is_not_available_on_this_fi=Ustawienie jasności po wybudzeniu w harmonogramie nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_mode_setting_is_not_available_on_this_firmware_upda=Ustawienie trybu harmonogramu nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_dimmed_brightness_setting_is_not_available_on_this=Ustawienie jasności przyciemnionego ekranu w harmonogramie nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+the_schedule_clock_brightness_setting_is_not_available_on_this_f=Ustawienie jasności zegara w harmonogramie nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+brightness_modes_are_not_available_on_this_firmware_update_the_d=Tryby jasności nie są dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+manual_backlight_control_is_not_available_on_this_firmware_updat=Ręczne sterowanie podświetleniem nie jest dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+manual_brightness_times_are_not_available_on_this_firmware_updat=Godziny ręcznego trybu jasności nie są dostępne w tej wersji firmware. Zaktualizuj firmware urządzenia, a następnie odśwież tę stronę.
+
+# src/webserver/application/screen_schedule_state.ts
+duration_seconds.one={count} sekunda
+duration_seconds.few={count} sekundy
+duration_seconds.many={count} sekund
+duration_seconds.other={count} sekundy
+duration_minutes.one={count} minuta
+duration_minutes.few={count} minuty
+duration_minutes.many={count} minut
+duration_minutes.other={count} minuty
+duration_hours.one={count} godzina
+duration_hours.few={count} godziny
+duration_hours.many={count} godzin
+duration_hours.other={count} godziny
+
+# src/webserver/application/settings_cover_art_section.ts
+show_cover_art=Pokaż okładkę
+keep_screen_awake_during_playback=Nie wygaszaj ekranu podczas odtwarzania
+media_player_entity=Encja odtwarzacza multimedialnego
+show_after=Pokaż po
+show_track_details_for=Pokaż szczegóły utworu przez
+never=Nigdy
+always=Zawsze
+screensaver_settings=Ustawienia wygaszacza
+enable_if_you_use_an_external_media_player_connected_to_your_spe=Włącz, jeśli używasz zewnętrznego odtwarzacza multimedialnego podłączonego do głośników przez wejście liniowe, telewizor lub HDMI. Po dodaniu drugiego odtwarzacza multimedialnego okładka, szczegóły utworu i postęp będą wyświetlane, gdy używane jest źródło zewnętrzne.
+show_external_sources=Pokaż źródła zewnętrzne
+external_source_media_entity=Encja multimediów źródła zewnętrznego
+external_sources=Źródła zewnętrzne
+advanced_filtering=Zaawansowane filtrowanie
+only_show_when=Pokazuj tylko, gdy
+advanced_options=Opcje zaawansowane
+media_cover_art_on=Okładka włączona
+cover_art_screen_saver=Wygaszacz z okładką
+
+# src/webserver/application/settings_page.ts
+reset_colours_to_defaults=Przywróć domyślne kolory
+reset_colours=Przywróć kolory
+appearance=Wygląd
+language=Język
+manual=Ręczny
+automatic=Automatyczny
+timed=Według godzin
+daytime_brightness=Jasność w dzień
+nighttime_brightness=Jasność w nocy
+dawn=Świt
+dusk=Zmierzch
+backlight=Podświetlenie ekranu
+timezone=Strefa czasowa
+clock_format=Format zegara
+custom_ntp_servers=Własne serwery NTP
+ntp_server_number=Serwer NTP {number}
+time=Czas
+show_clock_bar=Pokaż pasek zegara
+show_night_mode_icon=Pokaż ikonę trybu nocnego
+clock_bar_on=Pasek zegara włączony
+voice_services_on=Usługi głosowe włączone
+enable_battery_support=Włącz obsługę baterii
+battery_icon_on=Ikona baterii włączona
+battery=Bateria
+rotation=Obrót
+temperature_unit=Jednostka temperatury
+auto_from_timezone=Auto (wg strefy czasowej)
+centigrade_c=Celsjusza (°C)
+fahrenheit_f=Fahrenheita (°F)
+disabled=Wyłączone
+timer__screensaver_mode=Po czasie
+timeout=Limit czasu
+presence_entity=Encja obecności
+presence_sensor_entity=Encja czujnika obecności
+screensaver_on=Wygaszacz włączony
+screensaver=Wygaszacz ekranu
+return_home_after=Powrót do ekranu głównego po
+idle_on=Powrót do ekranu głównego włączony
+idle=Bezczynność
+display__settings_section=Wyświetlacz
+voice_sounds=Głos i dźwięki
+sleep_schedule=Uśpienie i harmonogram
+preferences=Preferencje
+system=System
+
+# src/webserver/application/settings_page_helpers.ts
+discovering=Wykrywanie
+alarm_delay_audio=Dźwięk odliczania alarmu
+tts_announcements=Komunikaty TTS
+entry_announcement=Komunikat wejścia
+exit_announcement=Komunikat wyjścia
+beep_volume=Głośność sygnałów
+faster_beeps_during_final_seconds=Szybsze sygnały w ostatnich sekundach
+entry_and_exit_beeps_use_the_panel_speaker_tts_is_sent_as_a_home=Sygnały wejścia i wyjścia są odtwarzane przez głośnik panelu. Komunikaty TTS są wysyłane jako zdarzenia ogłoszeń w Home Assistant tylko wtedy, gdy usługi głosowe są włączone.
+alarm_audio_on=Dźwięki alarmu włączone
+alarm_audio=Dźwięki alarmu
+then=Następnie
+display_off=Ekran wyłączony
+screen_dimmed=Ekran przyciemniony
+dimmed_screen_brightness=Jasność przyciemnionego ekranu
+daytime_dimmed_screen_brightness=Jasność przyciemnionego ekranu w dzień
+nighttime_dimmed_screen_brightness=Jasność przyciemnionego ekranu w nocy
+daytime_clock_brightness=Jasność zegara w dzień
+nighttime_clock_brightness=Jasność zegara w nocy
+
+# src/webserver/application/settings_reset_section.ts
+complete_reset=Wykonać pełny reset?
+complete_reset_2=Pełny reset
+factory_reset=Przywracanie ustawień fabrycznych
+backup_your_device_before_resetting=Utwórz kopię zapasową urządzenia przed resetem
+save_backup=Zapisz kopię zapasową
+settings_cannot_be_recovered_without_a_backup=Bez kopii zapasowej nie można odzyskać ustawień.
+requesting_reset=Żądanie resetu…
+waiting_for_the_display_to_accept_the_reset=Oczekiwanie na przyjęcie resetu przez wyświetlacz.
+follow_the_display_s_wifi_setup_instructions_to_reconnect_you_ma=Postępuj zgodnie z instrukcjami konfiguracji Wi-Fi na wyświetlaczu, aby ponownie się połączyć. Może być konieczne ponowne skonfigurowanie połączenia z Home Assistant.
+your_wifi_and_home_assistant_connection_will_be_retained_this_pa=Konfiguracja Wi-Fi i połączenie z Home Assistant zostaną zachowane. Ta strona odświeży się, gdy wyświetlacz będzie gotowy.
+waiting_for_the_display=Oczekiwanie na wyświetlacz
+the_display_has_not_reconnected_yet_check_its_screen_and_reload=Wyświetlacz nie połączył się jeszcze ponownie. Sprawdź jego ekran i odśwież tę stronę, gdy będzie gotowy. Nie przywracaj kopii zapasowej, dopóki reset się nie zakończy.
+check_the_display=Sprawdź wyświetlacz
+check_the_display_the_reset_may_already_be_restarting_it_reload=Sprawdź wyświetlacz: reset mógł już rozpocząć jego ponowne uruchamianie. Odśwież tę stronę przed wprowadzeniem dalszych zmian.
+a_reset_is_pending_wait_for_the_display_to_restart_before_making=Reset oczekuje na wykonanie. Przed wprowadzeniem zmian poczekaj na ponowne uruchomienie wyświetlacza.
+partial_reset=Częściowy reset
+reset_cards_and_preferences_retains_your_configuration_for_wifi=Resetuje karty i preferencje. Zachowuje konfigurację Wi-Fi i połączenia z Home Assistant
+remove_all_existing_configuration_and_reset_back_to_first_time_s=Usuwa całą istniejącą konfigurację i przywraca urządzenie do konfiguracji początkowej.
+
+# src/webserver/application/settings_schedule_section.ts
+time_based_night_schedule_overrides_screensaver_presence_wake_an=Gdy harmonogram nocny według godzin jest aktywny, ma pierwszeństwo przed wybudzaniem ekranu po wykryciu obecności i wygaszaczem z okładką.
+daytime=Dzień
+night_time=Noc
+activate_night_schedule_when=Włącz harmonogram nocny, gdy
+sensor_is_off=Czujnik jest wyłączony
+sensor_is_on=Czujnik jest włączony
+at_night_time=W nocy
+screen_off=Ekran wyłączony
+when_woken_idle_time_to_screen_off=Czas bezczynności do wyłączenia ekranu po wybudzeniu
+when_woken_screen_brightness=Jasność ekranu po wybudzeniu
+clock_brightness=Jasność zegara
+clock_text_colour=Kolor tekstu zegara
+schedule_on=Harmonogram włączony
+night_schedule=Harmonogram nocny
+
+# src/webserver/application/settings_system_section.ts
+hourly=Co godzinę
+daily=Codziennie
+weekly=Co tydzień
+monthly=Co miesiąc
+export=Eksportuj
+import=Importuj
+backup=Kopia zapasowa
+current_version=Bieżąca wersja
+available_version=Dostępna wersja
+update_available=Aktualizacja dostępna
+firmware_update_available=Aktualizacja firmware dostępna
+firmware_updates=Aktualizacje firmware
+auto_update=Automatyczna aktualizacja
+update_frequency=Częstotliwość aktualizacji
+on=Włączone
+automatic_firmware_updates_on=Automatyczne aktualizacje firmware włączone
+auto_updates=Automatyczne aktualizacje
+current=Bieżąca
+available=Dostępna
+wifi_firmware_update_available=Aktualizacja firmware Wi-Fi dostępna
+wifi_firmware=Firmware Wi-Fi
+version=Wersja
+install_older_firmware_version_the_display_will_restart_during_i=Zainstalować starszy firmware {version}? Wyświetlacz uruchomi się ponownie podczas instalacji.
+previous_firmware=Poprzedni firmware
+firmware=Firmware
+connection=Połączenie
+the_current_home_assistant_artwork_endpoint_is_endpoint=Bieżący punkt końcowy okładek Home Assistant: {endpoint}.
+home_assistant_protocol=Protokół Home Assistant
+home_assistant_port=Port Home Assistant
+home_assistant_settings=Ustawienia Home Assistant
+
+# src/webserver/application/state_loader_api.ts
+restarting_device=Ponowne uruchamianie urządzenia…
+
+# src/webserver/cards/action.ts
+text=Tekst
+large_state_numbers=Duże cyfry stanu
+confirmation_required=Wymagane potwierdzenie
+fields=Pola
+message=Komunikat
+run_this_script=Uruchomić ten skrypt?
+confirm_button=Przycisk potwierdzenia
+yes=Tak
+cancel_button=Przycisk anulowania
+no=Nie
+action=Akcja
+e_g_movie_mode=np. Tryb filmowy
+select_entity=Encja wyboru
+action_entity=Encja akcji
+value=Wartość
+enter_a_value_before_saving=Wprowadź wartość przed zapisaniem.
+choose_a_select_or_input_select_entity=Wybierz encję select lub input_select.
+choose_the_number_entity_type_that_matches_this_action=Wybierz typ encji liczbowej pasujący do tej akcji.
+choose_an_action=Wybierz akcję…
+name_current={name} (bieżący)
+no_local_actions_are_registered_on_this_device_add_register_loca=Na tym urządzeniu nie zarejestrowano żadnych akcji lokalnych. Dodaj wywołania register_local_action() do lambdy on_boot urządzenia.
+could_not_reach_device_enter_the_action_key_manually=Nie można połączyć się z urządzeniem. Wprowadź klucz akcji ręcznie.
+action_key=Klucz akcji
+add_an_action_key_before_saving=Dodaj klucz akcji przed zapisaniem.
+loading_actions=Ładowanie akcji…
+
+# src/webserver/cards/alarm.ts
+alarm_entity=Encja alarmu
+add_an_alarm_control_panel_entity_before_saving=Dodaj encję alarm_control_panel przed zapisaniem.
+label_display=Wyświetlanie etykiety
+name=Nazwa
+icon_display=Wyświetlanie ikony
+static=Stała ikona
+visible_actions=Widoczne akcje
+e_g_house_alarm=np. Alarm domowy
+modal_settings=Ustawienia okna
+pin_settings=Ustawienia PIN
+pin_required_for_arming=PIN wymagany do uzbrojenia
+pin_required_for_disarming=PIN wymagany do rozbrojenia
+e_g_arm_away=np. Uzbrój poza domem
+pin_required=Wymagany PIN
+
+# src/webserver/cards/climate.ts
+climate_entity=Encja klimatu
+add_a_climate_entity_before_saving=Dodaj encję klimatu przed zapisaniem.
+actual=Aktualna
+target=Docelowa
+icon_temperatures=Ikona i temperatury
+temperature_step=Krok temperatury
+1_degree=1 stopień
+0_5_degree=0,5 stopnia
+large_temperature_numbers=Duże cyfry temperatury
+e_g_living_room=np. Salon
+temperature_settings=Ustawienia temperatury
+advanced=Zaawansowane
+minimum_temperature=Minimalna temperatura
+maximum_temperature=Maksymalna temperatura
+
+# src/webserver/cards/cover_like_card.ts
+closed_icon=Ikona zamknięcia
+open_icon=Ikona otwarcia
+
+# src/webserver/cards/door_window.ts
+door=Drzwi
+window=Okno
+add_a_door_or_window_sensor_before_saving=Dodaj czujnik drzwi lub okna przed zapisaniem.
+e_g_patio_door=np. Drzwi tarasowe
+lit_when_open=Podświetlenie, gdy otwarte
+
+# src/webserver/cards/fan.ts
+fan_entity=Encja wentylatora
+add_a_fan_entity_before_saving=Dodaj encję wentylatora przed zapisaniem.
+e_g_bedroom_fan=np. Wentylator w sypialni
+optional_light=Opcjonalne światło
+light_entity=Encja światła
+fans=Wentylatory
+
+# src/webserver/cards/garage.ts
+e_g_open_garage=np. Otwórz garaż
+e_g_close_garage=np. Zamknij garaż
+display=Wyświetlanie
+when=Kiedy
+close__confirm_when=Zamykanie
+open__confirm_when=Otwieranie
+both=W obu przypadkach
+e_g_garage_door=np. Brama garażowa
+
+# src/webserver/cards/gate.ts
+e_g_open_gate=np. Otwórz bramę
+e_g_stop_gate=np. Zatrzymaj bramę
+e_g_close_gate=np. Zamknij bramę
+e_g_gate=np. Brama
+
+# src/webserver/cards/image.ts
+camera_entity=Encja kamery
+add_a_camera_entity_before_saving=Dodaj encję kamery przed zapisaniem.
+crop_to_fit=Przycięcie do rozmiaru
+show_full_image=Cały obraz
+show_icon=Pokaż ikonę
+show_label=Pokaż etykietę
+expanded_image=Powiększony obraz
+
+# src/webserver/cards/internal.ts
+internal_relay=Przekaźnik wewnętrzny
+no_relays=Brak przekaźników
+push_button=Przycisk chwilowy
+e_g_porch_light=np. Lampa na ganku
+
+# src/webserver/cards/lawn_mower.ts
+lawn_mower_entity=Encja kosiarki
+add_a_lawn_mower_entity_before_saving=Dodaj encję kosiarki przed zapisaniem.
+e_g_backyard_mower=np. Kosiarka w ogrodzie
+
+# src/webserver/cards/light_temperature.ts
+min_color_temp_k=Min. temperatura barwowa (K)
+max_color_temp_k=Maks. temperatura barwowa (K)
+
+# src/webserver/cards/lock.ts
+e_g_unlock_front_door=np. Odblokuj drzwi wejściowe
+e_g_lock_front_door=np. Zablokuj drzwi wejściowe
+lock__command=Zablokuj
+unlock=Odblokuj
+e_g_front_door=np. Drzwi wejściowe
+locked_icon=Ikona zablokowania
+unlocked_icon=Ikona odblokowania
+
+# src/webserver/cards/media.ts
+cover_art=Okładka
+track_album_or_playlist=Utwór, album lub playlista
+speaker_group=Grupa głośników
+play_pause=Odtwórz/Pauza
+previous=Poprzedni
+next=Następny
+volume=Głośność
+track_position=Pozycja utworu
+now_playing=Teraz odtwarzane
+state=Stan
+none=Brak
+top_left=Lewy górny róg
+large_media_numbers=Duże cyfry multimediów
+e_g_living_room_speaker=np. Głośnik w salonie
+speaker_entity=Encja głośnika
+add_a_speaker_entity_before_saving=Dodaj encję głośnika przed zapisaniem.
+speaker_discovery_entity_optional=Encja wykrywania głośników (opcjonalnie)
+default_entity=Domyślnie: {entity}
+leave_this_blank_to_use_entity_only_enter_another_helper_if_you=Pozostaw to pole puste, aby użyć {entity}. Wpisz innego pomocnika tylko wtedy, gdy masz więcej niż jednego pomocnika głośników lub domyślna nazwa encji została zmieniona.
+about_the_speaker_discovery_entity=Informacje o encji wykrywania głośników
+show_track_details=Pokaż szczegóły utworu
+external_sources_2=Źródła zewnętrzne
+use_a_second_media_entity_when_the_primary_player_switches_to_a=Użyj drugiej encji multimediów, gdy główny odtwarzacz przełączy się na źródło wejścia liniowego, TV lub HDMI. Okładka, szczegóły utworu, postęp i sterowanie będą pochodzić z drugiego odtwarzacza, dopóki ma on aktywne multimedia.
+maximum_volume=Maksymalna głośność
+source=Źródło
+need_help_finding_the_media_content_id=Potrzebujesz pomocy w znalezieniu identyfikatora treści multimedialnej?
+learn_how_to_configure_media_content_buttons=Dowiedz się, jak skonfigurować przyciski treści multimedialnych
+media_type=Typ multimediów
+custom_media_content_type=Niestandardowy typ treści multimedialnej
+id=Identyfikator
+add_a_media_id_before_saving=Dodaj identyfikator multimediów przed zapisaniem.
+player_source_input=Źródło / wejście odtwarzacza
+optional_e_g_spotify_or_line_in=Opcjonalnie, np. Spotify lub wejście liniowe
+e_g_morning_playlist=np. Poranna playlista
+track_title=Tytuł utworu
+artist_name=Nazwa wykonawcy
+
+# src/webserver/cards/presence.ts
+add_a_presence_sensor_before_saving=Dodaj czujnik obecności przed zapisaniem.
+clear_icon=Ikona braku wykrycia
+detected_icon=Ikona wykrycia
+lit_when_detected=Podświetlenie po wykryciu
+
+# src/webserver/cards/push.ts
+e_g_doorbell=np. Dzwonek do drzwi
+trigger=Wyzwalacz
+
+# src/webserver/cards/screen_lock.ts
+e_g_screen_lock=np. Blokada ekranu
+
+# src/webserver/cards/sensor.ts
+local_sensor=Czujnik lokalny
+add_a_sensor_entity_before_saving=Dodaj encję czujnika przed zapisaniem.
+large_sensor_numbers=Duże cyfry czujnika
+lit_when_active=Podświetlenie, gdy aktywne
+e_g_ups_runtime=np. Czas pracy UPS
+incoming_value_unit=Jednostka wartości wejściowej
+auto=Auto
+seconds=Sekundy
+minutes=Minuty
+hours=Godziny
+days=Dni
+auto_uses_the_unit_reported_by_home_assistant_a_manual_choice_ov=Auto używa jednostki zgłaszanej przez Home Assistant. Ręczny wybór ją zastępuje.
+input_status=Status wejściowy
+display_text=Wyświetlany tekst
+e_g_please_empty=np. Do opróżnienia
+input_status_2=Status wejściowy 2
+display_text_2=Wyświetlany tekst 2
+e_g_full=np. Pełny
+choose_a_sensor=Wybierz czujnik…
+name_text={name} (tekst)
+entity_current={entity} (bieżący)
+show_internal_sensors=Pokaż czujniki wewnętrzne
+could_not_reach_device_enter_sensor_key_manually=Brak połączenia z urządzeniem. Wprowadź klucz czujnika ręcznie.
+sensor_key=Klucz czujnika
+add_a_sensor_key_before_saving=Dodaj klucz czujnika przed zapisaniem.
+loading_sensors=Ładowanie czujników…
+
+# src/webserver/cards/slider.ts
+choose_a_light_fan_number_or_input_number_entity=Wybierz encję light, fan, number lub input_number.
+slider=Suwak
+e_g_office_blind=np. Roleta w biurze
+
+# src/webserver/cards/subpage.ts
+lighting=Oświetlenie
+garage=Garaż
+camera=Kamera
+e_g_lighting=np. Oświetlenie
+show_state=Pokaż stan
+state_entity=Encja stanu
+label_entity=Encja ({label})
+add_a_label_entity_before_saving=Dodaj encję ({label}) przed zapisaniem.
+add_a_status_entity_before_saving=Dodaj encję statusu przed zapisaniem.
+subpage=Podstrona
+edit_subpage=Edytuj podstronę
+
+# src/webserver/cards/switch.ts
+turn_off_this_device=Wyłączyć to urządzenie?
+large_active_display_numbers=Duże cyfry w stanie aktywnym
+off__confirm_when=Wyłączanie
+on__confirm_when=Włączanie
+add_a_light_entity_before_saving=Dodaj encję światła przed zapisaniem.
+
+# src/webserver/cards/timer.ts
+timer_entity=Encja minutnika
+add_a_timer_entity_before_saving=Dodaj encję minutnika przed zapisaniem.
+choose_a_timer_entity_timer=Wybierz encję minutnika (timer.*).
+confirm_before_cancel=Potwierdź przed anulowaniem
+confirmation_time_out_seconds=Limit czasu potwierdzenia (s)
+
+# src/webserver/cards/timezone.ts
+city_timezone=Miasto / strefa czasowa
+
+# src/webserver/cards/vacuum.ts
+vacuum_entity=Encja odkurzacza
+add_a_vacuum_entity_before_saving=Dodaj encję odkurzacza przed zapisaniem.
+e_g_clean_kitchen=np. Sprzątanie kuchni
+e_g_kitchen_vacuum=np. Odkurzacz w kuchni
+area_id=Identyfikator obszaru
+
+# src/webserver/cards/weather.ts
+weather_entity=Encja pogody
+
+# src/webserver/cards/weather_forecast.ts
+weather_forecast=Prognoza pogody
+
+# src/webserver/cards/webhook.ts
+url=URL
+e_g_gate_open=np. Otwórz bramę
+webhook_settings=Ustawienia webhooka
+add_a_webhook_url_before_saving=Dodaj adres URL webhooka przed zapisaniem.
+body=Treść
+headers=Nagłówki
+webhook=Webhook
+
+# src/webserver/cards/wifi_qr.ts
+connect_card=Karta połączenia
+qr_card=Karta QR
+wifi_network=Sieć Wi-Fi
+guest_wi_fi_switch=Przełącznik Wi-Fi dla gości
+select_a_guest_wi_fi_switch_before_saving=Wybierz przełącznik Wi-Fi dla gości przed zapisaniem.
+network_name_ssid=Nazwa sieci (SSID)
+guest_wifi=Wi-Fi dla gości
+security=Zabezpieczenia
+wpa_wpa2_personal=WPA/WPA2 Personal
+open__wifi_security=Otwarta
+password=Hasło
+8_63_characters_or_64_hexadecimal_characters=8–63 znaki lub 64 znaki szesnastkowe
+hidden_network=Sieć ukryta
+add_a_network_name_before_saving=Dodaj nazwę sieci przed zapisaniem.
+add_a_wifi_password_before_saving=Dodaj hasło Wi-Fi przed zapisaniem.
+the_network_name_must_be_32_bytes_or_fewer=Nazwa sieci może mieć maksymalnie 32 bajty.
+use_8_63_bytes_or_exactly_64_hexadecimal_characters=Użyj 8–63 bajtów lub dokładnie 64 znaków szesnastkowych.
+these_credentials_are_too_long_to_save_on_the_panel=Te dane logowania są zbyt długie, aby zapisać je na panelu.
+
+# src/webserver/controllers/native_panel_config_controller.ts
+configuration_changed_in_another_browser_reload_before_saving_ag=Konfiguracja została zmieniona w innej przeglądarce. Odśwież stronę przed ponownym zapisaniem.
+the_configuration_saved_but_its_older_firmware_copy_did_not_do_n=Konfiguracja została zapisana, ale jej kopia dla starszej wersji firmware nie została zapisana. Nie instaluj jeszcze starszego firmware na tym panelu.
+this_firmware_requires_web_authentication_for_wifi_sharing_passw=Ta wersja firmware wymaga uwierzytelniania w interfejsie WWW dla haseł udostępniania Wi-Fi. Zaloguj się, włącz web_server_auth lub zaktualizuj firmware panelu.
+
+# src/webserver/entry.ts
+name_saved_but_the_panel_could_not_restart_try_again=Zapisano nazwę, ale nie można ponownie uruchomić panelu. Spróbuj ponownie.
+wait_for_the_current_panel_operation_to_finish_before_renaming=Poczekaj na zakończenie bieżącej operacji panelu przed zmianą nazwy.
+some_configuration_changes_failed_reload_the_page_before_renamin=Niektóre zmiany konfiguracji nie powiodły się. Odśwież stronę przed zmianą nazwy.
+the_device_was_reset_reload_this_page_before_making_changes=Urządzenie zostało zresetowane. Odśwież tę stronę przed wprowadzaniem zmian.
+
+# src/webserver/features/backup.ts
+this_backup_was_taken_from_source_this_device_is_target_layout_w=Ta kopia zapasowa pochodzi z urządzenia {source}, a to urządzenie to {target}. Układ zostanie przywrócony, ale konfiguracja natywna zostanie pominięta.
+config_was_exported_from_a_different_panel_device_layout_may_loo=Konfiguracja została wyeksportowana z innego panelu ({device}) – układ może wyglądać inaczej
+backup_has_imported_slots_current_config_has_current_adapting=Liczba pól w kopii zapasowej: {imported}, w bieżącej konfiguracji: {current} – dostosowywanie
+
+# src/webserver/features/backup_file_controller.ts
+invalid_file_could_not_parse_json=Nieprawidłowy plik – nie można odczytać JSON
+invalid_file_could_not_read_backup=Nieprawidłowy plik – nie można odczytać kopii zapasowej
+
+# src/webserver/features/backup_restore_controller.ts
+configuration_restore_failed_check_the_connection_and_try_again=Nie można przywrócić konfiguracji. Sprawdź połączenie i spróbuj ponownie.
+invalid_config_file_missing_required_fields=Nieprawidłowy plik konfiguracji – brak wymaganych pól
+configuration_imported_successfully=Konfiguracja została zaimportowana
+
+# src/webserver/features/legacy_layout_restore.ts
+subpage_slot_is_too_large_to_restore=Podstrona {slot} jest zbyt duża, aby ją przywrócić.
+legacy_restore_more.one={names} i {count} więcej
+legacy_restore_more.few={names} i {count} więcej
+legacy_restore_more.many={names} i {count} więcej
+legacy_restore_more.other={names} i {count} więcej
+the_layout_could_not_be_restored_completely_because_native_confi=Nie można całkowicie przywrócić układu, ponieważ konfiguracja natywna jest niedostępna. Urządzenie nie zachowało: {affected}. Niektóre ustawienia mogły ulec zmianie; przywróć ponownie, gdy konfiguracja natywna będzie dostępna.
+
+# src/webserver/features/preview.ts
+toggle_lights_switches_helpers_or_fans=Przełączaj światła, przełączniki, pomocniki lub wentylatory.
+run_a_home_assistant_or_local_action=Uruchamiaj akcję Home Assistant lub akcję lokalną.
+control_or_trigger_alarm_panel_actions=Steruj panelem alarmowym lub wyzwalaj jego akcje.
+show_date_time_or_world_clock_values=Pokazuj datę, godzinę lub zegar światowy.
+show_climate_status_and_temperature_controls=Pokazuj stan klimatu i sterowanie temperaturą.
+control_blinds_curtains_or_covers=Steruj roletami, zasłonami lub osłonami.
+show_open_or_closed_sensor_state=Pokazuj stan otwarcia lub zamknięcia zgłaszany przez czujnik.
+show_person_or_presence_status=Pokazuj status osoby lub obecności.
+control_fan_speed_mode_or_direction=Steruj prędkością, trybem lub kierunkiem wentylatora.
+show_and_control_a_garage_door=Pokazuj stan bramy garażowej i steruj nią.
+show_and_control_a_gate=Pokazuj stan bramy i steruj nią.
+display_an_image_card_where_supported=Wyświetlaj kartę obrazu tam, gdzie jest obsługiwana.
+share_a_wifi_network_using_a_connect_card_or_qr_card=Udostępniaj sieć Wi-Fi za pomocą karty połączenia lub karty QR.
+control_built_in_device_relays=Steruj wbudowanymi przekaźnikami urządzenia.
+configure_light_switch_brightness_or_temperature_controls=Konfiguruj sterowanie włączaniem, jasnością lub temperaturą barwową światła.
+show_or_control_a_robotic_lawn_mower=Pokazuj stan kosiarki automatycznej lub steruj nią.
+show_a_sensor_value_from_this_device=Pokazuj wartość czujnika z tego urządzenia.
+show_and_control_a_lock=Pokazuj stan zamka i steruj nim.
+control_media_playback_or_volume=Steruj odtwarzaniem multimediów lub głośnością.
+open_all_media_controls_and_volume_in_a_modal=Otwieraj wszystkie elementy sterowania multimediami i głośność w oknie.
+fire_a_momentary_button_event=Wyzwalaj zdarzenie naciśnięcia przycisku chwilowego.
+display_sensor_values_or_states=Wyświetlaj wartości lub stany czujników.
+adjust_a_numeric_or_brightness_value=Reguluj wartość liczbową lub jasność.
+open_a_nested_page_of_cards=Otwieraj zagnieżdżoną stronę z kartami.
+send_a_direct_http_request=Wysyłaj bezpośrednie żądanie HTTP.
+show_or_control_a_vacuum_cleaner=Pokazuj stan odkurzacza lub steruj nim.
+show_weather_or_forecast_data=Pokazuj dane pogodowe lub prognozę.
+configure_a_label_card=Skonfiguruj kartę typu {label}.
+configure_a_card=Skonfiguruj kartę.
+label_not_available={label} (niedostępne)
+
+# src/webserver/features/settings.ts
+on_2=WŁ.
+
+# src/webserver/model/backup.ts
+invalid_config_file_backup_must_be_a_json_object=Nieprawidłowy plik konfiguracji – kopia zapasowa musi być obiektem JSON
+invalid_config_file_missing_required_fields_2=Nieprawidłowy plik konfiguracji – brak wymaganych pól
+backup_was_created_by_a_newer_version_of_espcontrol=Kopia zapasowa została utworzona przez nowszą wersję EspControl
+invalid_config_file_unsupported_backup_format=Nieprawidłowy plik konfiguracji – nieobsługiwany format kopii zapasowej
+invalid_native_configuration_backup=Nieprawidłowa kopia zapasowa konfiguracji natywnej
+
+# src/webserver/model/card_transfer.ts
+invalid_card_code_only_a_subpage_card_can_contain_a_subpage=Nieprawidłowy kod karty – tylko karta podstrony może zawierać podstronę
+invalid_card_code_expected_a_json_object=Nieprawidłowy kod karty – oczekiwano obiektu JSON
+invalid_card_code_missing_a_supported_version=Nieprawidłowy kod karty – brak obsługiwanej wersji
+card_code_was_created_by_a_newer_version_of_espcontrol=Kod karty został utworzony przez nowszą wersję EspControl
+invalid_card_code_unsupported_format=Nieprawidłowy kod karty – nieobsługiwany format
+invalid_card_code_missing_source_information=Nieprawidłowy kod karty – brak informacji o źródle
+invalid_card_code_no_cards_were_found=Nieprawidłowy kod karty – nie znaleziono kart
+card_code_contains_too_many_cards=Kod karty zawiera zbyt wiele kart
+card_code_is_too_large_to_copy=Kod karty jest zbyt duży, aby go skopiować
+paste_a_card_code_first=Najpierw wklej kod karty
+card_code_is_too_large_to_import=Kod karty jest zbyt duży, aby go zaimportować
+invalid_card_code_could_not_read_the_json=Nieprawidłowy kod karty – nie można odczytać JSON
+
+# src/webserver/model/panel_config.ts
+panelconfig_backup_payload_is_not_valid_base64=dane kopii zapasowej PanelConfig nie są poprawnie zakodowane w base64
+settings_must_be_an_object=ustawienia muszą być obiektem
+setting_values_must_be_strings=wartości ustawień muszą być ciągami znaków
+configuration_record_exceeds_its_supported_byte_length=rekord konfiguracji przekracza obsługiwaną długość w bajtach
+configuration_contains_too_many_records=konfiguracja zawiera zbyt wiele rekordów
+invalid_panelconfig_document_header=nieprawidłowy nagłówek dokumentu PanelConfig
+panelconfig_contains_too_many_records=PanelConfig zawiera zbyt wiele rekordów
+truncated_panelconfig_record=ucięty rekord PanelConfig
+invalid_panelconfig_record_length=nieprawidłowa długość rekordu PanelConfig
+invalid_device_profile_record=nieprawidłowy rekord profilu urządzenia
+invalid_slot_record=nieprawidłowy rekord slotu
+duplicate_slot_record=zduplikowany rekord slotu
+invalid_setting_record=nieprawidłowy rekord ustawienia
+duplicate_setting_record=zduplikowany rekord ustawienia
+unsupported_panelconfig_record_type=nieobsługiwany typ rekordu PanelConfig
+incomplete_panelconfig_document=niekompletny dokument PanelConfig
+panelconfig_backup_section_is_invalid=sekcja kopii zapasowej PanelConfig jest nieprawidłowa
+panelconfig_backup_version_or_device_profile_is_invalid=wersja kopii zapasowej PanelConfig lub profil urządzenia jest nieprawidłowy
+panelconfig_backup_device_profile_does_not_match_its_document=profil urządzenia w kopii zapasowej PanelConfig nie pasuje do jej dokumentu
+
+# src/webserver/model/panel_identity.ts
+panel_name_must_be_text=Nazwa panelu musi być tekstem.
+use_up_to_120_utf_8_bytes_with_no_control_characters=Użyj maksymalnie 120 bajtów UTF-8 bez znaków sterujących.
+invalid_panel_identity_in_backup=Nieprawidłowe dane identyfikacyjne panelu w kopii zapasowej.
+
+# product/v2/card_contract.json
+timer=Minutnik
+state_unit=Jednostka stanu
+state_precision=Dokładność stanu
+arm_away=Uzbrój poza domem
+arm_home=Uzbrój w domu
+arm_night=Uzbrój na noc
+arm_vacation=Uzbrój na wakacje
+disarm=Rozbrój
+date_time=Data i godzina
+visible_tabs=Widoczne zakładki
+doors_windows=Drzwi i okna
+interaction=Interakcja
+internal_switches=Przełączniki wewnętrzne
+speaker_discovery_entity=Encja wykrywania głośników
+top_left_display=Lewy górny róg
+media_content_id_uri=Identyfikator / URI treści multimedialnej
+media_content_type=Typ treści multimedialnej
+screen_lock=Blokada ekranu
+status_translation=Tłumaczenie statusu
+subpage_type=Typ podstrony
+camera_card=Karta kamery
+wifi_sharing=Udostępnianie Wi-Fi
+network_name=Nazwa sieci

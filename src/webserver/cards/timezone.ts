@@ -10,6 +10,7 @@ import {
 import type { CardRegistry } from "../application/card_registry";
 import type { ConfigDateTimeOptionsFeature } from "../application/config_date_time_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDynamic } from "../i18n";
 
 export function registerTimezoneCardTypes(
     registry: CardRegistry,
@@ -28,7 +29,7 @@ export function registerTimezoneCardTypes(
     } = dateTimeOptions;
     // Read-only world clock card: displays local time for a selected city.
     registry.register("timezone", {
-        label: function (this: any) { return cardContractCardLabel("timezone"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("timezone")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("timezone"); },
         pickerKey: function (this: any) { return cardContractPickerKey("timezone"); },
         hidden: function (this: any) { return cardContractHidden("timezone"); },
@@ -66,7 +67,7 @@ export function registerTimezoneCardTypes(
                 helpers.saveField("entity", b.entity);
                 helpers.saveField("label", "");
             });
-            var timezoneField: any = helpers.fieldWithControl("City / Timezone", helpers.idPrefix + "timezone", tzSelect);
+            var timezoneField: any = helpers.fieldWithControl(i18n("City / Timezone"), helpers.idPrefix + "timezone", tzSelect);
             panel.appendChild(timezoneField);
             helpers.markCardPrimaryField(timezoneField, "entity");
         },
