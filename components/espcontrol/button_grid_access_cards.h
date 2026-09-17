@@ -2,6 +2,17 @@
 
 // Internal implementation detail for button_grid.h. Include button_grid.h from device YAML.
 
+// Saved configs keep default card labels in English so the web configurator
+// can round-trip them. Translate those defaults only where they are displayed.
+inline std::string i18n_label_or_default(const std::string &label,
+                                         const char *english_default) {
+  if (!english_default) return label;
+  if (label.empty() || label == english_default) {
+    return espcontrol_i18n(std::string(english_default));
+  }
+  return label;
+}
+
 inline const char* garage_closed_icon(const std::string &icon) {
   return (icon.empty() || icon == "Auto") ? find_icon("Garage") : find_icon(icon.c_str());
 }
@@ -114,7 +125,8 @@ struct LockCardCtx {
 
 inline std::string lock_state_label(const std::string &state) {
   if (state.empty()) return "--";
-  return sentence_cap_text(state);
+  if (state == "open") return espcontrol_i18n_key("state_open");
+  return espcontrol_i18n(sentence_cap_text(state));
 }
 
 inline bool lock_state_is_active(const std::string &state) {

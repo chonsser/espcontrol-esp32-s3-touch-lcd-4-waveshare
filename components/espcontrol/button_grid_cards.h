@@ -111,11 +111,20 @@ inline void setup_internal_relay_card(BtnSlot &s, const ParsedCfg &p) {
     has_icon_on, icon_off, icon_on);
 }
 
+// Subpage presets save their English kind label (for example "Lighting").
+inline std::string subpage_card_display_label(const ParsedCfg &p) {
+  const std::string kind = normalize_subpage_kind(cfg_option_value(p.options, "subpage_kind"));
+  const char *english_default = saved_config_subpage_default_label(kind);
+  if (!english_default[0]) return p.label;
+  return i18n_label_or_default(p.label, english_default);
+}
+
 // Set icon and label on a toggle/push button based on its config
 inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
+  const std::string label = p.type == "subpage" ? subpage_card_display_label(p) : p.label;
   if (!p.entity.empty()) {
-    if (!p.label.empty()) {
-      lv_label_set_display_text(s.text_lbl, p.label.c_str());
+    if (!label.empty()) {
+      lv_label_set_display_text(s.text_lbl, label.c_str());
     }
     const char* icon_cp = "\U000F0493";
     if (p.icon.empty() || p.icon == "Auto") {
@@ -133,8 +142,8 @@ inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
       }
     }
   } else {
-    if (!p.label.empty()) {
-      lv_label_set_display_text(s.text_lbl, p.label.c_str());
+    if (!label.empty()) {
+      lv_label_set_display_text(s.text_lbl, label.c_str());
     }
     if (!p.icon.empty() && p.icon != "Auto") {
       lv_label_set_display_text(s.icon_lbl, find_icon(p.icon.c_str()));
@@ -175,7 +184,9 @@ inline void setup_action_card(BtnSlot &s, const ParsedCfg &p) {
 }
 
 inline void setup_local_action_card(BtnSlot &s, const ParsedCfg &p) {
-  std::string label = p.label.empty() ? (p.entity.empty() ? "Local Action" : sentence_cap_text(p.entity)) : p.label;
+  std::string label = (p.label.empty() && !p.entity.empty())
+    ? sentence_cap_text(p.entity)
+    : i18n_label_or_default(p.label, "Local Action");
   lv_label_set_display_text(s.text_lbl, label.c_str());
   const char *icon_cp = (p.icon.empty() || p.icon == "Auto") ? find_icon("Gesture Tap") : find_icon(p.icon.c_str());
   lv_label_set_display_text(s.icon_lbl, icon_cp);
@@ -237,7 +248,7 @@ inline void setup_subpage_parent_state_card(BtnSlot &s, const ParsedCfg &p,
   lv_label_set_display_text(s.sensor_lbl, "--");
   std::string unit = trim_display_unit(p.unit);
   lv_label_set_display_text(s.unit_lbl, unit.c_str());
-  std::string subpage_label = p.label.empty() ? espcontrol_i18n(std::string("Subpage")) : p.label;
+  std::string subpage_label = p.label.empty() ? espcontrol_i18n(std::string("Subpage")) : subpage_card_display_label(p);
   lv_label_set_display_text(s.text_lbl, subpage_label.c_str());
   set_subpage_chevron_visible(
     s, subpage_chevron_enabled, subpage_chevron_x, subpage_chevron_y,

@@ -142,8 +142,7 @@ inline AlarmActionCtx *basic_action_driver_bind_alarm_action(
   if (config.entity.empty()) return nullptr;
   AlarmCardCtx *card = new AlarmCardCtx();
   card->entity_id = config.entity;
-  card->label = config.label.empty()
-    ? alarm_action_label(config.sensor) : config.label;
+  card->label = alarm_action_card_label(config);
   card->options = config.options;
   card->btn = slot.btn;
   card->icon_lbl = slot.icon_lbl;

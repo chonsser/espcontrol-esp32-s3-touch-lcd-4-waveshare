@@ -90,6 +90,22 @@ inline const char *calendar_month_name(int month) {
   return espcontrol_i18n(months[month - 1]);
 }
 
+// Month name as written after a day number ("31 października"); languages
+// without a separate form repeat calendar_month_name().
+inline const char *calendar_month_day_name(int month) {
+  static const char *keys[] = {
+    "month_day_january", "month_day_february", "month_day_march",
+    "month_day_april", "month_day_may", "month_day_june",
+    "month_day_july", "month_day_august", "month_day_september",
+    "month_day_october", "month_day_november", "month_day_december"
+  };
+  if (month < 1 || month > 12) return espcontrol_i18n("Date");
+  const char *key = keys[month - 1];
+  const char *text = espcontrol_i18n_key(key);
+  // A key lookup returns the key itself on a miss; never show that.
+  return text == key ? calendar_month_name(month) : text;
+}
+
 inline void apply_calendar_card_text(const CalendarCardRef &ref,
                                      const CalendarDateState &state) {
   char value_buf[8];
@@ -107,7 +123,7 @@ inline void apply_calendar_card_text(const CalendarCardRef &ref,
       format_clock_time_without_suffix(value_buf, sizeof(value_buf),
                                        state.hour, state.minute, state.use_12h);
       value_text = value_buf;
-      snprintf(label_buf, sizeof(label_buf), "%d %s", state.day, calendar_month_name(state.month));
+      snprintf(label_buf, sizeof(label_buf), "%d %s", state.day, calendar_month_day_name(state.month));
       label_text = label_buf;
     }
   } else if (state.date_valid &&

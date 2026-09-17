@@ -71,6 +71,16 @@ target_compile_options(icons_legacy_alias_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(icons_legacy_alias_test PRIVATE ../../components/espcontrol)
 add_test(NAME icons_legacy_alias_test COMMAND icons_legacy_alias_test)
 
+# Includes the real generated i18n tables (every other harness stubs
+# espcontrol_i18n to identity). -UNDEBUG keeps the asserts in any build type.
+add_executable(i18n_polish_test i18n_polish_test.cpp)
+target_compile_features(i18n_polish_test PRIVATE cxx_std_17)
+target_compile_options(i18n_polish_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+target_include_directories(i18n_polish_test PRIVATE ../../components/espcontrol)
+add_test(NAME i18n_polish_test COMMAND i18n_polish_test)
+add_test(NAME i18n_display_titles_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/i18n_display_titles_test.py ${CMAKE_CXX_COMPILER})
+
 add_executable(external_memory_allocator_test external_memory_allocator_test.cpp)
 target_compile_features(external_memory_allocator_test PRIVATE cxx_std_17)
 target_compile_options(external_memory_allocator_test PRIVATE -Wall -Wextra -Werror)

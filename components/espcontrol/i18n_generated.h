@@ -252,6 +252,20 @@ inline const char *espcontrol_i18n_cs(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Potvrdit";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi pro hosty";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Stav Wi-Fi se nezměnil";
+  if (std::strcmp(text, "Cover Art") == 0) return "Obal alba";
+  if (std::strcmp(text, "Connect") == 0) return "Připojit";
+  if (std::strcmp(text, "Local Action") == 0) return "Místní akce";
+  if (std::strcmp(text, "Switch") == 0) return "Spínač";
+  if (std::strcmp(text, "Lighting") == 0) return "Osvětlení";
+  if (std::strcmp(text, "Garage") == 0) return "Garáž";
+  if (std::strcmp(text, "Sensor") == 0) return "Senzor";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Zamčeno";
+  if (std::strcmp(text, "Unlocked") == 0) return "Odemčeno";
+  if (std::strcmp(text, "Locking") == 0) return "Zamyká se";
+  if (std::strcmp(text, "Unlocking") == 0) return "Odemyká se";
+  if (std::strcmp(text, "Jammed") == 0) return "Zaseknuto";
+  if (std::strcmp(text, "Line-in") == 0) return "Linkový vstup";
   return text;
 }
 
@@ -485,6 +499,18 @@ inline const char *espcontrol_i18n_da(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Bekræft";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Gæste-Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wi-Fi blev ikke ændret";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumcover";
+  if (std::strcmp(text, "Connect") == 0) return "Opret forbindelse";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokal handling";
+  if (std::strcmp(text, "Switch") == 0) return "Kontakt";
+  if (std::strcmp(text, "Lighting") == 0) return "Belysning";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Låst";
+  if (std::strcmp(text, "Unlocked") == 0) return "Låst op";
+  if (std::strcmp(text, "Locking") == 0) return "Låser";
+  if (std::strcmp(text, "Unlocking") == 0) return "Låser op";
+  if (std::strcmp(text, "Jammed") == 0) return "Sidder fast";
+  if (std::strcmp(text, "Line-in") == 0) return "Linjeindgang";
   return text;
 }
 
@@ -716,6 +742,18 @@ inline const char *espcontrol_i18n_de(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Bestätigen";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Gast-WLAN";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "WLAN wurde nicht geändert";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumcover";
+  if (std::strcmp(text, "Connect") == 0) return "Verbinden";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokale Aktion";
+  if (std::strcmp(text, "Switch") == 0) return "Schalter";
+  if (std::strcmp(text, "Lighting") == 0) return "Beleuchtung";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Gesperrt";
+  if (std::strcmp(text, "Unlocked") == 0) return "Entsperrt";
+  if (std::strcmp(text, "Locking") == 0) return "Wird gesperrt";
+  if (std::strcmp(text, "Unlocking") == 0) return "Wird entsperrt";
+  if (std::strcmp(text, "Jammed") == 0) return "Verklemmt";
+  if (std::strcmp(text, "Line-in") == 0) return "Line-In";
   return text;
 }
 
@@ -955,6 +993,19 @@ inline const char *espcontrol_i18n_es(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confirmar";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi de invitados";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "El Wi-Fi no ha cambiado";
+  if (std::strcmp(text, "Cover Art") == 0) return "Carátula";
+  if (std::strcmp(text, "Connect") == 0) return "Conectar";
+  if (std::strcmp(text, "Local Action") == 0) return "Acción local";
+  if (std::strcmp(text, "Switch") == 0) return "Interruptor";
+  if (std::strcmp(text, "Lighting") == 0) return "Iluminación";
+  if (std::strcmp(text, "Garage") == 0) return "Garaje";
+  if (std::strcmp(text, "Camera") == 0) return "Cámara";
+  if (std::strcmp(text, "Locked") == 0) return "Bloqueado";
+  if (std::strcmp(text, "Unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(text, "Locking") == 0) return "Bloqueando";
+  if (std::strcmp(text, "Unlocking") == 0) return "Desbloqueando";
+  if (std::strcmp(text, "Jammed") == 0) return "Atascado";
+  if (std::strcmp(text, "Line-in") == 0) return "Entrada de línea";
   return text;
 }
 
@@ -1204,6 +1255,20 @@ inline const char *espcontrol_i18n_fi(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Vahvista";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Vieras-Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wi-Fi ei muuttunut";
+  if (std::strcmp(text, "Cover Art") == 0) return "Kansikuva";
+  if (std::strcmp(text, "Connect") == 0) return "Yhdistä";
+  if (std::strcmp(text, "Local Action") == 0) return "Paikallinen toiminto";
+  if (std::strcmp(text, "Switch") == 0) return "Kytkin";
+  if (std::strcmp(text, "Lighting") == 0) return "Valaistus";
+  if (std::strcmp(text, "Garage") == 0) return "Autotalli";
+  if (std::strcmp(text, "Sensor") == 0) return "Anturi";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Lukittu";
+  if (std::strcmp(text, "Unlocked") == 0) return "Avattu";
+  if (std::strcmp(text, "Locking") == 0) return "Lukitaan";
+  if (std::strcmp(text, "Unlocking") == 0) return "Avataan";
+  if (std::strcmp(text, "Jammed") == 0) return "Jumissa";
+  if (std::strcmp(text, "Line-in") == 0) return "Linjatulo";
   return text;
 }
 
@@ -1436,6 +1501,19 @@ inline const char *espcontrol_i18n_fr(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confirmer";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi invité";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Le Wi-Fi n’a pas changé";
+  if (std::strcmp(text, "Cover Art") == 0) return "Pochette";
+  if (std::strcmp(text, "Connect") == 0) return "Se connecter";
+  if (std::strcmp(text, "Local Action") == 0) return "Action locale";
+  if (std::strcmp(text, "Switch") == 0) return "Interrupteur";
+  if (std::strcmp(text, "Lighting") == 0) return "Éclairage";
+  if (std::strcmp(text, "Sensor") == 0) return "Capteur";
+  if (std::strcmp(text, "Camera") == 0) return "Caméra";
+  if (std::strcmp(text, "Locked") == 0) return "Verrouillé";
+  if (std::strcmp(text, "Unlocked") == 0) return "Déverrouillé";
+  if (std::strcmp(text, "Locking") == 0) return "Verrouillage";
+  if (std::strcmp(text, "Unlocking") == 0) return "Déverrouillage";
+  if (std::strcmp(text, "Jammed") == 0) return "Bloqué";
+  if (std::strcmp(text, "Line-in") == 0) return "Entrée ligne";
   return text;
 }
 
@@ -1693,6 +1771,20 @@ inline const char *espcontrol_i18n_he(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "לאשר";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "רשת Wi-Fi לאורחים";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "מצב ה-Wi-Fi לא השתנה";
+  if (std::strcmp(text, "Cover Art") == 0) return "עטיפת אלבום";
+  if (std::strcmp(text, "Connect") == 0) return "התחברות";
+  if (std::strcmp(text, "Local Action") == 0) return "פעולה מקומית";
+  if (std::strcmp(text, "Switch") == 0) return "מתג";
+  if (std::strcmp(text, "Lighting") == 0) return "תאורה";
+  if (std::strcmp(text, "Garage") == 0) return "חניה";
+  if (std::strcmp(text, "Sensor") == 0) return "חיישן";
+  if (std::strcmp(text, "Camera") == 0) return "מצלמה";
+  if (std::strcmp(text, "Locked") == 0) return "נעול";
+  if (std::strcmp(text, "Unlocked") == 0) return "לא נעול";
+  if (std::strcmp(text, "Locking") == 0) return "נועל";
+  if (std::strcmp(text, "Unlocking") == 0) return "משחרר נעילה";
+  if (std::strcmp(text, "Jammed") == 0) return "תקוע";
+  if (std::strcmp(text, "Line-in") == 0) return "כניסת קו";
   return text;
 }
 
@@ -1942,6 +2034,20 @@ inline const char *espcontrol_i18n_hu(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Megerősítés";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Vendég Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "A Wi-Fi állapota nem változott";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumborító";
+  if (std::strcmp(text, "Connect") == 0) return "Csatlakozás";
+  if (std::strcmp(text, "Local Action") == 0) return "Helyi művelet";
+  if (std::strcmp(text, "Switch") == 0) return "Kapcsoló";
+  if (std::strcmp(text, "Lighting") == 0) return "Világítás";
+  if (std::strcmp(text, "Garage") == 0) return "Garázs";
+  if (std::strcmp(text, "Sensor") == 0) return "Érzékelő";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Lezárva";
+  if (std::strcmp(text, "Unlocked") == 0) return "Feloldva";
+  if (std::strcmp(text, "Locking") == 0) return "Lezárás";
+  if (std::strcmp(text, "Unlocking") == 0) return "Feloldás";
+  if (std::strcmp(text, "Jammed") == 0) return "Beragadt";
+  if (std::strcmp(text, "Line-in") == 0) return "Vonalbemenet";
   return text;
 }
 
@@ -2181,6 +2287,19 @@ inline const char *espcontrol_i18n_it(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confermare";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi ospiti";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Il Wi-Fi non è cambiato";
+  if (std::strcmp(text, "Cover Art") == 0) return "Copertina";
+  if (std::strcmp(text, "Connect") == 0) return "Connetti";
+  if (std::strcmp(text, "Local Action") == 0) return "Azione locale";
+  if (std::strcmp(text, "Switch") == 0) return "Interruttore";
+  if (std::strcmp(text, "Lighting") == 0) return "Illuminazione";
+  if (std::strcmp(text, "Sensor") == 0) return "Sensore";
+  if (std::strcmp(text, "Camera") == 0) return "Telecamera";
+  if (std::strcmp(text, "Locked") == 0) return "Bloccato";
+  if (std::strcmp(text, "Unlocked") == 0) return "Sbloccato";
+  if (std::strcmp(text, "Locking") == 0) return "Blocco";
+  if (std::strcmp(text, "Unlocking") == 0) return "Sblocco";
+  if (std::strcmp(text, "Jammed") == 0) return "Inceppato";
+  if (std::strcmp(text, "Line-in") == 0) return "Ingresso linea";
   return text;
 }
 
@@ -2418,6 +2537,19 @@ inline const char *espcontrol_i18n_nb(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Bekreft";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Gjeste-Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wi-Fi ble ikke endret";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumcover";
+  if (std::strcmp(text, "Connect") == 0) return "Koble til";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokal handling";
+  if (std::strcmp(text, "Switch") == 0) return "Bryter";
+  if (std::strcmp(text, "Lighting") == 0) return "Belysning";
+  if (std::strcmp(text, "Garage") == 0) return "Garasje";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Låst";
+  if (std::strcmp(text, "Unlocked") == 0) return "Låst opp";
+  if (std::strcmp(text, "Locking") == 0) return "Låser";
+  if (std::strcmp(text, "Unlocking") == 0) return "Låser opp";
+  if (std::strcmp(text, "Jammed") == 0) return "Sitter fast";
+  if (std::strcmp(text, "Line-in") == 0) return "Linjeinngang";
   return text;
 }
 
@@ -2655,6 +2787,17 @@ inline const char *espcontrol_i18n_nl(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Bevestigen";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Gastwifi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wifi is niet gewijzigd";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumhoes";
+  if (std::strcmp(text, "Connect") == 0) return "Verbinden";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokale actie";
+  if (std::strcmp(text, "Switch") == 0) return "Schakelaar";
+  if (std::strcmp(text, "Lighting") == 0) return "Verlichting";
+  if (std::strcmp(text, "Locked") == 0) return "Vergrendeld";
+  if (std::strcmp(text, "Unlocked") == 0) return "Ontgrendeld";
+  if (std::strcmp(text, "Locking") == 0) return "Vergrendelt";
+  if (std::strcmp(text, "Unlocking") == 0) return "Ontgrendelt";
+  if (std::strcmp(text, "Jammed") == 0) return "Vastgelopen";
+  if (std::strcmp(text, "Line-in") == 0) return "Lijningang";
   return text;
 }
 
@@ -2669,10 +2812,13 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Always On") == 0) return "Zawsze włączone";
   if (std::strcmp(text, "Arm Away") == 0) return "Uzbrój poza domem";
   if (std::strcmp(text, "Arm Home") == 0) return "Uzbrój w domu";
+  if (std::strcmp(text, "Arm Night") == 0) return "Uzbrój na noc";
+  if (std::strcmp(text, "Arm Vacation") == 0) return "Uzbrój na wakacje";
   if (std::strcmp(text, "Armed Away") == 0) return "Uzbrojony poza domem";
   if (std::strcmp(text, "Armed Custom") == 0) return "Uzbrojony niestandardowo";
   if (std::strcmp(text, "Armed Home") == 0) return "Uzbrojony w domu";
-  if (std::strcmp(text, "Armed Night") == 0) return "Uzbrojony noc";
+  if (std::strcmp(text, "Armed Night") == 0) return "Uzbrojony na noc";
+  if (std::strcmp(text, "Armed Vacation") == 0) return "Uzbrojony na wakacje";
   if (std::strcmp(text, "Arming") == 0) return "Uzbrajanie";
   if (std::strcmp(text, "Away") == 0) return "Poza domem";
   if (std::strcmp(text, "Back") == 0) return "Wstecz";
@@ -2725,6 +2871,7 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Heavy Snow") == 0) return "Silne opady śniegu";
   if (std::strcmp(text, "High") == 0) return "Wysoki";
   if (std::strcmp(text, "High target") == 0) return "Wysoki cel";
+  if (std::strcmp(text, "Holduntil") == 0) return "Podtrzymaj do";
   if (std::strcmp(text, "Home") == 0) return "Dom";
   if (std::strcmp(text, "Hourly") == 0) return "Co godzinę";
   if (std::strcmp(text, "Hurricane") == 0) return "Huragan";
@@ -2740,6 +2887,7 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Low target") == 0) return "Niski cel";
   if (std::strcmp(text, "Media Control") == 0) return "Sterowanie multimediami";
   if (std::strcmp(text, "Playlist") == 0) return "Playlista";
+  if (std::strcmp(text, "Medium") == 0) return "Średni";
   if (std::strcmp(text, "Mode") == 0) return "Tryb";
   if (std::strcmp(text, "Group") == 0) return "Grupa";
   if (std::strcmp(text, "Monthly") == 0) return "Co miesiąc";
@@ -2758,8 +2906,10 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "October") == 0) return "październik";
   if (std::strcmp(text, "November") == 0) return "listopad";
   if (std::strcmp(text, "December") == 0) return "grudzień";
-  if (std::strcmp(text, "Next") == 0) return "Dalej";
+  if (std::strcmp(text, "Next") == 0) return "Następny";
+  if (std::strcmp(text, "Night") == 0) return "Noc";
   if (std::strcmp(text, "No") == 0) return "Nie";
+  if (std::strcmp(text, "Nohold") == 0) return "Bez podtrzymania";
   if (std::strcmp(text, "None") == 0) return "Brak";
   if (std::strcmp(text, "No options") == 0) return "Brak opcji";
   if (std::strcmp(text, "No presets") == 0) return "Brak presetów";
@@ -2782,6 +2932,7 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Pause") == 0) return "Pauza";
   if (std::strcmp(text, "Paused") == 0) return "Wstrzymane";
   if (std::strcmp(text, "Pending") == 0) return "Oczekujące";
+  if (std::strcmp(text, "Permanenthold") == 0) return "Podtrzymanie stałe";
   if (std::strcmp(text, "PIN was not accepted") == 0) return "PIN nie został zaakceptowany";
   if (std::strcmp(text, "Play/Pause") == 0) return "Odtwórz/Pauza";
   if (std::strcmp(text, "Playing") == 0) return "Odtwarzanie";
@@ -2790,6 +2941,7 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Presence") == 0) return "Obecność";
   if (std::strcmp(text, "Previous") == 0) return "Poprzedni";
   if (std::strcmp(text, "Push") == 0) return "Naciśnij";
+  if (std::strcmp(text, "Quiet") == 0) return "Cichy";
   if (std::strcmp(text, "Rainy") == 0) return "Deszczowo";
   if (std::strcmp(text, "Relay") == 0) return "Przekaźnik";
   if (std::strcmp(text, "Returning") == 0) return "Powraca";
@@ -2802,16 +2954,18 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Snowy") == 0) return "Śnieżnie";
   if (std::strcmp(text, "Snowy And Rain") == 0) return "Śnieg i deszcz";
   if (std::strcmp(text, "Spot Clean") == 0) return "Czyszczenie punktowe";
+  if (std::strcmp(text, "Start / Dock") == 0) return "Start / Dokuj";
   if (std::strcmp(text, "Still") == 0) return "Stabilny";
   if (std::strcmp(text, "Subpage") == 0) return "Podstrona";
   if (std::strcmp(text, "Stop") == 0) return "Zatrzymaj";
   if (std::strcmp(text, "Sunny") == 0) return "Słonecznie";
   if (std::strcmp(text, "Sunny Alert") == 0) return "Ostrzeżenie słoneczne";
   if (std::strcmp(text, "Sunset") == 0) return "Zachód słońca";
-  if (std::strcmp(text, "Sunset Down") == 0) return "Zachód słońca dół";
-  if (std::strcmp(text, "Sunset Up") == 0) return "Zachód słońca góra";
+  if (std::strcmp(text, "Sunset Down") == 0) return "Zachód słońca";
+  if (std::strcmp(text, "Sunset Up") == 0) return "Wschód słońca";
   if (std::strcmp(text, "Swing") == 0) return "Ruch wahadłowy";
   if (std::strcmp(text, "Target") == 0) return "Cel";
+  if (std::strcmp(text, "Temporaryhold") == 0) return "Podtrzymanie tymczasowe";
   if (std::strcmp(text, "Today") == 0) return "Dziś";
   if (std::strcmp(text, "Too many") == 0) return "Za dużo";
   if (std::strcmp(text, "Toggle this device?") == 0) return "Przełączyć to urządzenie?";
@@ -2824,12 +2978,15 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Unknown") == 0) return "Nieznane";
   if (std::strcmp(text, "Unlock") == 0) return "Odblokuj";
   if (std::strcmp(text, "Unsupported") == 0) return "Nieobsługiwane";
+  if (std::strcmp(text, "Vacation") == 0) return "Wakacje";
+  if (std::strcmp(text, "Vacationhold") == 0) return "Podtrzymanie wakacyjne";
   if (std::strcmp(text, "Vacuum") == 0) return "Odkurzacz";
   if (std::strcmp(text, "Version unknown") == 0) return "Wersja nieznana";
   if (std::strcmp(text, "Voice") == 0) return "Głos";
   if (std::strcmp(text, "Volume") == 0) return "Głośność";
   if (std::strcmp(text, "Waiting for Home Assistant") == 0) return "Oczekiwanie na Home Assistant";
   if (std::strcmp(text, "Connecting to \nHome Assistant") == 0) return "Łączenie z \nHome Assistant";
+  if (std::strcmp(text, "If this persists, check your server for issues") == 0) return "Jeśli problem nie ustąpi, sprawdź działanie serwera";
   if (std::strcmp(text, "Weather") == 0) return "Pogoda";
   if (std::strcmp(text, "Weekly") == 0) return "Co tydzień";
   if (std::strcmp(text, "Window") == 0) return "Okno";
@@ -2889,9 +3046,23 @@ inline const char *espcontrol_i18n_pl(const char *text) {
   if (std::strcmp(text, "Daytime") == 0) return "Dzień";
   if (std::strcmp(text, "Nighttime") == 0) return "Noc";
   if (std::strcmp(text, "Timer") == 0) return "Minutnik";
-  if (std::strcmp(text, "Confirm") == 0) return "Potwierdzić";
+  if (std::strcmp(text, "Confirm") == 0) return "Potwierdź";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi dla gości";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Stan Wi-Fi nie zmienił się";
+  if (std::strcmp(text, "Cover Art") == 0) return "Okładka";
+  if (std::strcmp(text, "Connect") == 0) return "Połącz";
+  if (std::strcmp(text, "Local Action") == 0) return "Akcja lokalna";
+  if (std::strcmp(text, "Switch") == 0) return "Przełącznik";
+  if (std::strcmp(text, "Lighting") == 0) return "Oświetlenie";
+  if (std::strcmp(text, "Garage") == 0) return "Garaż";
+  if (std::strcmp(text, "Sensor") == 0) return "Czujnik";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Zablokowany";
+  if (std::strcmp(text, "Unlocked") == 0) return "Odblokowany";
+  if (std::strcmp(text, "Locking") == 0) return "Blokowanie";
+  if (std::strcmp(text, "Unlocking") == 0) return "Odblokowywanie";
+  if (std::strcmp(text, "Jammed") == 0) return "Zacięty";
+  if (std::strcmp(text, "Line-in") == 0) return "Wejście liniowe";
   return text;
 }
 
@@ -3131,6 +3302,19 @@ inline const char *espcontrol_i18n_pt_br(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confirmar";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi de convidados";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "O Wi-Fi não mudou";
+  if (std::strcmp(text, "Cover Art") == 0) return "Capa do álbum";
+  if (std::strcmp(text, "Connect") == 0) return "Conectar";
+  if (std::strcmp(text, "Local Action") == 0) return "Ação local";
+  if (std::strcmp(text, "Switch") == 0) return "Interruptor";
+  if (std::strcmp(text, "Lighting") == 0) return "Iluminação";
+  if (std::strcmp(text, "Garage") == 0) return "Garagem";
+  if (std::strcmp(text, "Camera") == 0) return "Câmera";
+  if (std::strcmp(text, "Locked") == 0) return "Bloqueado";
+  if (std::strcmp(text, "Unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(text, "Locking") == 0) return "Bloqueando";
+  if (std::strcmp(text, "Unlocking") == 0) return "Desbloqueando";
+  if (std::strcmp(text, "Jammed") == 0) return "Emperrado";
+  if (std::strcmp(text, "Line-in") == 0) return "Entrada de linha";
   return text;
 }
 
@@ -3371,6 +3555,19 @@ inline const char *espcontrol_i18n_pt(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confirmar";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi de convidados";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "O Wi-Fi não mudou";
+  if (std::strcmp(text, "Cover Art") == 0) return "Capa do álbum";
+  if (std::strcmp(text, "Connect") == 0) return "Ligar";
+  if (std::strcmp(text, "Local Action") == 0) return "Ação local";
+  if (std::strcmp(text, "Switch") == 0) return "Interruptor";
+  if (std::strcmp(text, "Lighting") == 0) return "Iluminação";
+  if (std::strcmp(text, "Garage") == 0) return "Garagem";
+  if (std::strcmp(text, "Camera") == 0) return "Câmara";
+  if (std::strcmp(text, "Locked") == 0) return "Bloqueado";
+  if (std::strcmp(text, "Unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(text, "Locking") == 0) return "A bloquear";
+  if (std::strcmp(text, "Unlocking") == 0) return "A desbloquear";
+  if (std::strcmp(text, "Jammed") == 0) return "Encravado";
+  if (std::strcmp(text, "Line-in") == 0) return "Entrada de linha";
   return text;
 }
 
@@ -3620,6 +3817,20 @@ inline const char *espcontrol_i18n_ro(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Confirmați";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi pentru oaspeți";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Starea Wi-Fi nu s-a schimbat";
+  if (std::strcmp(text, "Cover Art") == 0) return "Copertă album";
+  if (std::strcmp(text, "Connect") == 0) return "Conectează";
+  if (std::strcmp(text, "Local Action") == 0) return "Acțiune locală";
+  if (std::strcmp(text, "Switch") == 0) return "Comutator";
+  if (std::strcmp(text, "Lighting") == 0) return "Iluminat";
+  if (std::strcmp(text, "Garage") == 0) return "Garaj";
+  if (std::strcmp(text, "Sensor") == 0) return "Senzor";
+  if (std::strcmp(text, "Camera") == 0) return "Cameră";
+  if (std::strcmp(text, "Locked") == 0) return "Blocat";
+  if (std::strcmp(text, "Unlocked") == 0) return "Deblocat";
+  if (std::strcmp(text, "Locking") == 0) return "Se blochează";
+  if (std::strcmp(text, "Unlocking") == 0) return "Se deblochează";
+  if (std::strcmp(text, "Jammed") == 0) return "Înțepenit";
+  if (std::strcmp(text, "Line-in") == 0) return "Intrare linie";
   return text;
 }
 
@@ -3876,6 +4087,20 @@ inline const char *espcontrol_i18n_ru(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Подтвердить";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Гостевой Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Состояние Wi-Fi не изменилось";
+  if (std::strcmp(text, "Cover Art") == 0) return "Обложка";
+  if (std::strcmp(text, "Connect") == 0) return "Подключиться";
+  if (std::strcmp(text, "Local Action") == 0) return "Локальное действие";
+  if (std::strcmp(text, "Switch") == 0) return "Выключатель";
+  if (std::strcmp(text, "Lighting") == 0) return "Освещение";
+  if (std::strcmp(text, "Garage") == 0) return "Гараж";
+  if (std::strcmp(text, "Sensor") == 0) return "Датчик";
+  if (std::strcmp(text, "Camera") == 0) return "Камера";
+  if (std::strcmp(text, "Locked") == 0) return "Заблокировано";
+  if (std::strcmp(text, "Unlocked") == 0) return "Разблокировано";
+  if (std::strcmp(text, "Locking") == 0) return "Блокируется";
+  if (std::strcmp(text, "Unlocking") == 0) return "Разблокируется";
+  if (std::strcmp(text, "Jammed") == 0) return "Заклинило";
+  if (std::strcmp(text, "Line-in") == 0) return "Линейный вход";
   return text;
 }
 
@@ -4117,6 +4342,20 @@ inline const char *espcontrol_i18n_sk(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Potvrdiť";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi pre hostí";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Stav Wi-Fi sa nezmenil";
+  if (std::strcmp(text, "Cover Art") == 0) return "Obal albumu";
+  if (std::strcmp(text, "Connect") == 0) return "Pripojiť";
+  if (std::strcmp(text, "Local Action") == 0) return "Miestna akcia";
+  if (std::strcmp(text, "Switch") == 0) return "Prepínač";
+  if (std::strcmp(text, "Lighting") == 0) return "Osvetlenie";
+  if (std::strcmp(text, "Garage") == 0) return "Garáž";
+  if (std::strcmp(text, "Sensor") == 0) return "Senzor";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Zamknuté";
+  if (std::strcmp(text, "Unlocked") == 0) return "Odomknuté";
+  if (std::strcmp(text, "Locking") == 0) return "Zamyká sa";
+  if (std::strcmp(text, "Unlocking") == 0) return "Odomyká sa";
+  if (std::strcmp(text, "Jammed") == 0) return "Zaseknuté";
+  if (std::strcmp(text, "Line-in") == 0) return "Linkový vstup";
   return text;
 }
 
@@ -4362,6 +4601,20 @@ inline const char *espcontrol_i18n_sl(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Potrdi";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Wi-Fi za goste";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Stanje Wi-Fi se ni spremenilo";
+  if (std::strcmp(text, "Cover Art") == 0) return "Naslovnica";
+  if (std::strcmp(text, "Connect") == 0) return "Poveži";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokalno dejanje";
+  if (std::strcmp(text, "Switch") == 0) return "Stikalo";
+  if (std::strcmp(text, "Lighting") == 0) return "Razsvetljava";
+  if (std::strcmp(text, "Garage") == 0) return "Garaža";
+  if (std::strcmp(text, "Sensor") == 0) return "Senzor";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Zaklenjeno";
+  if (std::strcmp(text, "Unlocked") == 0) return "Odklenjeno";
+  if (std::strcmp(text, "Locking") == 0) return "Zaklepanje";
+  if (std::strcmp(text, "Unlocking") == 0) return "Odklepanje";
+  if (std::strcmp(text, "Jammed") == 0) return "Zataknjeno";
+  if (std::strcmp(text, "Line-in") == 0) return "Linijski vhod";
   return text;
 }
 
@@ -4598,6 +4851,18 @@ inline const char *espcontrol_i18n_sv(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Bekräfta";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Gäst-Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wi-Fi ändrades inte";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albumomslag";
+  if (std::strcmp(text, "Connect") == 0) return "Anslut";
+  if (std::strcmp(text, "Local Action") == 0) return "Lokal åtgärd";
+  if (std::strcmp(text, "Switch") == 0) return "Brytare";
+  if (std::strcmp(text, "Lighting") == 0) return "Belysning";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Låst";
+  if (std::strcmp(text, "Unlocked") == 0) return "Upplåst";
+  if (std::strcmp(text, "Locking") == 0) return "Låser";
+  if (std::strcmp(text, "Unlocking") == 0) return "Låser upp";
+  if (std::strcmp(text, "Jammed") == 0) return "Fastnat";
+  if (std::strcmp(text, "Line-in") == 0) return "Linjeingång";
   return text;
 }
 
@@ -4847,6 +5112,20 @@ inline const char *espcontrol_i18n_tr(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Onayla";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Misafir Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Wi-Fi durumu değişmedi";
+  if (std::strcmp(text, "Cover Art") == 0) return "Albüm kapağı";
+  if (std::strcmp(text, "Connect") == 0) return "Bağlan";
+  if (std::strcmp(text, "Local Action") == 0) return "Yerel eylem";
+  if (std::strcmp(text, "Switch") == 0) return "Anahtar";
+  if (std::strcmp(text, "Lighting") == 0) return "Aydınlatma";
+  if (std::strcmp(text, "Garage") == 0) return "Garaj";
+  if (std::strcmp(text, "Sensor") == 0) return "Sensör";
+  if (std::strcmp(text, "Camera") == 0) return "Kamera";
+  if (std::strcmp(text, "Locked") == 0) return "Kilitli";
+  if (std::strcmp(text, "Unlocked") == 0) return "Kilit açık";
+  if (std::strcmp(text, "Locking") == 0) return "Kilitleniyor";
+  if (std::strcmp(text, "Unlocking") == 0) return "Kilit açılıyor";
+  if (std::strcmp(text, "Jammed") == 0) return "Sıkıştı";
+  if (std::strcmp(text, "Line-in") == 0) return "Hat girişi";
   return text;
 }
 
@@ -5098,6 +5377,20 @@ inline const char *espcontrol_i18n_uk(const char *text) {
   if (std::strcmp(text, "Confirm") == 0) return "Підтвердити";
   if (std::strcmp(text, "Guest Wi-Fi") == 0) return "Гостьовий Wi-Fi";
   if (std::strcmp(text, "Wi-Fi did not change") == 0) return "Стан Wi-Fi не змінився";
+  if (std::strcmp(text, "Cover Art") == 0) return "Обкладинка";
+  if (std::strcmp(text, "Connect") == 0) return "Під’єднатися";
+  if (std::strcmp(text, "Local Action") == 0) return "Локальна дія";
+  if (std::strcmp(text, "Switch") == 0) return "Перемикач";
+  if (std::strcmp(text, "Lighting") == 0) return "Освітлення";
+  if (std::strcmp(text, "Garage") == 0) return "Гараж";
+  if (std::strcmp(text, "Sensor") == 0) return "Датчик";
+  if (std::strcmp(text, "Camera") == 0) return "Камера";
+  if (std::strcmp(text, "Locked") == 0) return "Заблоковано";
+  if (std::strcmp(text, "Unlocked") == 0) return "Розблоковано";
+  if (std::strcmp(text, "Locking") == 0) return "Блокується";
+  if (std::strcmp(text, "Unlocking") == 0) return "Розблоковується";
+  if (std::strcmp(text, "Jammed") == 0) return "Заклинило";
+  if (std::strcmp(text, "Line-in") == 0) return "Лінійний вхід";
   return text;
 }
 
@@ -5210,6 +5503,18 @@ inline const char *espcontrol_i18n_key_en(const char *key) {
   if (std::strcmp(key, "october") == 0) return "October";
   if (std::strcmp(key, "november") == 0) return "November";
   if (std::strcmp(key, "december") == 0) return "December";
+  if (std::strcmp(key, "month_day_january") == 0) return "January";
+  if (std::strcmp(key, "month_day_february") == 0) return "February";
+  if (std::strcmp(key, "month_day_march") == 0) return "March";
+  if (std::strcmp(key, "month_day_april") == 0) return "April";
+  if (std::strcmp(key, "month_day_may") == 0) return "May";
+  if (std::strcmp(key, "month_day_june") == 0) return "June";
+  if (std::strcmp(key, "month_day_july") == 0) return "July";
+  if (std::strcmp(key, "month_day_august") == 0) return "August";
+  if (std::strcmp(key, "month_day_september") == 0) return "September";
+  if (std::strcmp(key, "month_day_october") == 0) return "October";
+  if (std::strcmp(key, "month_day_november") == 0) return "November";
+  if (std::strcmp(key, "month_day_december") == 0) return "December";
   if (std::strcmp(key, "next") == 0) return "Next";
   if (std::strcmp(key, "night") == 0) return "Night";
   if (std::strcmp(key, "no") == 0) return "No";
@@ -5358,6 +5663,20 @@ inline const char *espcontrol_i18n_key_en(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirm";
   if (std::strcmp(key, "guest_wifi") == 0) return "Guest Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi did not change";
+  if (std::strcmp(key, "cover_art") == 0) return "Cover Art";
+  if (std::strcmp(key, "connect") == 0) return "Connect";
+  if (std::strcmp(key, "local_action") == 0) return "Local Action";
+  if (std::strcmp(key, "switch") == 0) return "Switch";
+  if (std::strcmp(key, "lighting") == 0) return "Lighting";
+  if (std::strcmp(key, "garage") == 0) return "Garage";
+  if (std::strcmp(key, "sensor") == 0) return "Sensor";
+  if (std::strcmp(key, "camera") == 0) return "Camera";
+  if (std::strcmp(key, "locked") == 0) return "Locked";
+  if (std::strcmp(key, "unlocked") == 0) return "Unlocked";
+  if (std::strcmp(key, "locking") == 0) return "Locking";
+  if (std::strcmp(key, "unlocking") == 0) return "Unlocking";
+  if (std::strcmp(key, "jammed") == 0) return "Jammed";
+  if (std::strcmp(key, "line_in") == 0) return "Line-in";
   return key;
 }
 
@@ -5461,6 +5780,18 @@ inline const char *espcontrol_i18n_key_cs(const char *key) {
   if (std::strcmp(key, "october") == 0) return "říjen";
   if (std::strcmp(key, "november") == 0) return "listopad";
   if (std::strcmp(key, "december") == 0) return "prosinec";
+  if (std::strcmp(key, "month_day_january") == 0) return "ledna";
+  if (std::strcmp(key, "month_day_february") == 0) return "února";
+  if (std::strcmp(key, "month_day_march") == 0) return "března";
+  if (std::strcmp(key, "month_day_april") == 0) return "dubna";
+  if (std::strcmp(key, "month_day_may") == 0) return "května";
+  if (std::strcmp(key, "month_day_june") == 0) return "června";
+  if (std::strcmp(key, "month_day_july") == 0) return "července";
+  if (std::strcmp(key, "month_day_august") == 0) return "srpna";
+  if (std::strcmp(key, "month_day_september") == 0) return "září";
+  if (std::strcmp(key, "month_day_october") == 0) return "října";
+  if (std::strcmp(key, "month_day_november") == 0) return "listopadu";
+  if (std::strcmp(key, "month_day_december") == 0) return "prosince";
   if (std::strcmp(key, "next") == 0) return "Další";
   if (std::strcmp(key, "no") == 0) return "Ne";
   if (std::strcmp(key, "none") == 0) return "Žádné";
@@ -5599,6 +5930,20 @@ inline const char *espcontrol_i18n_key_cs(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Potvrdit";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi pro hosty";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Stav Wi-Fi se nezměnil";
+  if (std::strcmp(key, "cover_art") == 0) return "Obal alba";
+  if (std::strcmp(key, "connect") == 0) return "Připojit";
+  if (std::strcmp(key, "local_action") == 0) return "Místní akce";
+  if (std::strcmp(key, "switch") == 0) return "Spínač";
+  if (std::strcmp(key, "lighting") == 0) return "Osvětlení";
+  if (std::strcmp(key, "garage") == 0) return "Garáž";
+  if (std::strcmp(key, "sensor") == 0) return "Senzor";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Zamčeno";
+  if (std::strcmp(key, "unlocked") == 0) return "Odemčeno";
+  if (std::strcmp(key, "locking") == 0) return "Zamyká se";
+  if (std::strcmp(key, "unlocking") == 0) return "Odemyká se";
+  if (std::strcmp(key, "jammed") == 0) return "Zaseknuto";
+  if (std::strcmp(key, "line_in") == 0) return "Linkový vstup";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -5702,6 +6047,18 @@ inline const char *espcontrol_i18n_key_da(const char *key) {
   if (std::strcmp(key, "october") == 0) return "oktober";
   if (std::strcmp(key, "november") == 0) return "november";
   if (std::strcmp(key, "december") == 0) return "december";
+  if (std::strcmp(key, "month_day_january") == 0) return "januar";
+  if (std::strcmp(key, "month_day_february") == 0) return "februar";
+  if (std::strcmp(key, "month_day_march") == 0) return "marts";
+  if (std::strcmp(key, "month_day_april") == 0) return "april";
+  if (std::strcmp(key, "month_day_may") == 0) return "maj";
+  if (std::strcmp(key, "month_day_june") == 0) return "juni";
+  if (std::strcmp(key, "month_day_july") == 0) return "juli";
+  if (std::strcmp(key, "month_day_august") == 0) return "august";
+  if (std::strcmp(key, "month_day_september") == 0) return "september";
+  if (std::strcmp(key, "month_day_october") == 0) return "oktober";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "december";
   if (std::strcmp(key, "next") == 0) return "Næste";
   if (std::strcmp(key, "no") == 0) return "Nej";
   if (std::strcmp(key, "none") == 0) return "Ingen";
@@ -5833,6 +6190,18 @@ inline const char *espcontrol_i18n_key_da(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Bekræft";
   if (std::strcmp(key, "guest_wifi") == 0) return "Gæste-Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi blev ikke ændret";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumcover";
+  if (std::strcmp(key, "connect") == 0) return "Opret forbindelse";
+  if (std::strcmp(key, "local_action") == 0) return "Lokal handling";
+  if (std::strcmp(key, "switch") == 0) return "Kontakt";
+  if (std::strcmp(key, "lighting") == 0) return "Belysning";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Låst";
+  if (std::strcmp(key, "unlocked") == 0) return "Låst op";
+  if (std::strcmp(key, "locking") == 0) return "Låser";
+  if (std::strcmp(key, "unlocking") == 0) return "Låser op";
+  if (std::strcmp(key, "jammed") == 0) return "Sidder fast";
+  if (std::strcmp(key, "line_in") == 0) return "Linjeindgang";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -5934,6 +6303,14 @@ inline const char *espcontrol_i18n_key_de(const char *key) {
   if (std::strcmp(key, "july") == 0) return "Juli";
   if (std::strcmp(key, "october") == 0) return "Oktober";
   if (std::strcmp(key, "december") == 0) return "Dezember";
+  if (std::strcmp(key, "month_day_january") == 0) return "Januar";
+  if (std::strcmp(key, "month_day_february") == 0) return "Februar";
+  if (std::strcmp(key, "month_day_march") == 0) return "März";
+  if (std::strcmp(key, "month_day_may") == 0) return "Mai";
+  if (std::strcmp(key, "month_day_june") == 0) return "Juni";
+  if (std::strcmp(key, "month_day_july") == 0) return "Juli";
+  if (std::strcmp(key, "month_day_october") == 0) return "Oktober";
+  if (std::strcmp(key, "month_day_december") == 0) return "Dezember";
   if (std::strcmp(key, "next") == 0) return "Weiter";
   if (std::strcmp(key, "no") == 0) return "Nein";
   if (std::strcmp(key, "none") == 0) return "Keine";
@@ -6065,6 +6442,18 @@ inline const char *espcontrol_i18n_key_de(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Bestätigen";
   if (std::strcmp(key, "guest_wifi") == 0) return "Gast-WLAN";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "WLAN wurde nicht geändert";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumcover";
+  if (std::strcmp(key, "connect") == 0) return "Verbinden";
+  if (std::strcmp(key, "local_action") == 0) return "Lokale Aktion";
+  if (std::strcmp(key, "switch") == 0) return "Schalter";
+  if (std::strcmp(key, "lighting") == 0) return "Beleuchtung";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Gesperrt";
+  if (std::strcmp(key, "unlocked") == 0) return "Entsperrt";
+  if (std::strcmp(key, "locking") == 0) return "Wird gesperrt";
+  if (std::strcmp(key, "unlocking") == 0) return "Wird entsperrt";
+  if (std::strcmp(key, "jammed") == 0) return "Verklemmt";
+  if (std::strcmp(key, "line_in") == 0) return "Line-In";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -6169,6 +6558,18 @@ inline const char *espcontrol_i18n_key_es(const char *key) {
   if (std::strcmp(key, "october") == 0) return "octubre";
   if (std::strcmp(key, "november") == 0) return "noviembre";
   if (std::strcmp(key, "december") == 0) return "diciembre";
+  if (std::strcmp(key, "month_day_january") == 0) return "de enero";
+  if (std::strcmp(key, "month_day_february") == 0) return "de febrero";
+  if (std::strcmp(key, "month_day_march") == 0) return "de marzo";
+  if (std::strcmp(key, "month_day_april") == 0) return "de abril";
+  if (std::strcmp(key, "month_day_may") == 0) return "de mayo";
+  if (std::strcmp(key, "month_day_june") == 0) return "de junio";
+  if (std::strcmp(key, "month_day_july") == 0) return "de julio";
+  if (std::strcmp(key, "month_day_august") == 0) return "de agosto";
+  if (std::strcmp(key, "month_day_september") == 0) return "de septiembre";
+  if (std::strcmp(key, "month_day_october") == 0) return "de octubre";
+  if (std::strcmp(key, "month_day_november") == 0) return "de noviembre";
+  if (std::strcmp(key, "month_day_december") == 0) return "de diciembre";
   if (std::strcmp(key, "next") == 0) return "Siguiente";
   if (std::strcmp(key, "none") == 0) return "Ninguno";
   if (std::strcmp(key, "no_options") == 0) return "Sin opciones";
@@ -6305,6 +6706,19 @@ inline const char *espcontrol_i18n_key_es(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirmar";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi de invitados";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "El Wi-Fi no ha cambiado";
+  if (std::strcmp(key, "cover_art") == 0) return "Carátula";
+  if (std::strcmp(key, "connect") == 0) return "Conectar";
+  if (std::strcmp(key, "local_action") == 0) return "Acción local";
+  if (std::strcmp(key, "switch") == 0) return "Interruptor";
+  if (std::strcmp(key, "lighting") == 0) return "Iluminación";
+  if (std::strcmp(key, "garage") == 0) return "Garaje";
+  if (std::strcmp(key, "camera") == 0) return "Cámara";
+  if (std::strcmp(key, "locked") == 0) return "Bloqueado";
+  if (std::strcmp(key, "unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(key, "locking") == 0) return "Bloqueando";
+  if (std::strcmp(key, "unlocking") == 0) return "Desbloqueando";
+  if (std::strcmp(key, "jammed") == 0) return "Atascado";
+  if (std::strcmp(key, "line_in") == 0) return "Entrada de línea";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -6413,6 +6827,18 @@ inline const char *espcontrol_i18n_key_fi(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Lokakuu";
   if (std::strcmp(key, "november") == 0) return "Marraskuu";
   if (std::strcmp(key, "december") == 0) return "Joulukuu";
+  if (std::strcmp(key, "month_day_january") == 0) return "tammikuuta";
+  if (std::strcmp(key, "month_day_february") == 0) return "helmikuuta";
+  if (std::strcmp(key, "month_day_march") == 0) return "maaliskuuta";
+  if (std::strcmp(key, "month_day_april") == 0) return "huhtikuuta";
+  if (std::strcmp(key, "month_day_may") == 0) return "toukokuuta";
+  if (std::strcmp(key, "month_day_june") == 0) return "kesäkuuta";
+  if (std::strcmp(key, "month_day_july") == 0) return "heinäkuuta";
+  if (std::strcmp(key, "month_day_august") == 0) return "elokuuta";
+  if (std::strcmp(key, "month_day_september") == 0) return "syyskuuta";
+  if (std::strcmp(key, "month_day_october") == 0) return "lokakuuta";
+  if (std::strcmp(key, "month_day_november") == 0) return "marraskuuta";
+  if (std::strcmp(key, "month_day_december") == 0) return "joulukuuta";
   if (std::strcmp(key, "next") == 0) return "Seuraava";
   if (std::strcmp(key, "no") == 0) return "Ei";
   if (std::strcmp(key, "nohold") == 0) return "Ei pitoa";
@@ -6555,6 +6981,20 @@ inline const char *espcontrol_i18n_key_fi(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Vahvista";
   if (std::strcmp(key, "guest_wifi") == 0) return "Vieras-Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi ei muuttunut";
+  if (std::strcmp(key, "cover_art") == 0) return "Kansikuva";
+  if (std::strcmp(key, "connect") == 0) return "Yhdistä";
+  if (std::strcmp(key, "local_action") == 0) return "Paikallinen toiminto";
+  if (std::strcmp(key, "switch") == 0) return "Kytkin";
+  if (std::strcmp(key, "lighting") == 0) return "Valaistus";
+  if (std::strcmp(key, "garage") == 0) return "Autotalli";
+  if (std::strcmp(key, "sensor") == 0) return "Anturi";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Lukittu";
+  if (std::strcmp(key, "unlocked") == 0) return "Avattu";
+  if (std::strcmp(key, "locking") == 0) return "Lukitaan";
+  if (std::strcmp(key, "unlocking") == 0) return "Avataan";
+  if (std::strcmp(key, "jammed") == 0) return "Jumissa";
+  if (std::strcmp(key, "line_in") == 0) return "Linjatulo";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -6656,6 +7096,18 @@ inline const char *espcontrol_i18n_key_fr(const char *key) {
   if (std::strcmp(key, "october") == 0) return "octobre";
   if (std::strcmp(key, "november") == 0) return "novembre";
   if (std::strcmp(key, "december") == 0) return "décembre";
+  if (std::strcmp(key, "month_day_january") == 0) return "janvier";
+  if (std::strcmp(key, "month_day_february") == 0) return "février";
+  if (std::strcmp(key, "month_day_march") == 0) return "mars";
+  if (std::strcmp(key, "month_day_april") == 0) return "avril";
+  if (std::strcmp(key, "month_day_may") == 0) return "mai";
+  if (std::strcmp(key, "month_day_june") == 0) return "juin";
+  if (std::strcmp(key, "month_day_july") == 0) return "juillet";
+  if (std::strcmp(key, "month_day_august") == 0) return "août";
+  if (std::strcmp(key, "month_day_september") == 0) return "septembre";
+  if (std::strcmp(key, "month_day_october") == 0) return "octobre";
+  if (std::strcmp(key, "month_day_november") == 0) return "novembre";
+  if (std::strcmp(key, "month_day_december") == 0) return "décembre";
   if (std::strcmp(key, "next") == 0) return "Suivant";
   if (std::strcmp(key, "no") == 0) return "Non";
   if (std::strcmp(key, "none") == 0) return "Aucun";
@@ -6788,6 +7240,19 @@ inline const char *espcontrol_i18n_key_fr(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirmer";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi invité";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Le Wi-Fi n’a pas changé";
+  if (std::strcmp(key, "cover_art") == 0) return "Pochette";
+  if (std::strcmp(key, "connect") == 0) return "Se connecter";
+  if (std::strcmp(key, "local_action") == 0) return "Action locale";
+  if (std::strcmp(key, "switch") == 0) return "Interrupteur";
+  if (std::strcmp(key, "lighting") == 0) return "Éclairage";
+  if (std::strcmp(key, "sensor") == 0) return "Capteur";
+  if (std::strcmp(key, "camera") == 0) return "Caméra";
+  if (std::strcmp(key, "locked") == 0) return "Verrouillé";
+  if (std::strcmp(key, "unlocked") == 0) return "Déverrouillé";
+  if (std::strcmp(key, "locking") == 0) return "Verrouillage";
+  if (std::strcmp(key, "unlocking") == 0) return "Déverrouillage";
+  if (std::strcmp(key, "jammed") == 0) return "Bloqué";
+  if (std::strcmp(key, "line_in") == 0) return "Entrée ligne";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -6900,6 +7365,18 @@ inline const char *espcontrol_i18n_key_he(const char *key) {
   if (std::strcmp(key, "october") == 0) return "אוקטובר";
   if (std::strcmp(key, "november") == 0) return "נובמבר";
   if (std::strcmp(key, "december") == 0) return "דצמבר";
+  if (std::strcmp(key, "month_day_january") == 0) return "בינואר";
+  if (std::strcmp(key, "month_day_february") == 0) return "בפברואר";
+  if (std::strcmp(key, "month_day_march") == 0) return "במרץ";
+  if (std::strcmp(key, "month_day_april") == 0) return "באפריל";
+  if (std::strcmp(key, "month_day_may") == 0) return "במאי";
+  if (std::strcmp(key, "month_day_june") == 0) return "ביוני";
+  if (std::strcmp(key, "month_day_july") == 0) return "ביולי";
+  if (std::strcmp(key, "month_day_august") == 0) return "באוגוסט";
+  if (std::strcmp(key, "month_day_september") == 0) return "בספטמבר";
+  if (std::strcmp(key, "month_day_october") == 0) return "באוקטובר";
+  if (std::strcmp(key, "month_day_november") == 0) return "בנובמבר";
+  if (std::strcmp(key, "month_day_december") == 0) return "בדצמבר";
   if (std::strcmp(key, "next") == 0) return "הבא";
   if (std::strcmp(key, "night") == 0) return "לילה";
   if (std::strcmp(key, "no") == 0) return "לא";
@@ -7046,6 +7523,20 @@ inline const char *espcontrol_i18n_key_he(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "לאשר";
   if (std::strcmp(key, "guest_wifi") == 0) return "רשת Wi-Fi לאורחים";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "מצב ה-Wi-Fi לא השתנה";
+  if (std::strcmp(key, "cover_art") == 0) return "עטיפת אלבום";
+  if (std::strcmp(key, "connect") == 0) return "התחברות";
+  if (std::strcmp(key, "local_action") == 0) return "פעולה מקומית";
+  if (std::strcmp(key, "switch") == 0) return "מתג";
+  if (std::strcmp(key, "lighting") == 0) return "תאורה";
+  if (std::strcmp(key, "garage") == 0) return "חניה";
+  if (std::strcmp(key, "sensor") == 0) return "חיישן";
+  if (std::strcmp(key, "camera") == 0) return "מצלמה";
+  if (std::strcmp(key, "locked") == 0) return "נעול";
+  if (std::strcmp(key, "unlocked") == 0) return "לא נעול";
+  if (std::strcmp(key, "locking") == 0) return "נועל";
+  if (std::strcmp(key, "unlocking") == 0) return "משחרר נעילה";
+  if (std::strcmp(key, "jammed") == 0) return "תקוע";
+  if (std::strcmp(key, "line_in") == 0) return "כניסת קו";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -7153,6 +7644,18 @@ inline const char *espcontrol_i18n_key_hu(const char *key) {
   if (std::strcmp(key, "august") == 0) return "Augusztus";
   if (std::strcmp(key, "september") == 0) return "Szeptember";
   if (std::strcmp(key, "october") == 0) return "Október";
+  if (std::strcmp(key, "month_day_january") == 0) return "január";
+  if (std::strcmp(key, "month_day_february") == 0) return "február";
+  if (std::strcmp(key, "month_day_march") == 0) return "március";
+  if (std::strcmp(key, "month_day_april") == 0) return "április";
+  if (std::strcmp(key, "month_day_may") == 0) return "május";
+  if (std::strcmp(key, "month_day_june") == 0) return "június";
+  if (std::strcmp(key, "month_day_july") == 0) return "július";
+  if (std::strcmp(key, "month_day_august") == 0) return "augusztus";
+  if (std::strcmp(key, "month_day_september") == 0) return "szeptember";
+  if (std::strcmp(key, "month_day_october") == 0) return "október";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "december";
   if (std::strcmp(key, "next") == 0) return "Következő";
   if (std::strcmp(key, "no") == 0) return "Nem";
   if (std::strcmp(key, "nohold") == 0) return "Nincs tartás";
@@ -7296,6 +7799,20 @@ inline const char *espcontrol_i18n_key_hu(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Megerősítés";
   if (std::strcmp(key, "guest_wifi") == 0) return "Vendég Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "A Wi-Fi állapota nem változott";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumborító";
+  if (std::strcmp(key, "connect") == 0) return "Csatlakozás";
+  if (std::strcmp(key, "local_action") == 0) return "Helyi művelet";
+  if (std::strcmp(key, "switch") == 0) return "Kapcsoló";
+  if (std::strcmp(key, "lighting") == 0) return "Világítás";
+  if (std::strcmp(key, "garage") == 0) return "Garázs";
+  if (std::strcmp(key, "sensor") == 0) return "Érzékelő";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Lezárva";
+  if (std::strcmp(key, "unlocked") == 0) return "Feloldva";
+  if (std::strcmp(key, "locking") == 0) return "Lezárás";
+  if (std::strcmp(key, "unlocking") == 0) return "Feloldás";
+  if (std::strcmp(key, "jammed") == 0) return "Beragadt";
+  if (std::strcmp(key, "line_in") == 0) return "Vonalbemenet";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -7400,6 +7917,18 @@ inline const char *espcontrol_i18n_key_it(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Ottobre";
   if (std::strcmp(key, "november") == 0) return "Novembre";
   if (std::strcmp(key, "december") == 0) return "Dicembre";
+  if (std::strcmp(key, "month_day_january") == 0) return "gennaio";
+  if (std::strcmp(key, "month_day_february") == 0) return "febbraio";
+  if (std::strcmp(key, "month_day_march") == 0) return "marzo";
+  if (std::strcmp(key, "month_day_april") == 0) return "aprile";
+  if (std::strcmp(key, "month_day_may") == 0) return "maggio";
+  if (std::strcmp(key, "month_day_june") == 0) return "giugno";
+  if (std::strcmp(key, "month_day_july") == 0) return "luglio";
+  if (std::strcmp(key, "month_day_august") == 0) return "agosto";
+  if (std::strcmp(key, "month_day_september") == 0) return "settembre";
+  if (std::strcmp(key, "month_day_october") == 0) return "ottobre";
+  if (std::strcmp(key, "month_day_november") == 0) return "novembre";
+  if (std::strcmp(key, "month_day_december") == 0) return "dicembre";
   if (std::strcmp(key, "next") == 0) return "Avanti";
   if (std::strcmp(key, "nohold") == 0) return "Auto";
   if (std::strcmp(key, "none") == 0) return "Nessuno";
@@ -7536,6 +8065,19 @@ inline const char *espcontrol_i18n_key_it(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confermare";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi ospiti";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Il Wi-Fi non è cambiato";
+  if (std::strcmp(key, "cover_art") == 0) return "Copertina";
+  if (std::strcmp(key, "connect") == 0) return "Connetti";
+  if (std::strcmp(key, "local_action") == 0) return "Azione locale";
+  if (std::strcmp(key, "switch") == 0) return "Interruttore";
+  if (std::strcmp(key, "lighting") == 0) return "Illuminazione";
+  if (std::strcmp(key, "sensor") == 0) return "Sensore";
+  if (std::strcmp(key, "camera") == 0) return "Telecamera";
+  if (std::strcmp(key, "locked") == 0) return "Bloccato";
+  if (std::strcmp(key, "unlocked") == 0) return "Sbloccato";
+  if (std::strcmp(key, "locking") == 0) return "Blocco";
+  if (std::strcmp(key, "unlocking") == 0) return "Sblocco";
+  if (std::strcmp(key, "jammed") == 0) return "Inceppato";
+  if (std::strcmp(key, "line_in") == 0) return "Ingresso linea";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -7639,6 +8181,18 @@ inline const char *espcontrol_i18n_key_nb(const char *key) {
   if (std::strcmp(key, "october") == 0) return "oktober";
   if (std::strcmp(key, "november") == 0) return "november";
   if (std::strcmp(key, "december") == 0) return "desember";
+  if (std::strcmp(key, "month_day_january") == 0) return "januar";
+  if (std::strcmp(key, "month_day_february") == 0) return "februar";
+  if (std::strcmp(key, "month_day_march") == 0) return "mars";
+  if (std::strcmp(key, "month_day_april") == 0) return "april";
+  if (std::strcmp(key, "month_day_may") == 0) return "mai";
+  if (std::strcmp(key, "month_day_june") == 0) return "juni";
+  if (std::strcmp(key, "month_day_july") == 0) return "juli";
+  if (std::strcmp(key, "month_day_august") == 0) return "august";
+  if (std::strcmp(key, "month_day_september") == 0) return "september";
+  if (std::strcmp(key, "month_day_october") == 0) return "oktober";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "desember";
   if (std::strcmp(key, "next") == 0) return "Neste";
   if (std::strcmp(key, "no") == 0) return "Nei";
   if (std::strcmp(key, "none") == 0) return "Ingen";
@@ -7774,6 +8328,19 @@ inline const char *espcontrol_i18n_key_nb(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Bekreft";
   if (std::strcmp(key, "guest_wifi") == 0) return "Gjeste-Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi ble ikke endret";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumcover";
+  if (std::strcmp(key, "connect") == 0) return "Koble til";
+  if (std::strcmp(key, "local_action") == 0) return "Lokal handling";
+  if (std::strcmp(key, "switch") == 0) return "Bryter";
+  if (std::strcmp(key, "lighting") == 0) return "Belysning";
+  if (std::strcmp(key, "garage") == 0) return "Garasje";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Låst";
+  if (std::strcmp(key, "unlocked") == 0) return "Låst opp";
+  if (std::strcmp(key, "locking") == 0) return "Låser";
+  if (std::strcmp(key, "unlocking") == 0) return "Låser opp";
+  if (std::strcmp(key, "jammed") == 0) return "Sitter fast";
+  if (std::strcmp(key, "line_in") == 0) return "Linjeinngang";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -7879,6 +8446,18 @@ inline const char *espcontrol_i18n_key_nl(const char *key) {
   if (std::strcmp(key, "october") == 0) return "oktober";
   if (std::strcmp(key, "november") == 0) return "november";
   if (std::strcmp(key, "december") == 0) return "december";
+  if (std::strcmp(key, "month_day_january") == 0) return "januari";
+  if (std::strcmp(key, "month_day_february") == 0) return "februari";
+  if (std::strcmp(key, "month_day_march") == 0) return "maart";
+  if (std::strcmp(key, "month_day_april") == 0) return "april";
+  if (std::strcmp(key, "month_day_may") == 0) return "mei";
+  if (std::strcmp(key, "month_day_june") == 0) return "juni";
+  if (std::strcmp(key, "month_day_july") == 0) return "juli";
+  if (std::strcmp(key, "month_day_august") == 0) return "augustus";
+  if (std::strcmp(key, "month_day_september") == 0) return "september";
+  if (std::strcmp(key, "month_day_october") == 0) return "oktober";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "december";
   if (std::strcmp(key, "next") == 0) return "Volgende";
   if (std::strcmp(key, "no") == 0) return "Nee";
   if (std::strcmp(key, "none") == 0) return "Geen";
@@ -8011,6 +8590,17 @@ inline const char *espcontrol_i18n_key_nl(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Bevestigen";
   if (std::strcmp(key, "guest_wifi") == 0) return "Gastwifi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wifi is niet gewijzigd";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumhoes";
+  if (std::strcmp(key, "connect") == 0) return "Verbinden";
+  if (std::strcmp(key, "local_action") == 0) return "Lokale actie";
+  if (std::strcmp(key, "switch") == 0) return "Schakelaar";
+  if (std::strcmp(key, "lighting") == 0) return "Verlichting";
+  if (std::strcmp(key, "locked") == 0) return "Vergrendeld";
+  if (std::strcmp(key, "unlocked") == 0) return "Ontgrendeld";
+  if (std::strcmp(key, "locking") == 0) return "Vergrendelt";
+  if (std::strcmp(key, "unlocking") == 0) return "Ontgrendelt";
+  if (std::strcmp(key, "jammed") == 0) return "Vastgelopen";
+  if (std::strcmp(key, "line_in") == 0) return "Lijningang";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -8025,10 +8615,13 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "always_on") == 0) return "Zawsze włączone";
   if (std::strcmp(key, "arm_away") == 0) return "Uzbrój poza domem";
   if (std::strcmp(key, "arm_home") == 0) return "Uzbrój w domu";
+  if (std::strcmp(key, "arm_night") == 0) return "Uzbrój na noc";
+  if (std::strcmp(key, "arm_vacation") == 0) return "Uzbrój na wakacje";
   if (std::strcmp(key, "armed_away") == 0) return "Uzbrojony poza domem";
   if (std::strcmp(key, "armed_custom") == 0) return "Uzbrojony niestandardowo";
   if (std::strcmp(key, "armed_home") == 0) return "Uzbrojony w domu";
-  if (std::strcmp(key, "armed_night") == 0) return "Uzbrojony noc";
+  if (std::strcmp(key, "armed_night") == 0) return "Uzbrojony na noc";
+  if (std::strcmp(key, "armed_vacation") == 0) return "Uzbrojony na wakacje";
   if (std::strcmp(key, "arming") == 0) return "Uzbrajanie";
   if (std::strcmp(key, "away") == 0) return "Poza domem";
   if (std::strcmp(key, "back") == 0) return "Wstecz";
@@ -8081,6 +8674,7 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "heavy_snow") == 0) return "Silne opady śniegu";
   if (std::strcmp(key, "high") == 0) return "Wysoki";
   if (std::strcmp(key, "high_target") == 0) return "Wysoki cel";
+  if (std::strcmp(key, "holduntil") == 0) return "Podtrzymaj do";
   if (std::strcmp(key, "home") == 0) return "Dom";
   if (std::strcmp(key, "hourly") == 0) return "Co godzinę";
   if (std::strcmp(key, "hurricane") == 0) return "Huragan";
@@ -8096,6 +8690,7 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "low_target") == 0) return "Niski cel";
   if (std::strcmp(key, "media_control") == 0) return "Sterowanie multimediami";
   if (std::strcmp(key, "playlist") == 0) return "Playlista";
+  if (std::strcmp(key, "medium") == 0) return "Średni";
   if (std::strcmp(key, "mode") == 0) return "Tryb";
   if (std::strcmp(key, "group") == 0) return "Grupa";
   if (std::strcmp(key, "monthly") == 0) return "Co miesiąc";
@@ -8114,8 +8709,22 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "october") == 0) return "październik";
   if (std::strcmp(key, "november") == 0) return "listopad";
   if (std::strcmp(key, "december") == 0) return "grudzień";
-  if (std::strcmp(key, "next") == 0) return "Dalej";
+  if (std::strcmp(key, "month_day_january") == 0) return "stycznia";
+  if (std::strcmp(key, "month_day_february") == 0) return "lutego";
+  if (std::strcmp(key, "month_day_march") == 0) return "marca";
+  if (std::strcmp(key, "month_day_april") == 0) return "kwietnia";
+  if (std::strcmp(key, "month_day_may") == 0) return "maja";
+  if (std::strcmp(key, "month_day_june") == 0) return "czerwca";
+  if (std::strcmp(key, "month_day_july") == 0) return "lipca";
+  if (std::strcmp(key, "month_day_august") == 0) return "sierpnia";
+  if (std::strcmp(key, "month_day_september") == 0) return "września";
+  if (std::strcmp(key, "month_day_october") == 0) return "października";
+  if (std::strcmp(key, "month_day_november") == 0) return "listopada";
+  if (std::strcmp(key, "month_day_december") == 0) return "grudnia";
+  if (std::strcmp(key, "next") == 0) return "Następny";
+  if (std::strcmp(key, "night") == 0) return "Noc";
   if (std::strcmp(key, "no") == 0) return "Nie";
+  if (std::strcmp(key, "nohold") == 0) return "Bez podtrzymania";
   if (std::strcmp(key, "none") == 0) return "Brak";
   if (std::strcmp(key, "no_options") == 0) return "Brak opcji";
   if (std::strcmp(key, "no_presets") == 0) return "Brak presetów";
@@ -8139,6 +8748,7 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "pause") == 0) return "Pauza";
   if (std::strcmp(key, "paused") == 0) return "Wstrzymane";
   if (std::strcmp(key, "pending") == 0) return "Oczekujące";
+  if (std::strcmp(key, "permanenthold") == 0) return "Podtrzymanie stałe";
   if (std::strcmp(key, "pin_was_not_accepted") == 0) return "PIN nie został zaakceptowany";
   if (std::strcmp(key, "play_pause") == 0) return "Odtwórz/Pauza";
   if (std::strcmp(key, "playing") == 0) return "Odtwarzanie";
@@ -8147,6 +8757,7 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "presence") == 0) return "Obecność";
   if (std::strcmp(key, "previous") == 0) return "Poprzedni";
   if (std::strcmp(key, "push") == 0) return "Naciśnij";
+  if (std::strcmp(key, "quiet") == 0) return "Cichy";
   if (std::strcmp(key, "rainy") == 0) return "Deszczowo";
   if (std::strcmp(key, "relay") == 0) return "Przekaźnik";
   if (std::strcmp(key, "returning") == 0) return "Powraca";
@@ -8159,16 +8770,18 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "snowy") == 0) return "Śnieżnie";
   if (std::strcmp(key, "snowy_and_rain") == 0) return "Śnieg i deszcz";
   if (std::strcmp(key, "spot_clean") == 0) return "Czyszczenie punktowe";
+  if (std::strcmp(key, "start_dock") == 0) return "Start / Dokuj";
   if (std::strcmp(key, "still") == 0) return "Stabilny";
   if (std::strcmp(key, "subpage") == 0) return "Podstrona";
   if (std::strcmp(key, "stop") == 0) return "Zatrzymaj";
   if (std::strcmp(key, "sunny") == 0) return "Słonecznie";
   if (std::strcmp(key, "sunny_alert") == 0) return "Ostrzeżenie słoneczne";
   if (std::strcmp(key, "sunset") == 0) return "Zachód słońca";
-  if (std::strcmp(key, "sunset_down") == 0) return "Zachód słońca dół";
-  if (std::strcmp(key, "sunset_up") == 0) return "Zachód słońca góra";
+  if (std::strcmp(key, "sunset_down") == 0) return "Zachód słońca";
+  if (std::strcmp(key, "sunset_up") == 0) return "Wschód słońca";
   if (std::strcmp(key, "swing") == 0) return "Ruch wahadłowy";
   if (std::strcmp(key, "target") == 0) return "Cel";
+  if (std::strcmp(key, "temporaryhold") == 0) return "Podtrzymanie tymczasowe";
   if (std::strcmp(key, "today") == 0) return "Dziś";
   if (std::strcmp(key, "too_many") == 0) return "Za dużo";
   if (std::strcmp(key, "toggle_this_device") == 0) return "Przełączyć to urządzenie?";
@@ -8181,12 +8794,15 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "unknown") == 0) return "Nieznane";
   if (std::strcmp(key, "unlock") == 0) return "Odblokuj";
   if (std::strcmp(key, "unsupported") == 0) return "Nieobsługiwane";
+  if (std::strcmp(key, "vacation") == 0) return "Wakacje";
+  if (std::strcmp(key, "vacationhold") == 0) return "Podtrzymanie wakacyjne";
   if (std::strcmp(key, "vacuum") == 0) return "Odkurzacz";
   if (std::strcmp(key, "version_unknown") == 0) return "Wersja nieznana";
   if (std::strcmp(key, "voice") == 0) return "Głos";
   if (std::strcmp(key, "volume") == 0) return "Głośność";
   if (std::strcmp(key, "waiting_for_home_assistant") == 0) return "Oczekiwanie na Home Assistant";
   if (std::strcmp(key, "home_assistant_connection_lost") == 0) return "Łączenie z \nHome Assistant";
+  if (std::strcmp(key, "check_the_status_of_your_home_assistant_server") == 0) return "Jeśli problem nie ustąpi, sprawdź działanie serwera";
   if (std::strcmp(key, "weather") == 0) return "Pogoda";
   if (std::strcmp(key, "weekly") == 0) return "Co tydzień";
   if (std::strcmp(key, "window") == 0) return "Okno";
@@ -8201,6 +8817,7 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "booting") == 0) return "Uruchamianie";
   if (std::strcmp(key, "connect_an_ethernet_cable_and_wait_for_a_network_address") == 0) return "Podłącz kabel Ethernet\ni poczekaj na adres sieciowy";
   if (std::strcmp(key, "connect_to_the_setup_hotspot_then_open_192_168_4_1") == 0) return "Połącz się z hotspotem konfiguracji\ni otwórz 192.168.4.1";
+  if (std::strcmp(key, "connect_to") == 0) return "Połącz się z";
   if (std::strcmp(key, "connect_to_wifi") == 0) return "Połącz z WiFi";
   if (std::strcmp(key, "scan_to_connect") == 0) return "Zeskanuj, aby się połączyć";
   if (std::strcmp(key, "network") == 0) return "Sieć";
@@ -8232,7 +8849,6 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "update_complete") == 0) return "Aktualizacja ukończona";
   if (std::strcmp(key, "update_failed") == 0) return "Aktualizacja nieudana";
   if (std::strcmp(key, "wifi_disconnected") == 0) return "WiFi rozłączone";
-  if (std::strcmp(key, "connect_to") == 0) return "Połącz się z";
   if (std::strcmp(key, "to_configure_your_network_settings") == 0) return "aby skonfigurować ustawienia sieci";
   if (std::strcmp(key, "wifi_setup") == 0) return "Konfiguracja WiFi";
   if (std::strcmp(key, "speaker_group") == 0) return "Grupa głośników";
@@ -8246,9 +8862,23 @@ inline const char *espcontrol_i18n_key_pl(const char *key) {
   if (std::strcmp(key, "daytime") == 0) return "Dzień";
   if (std::strcmp(key, "nighttime") == 0) return "Noc";
   if (std::strcmp(key, "timer") == 0) return "Minutnik";
-  if (std::strcmp(key, "timer_confirm") == 0) return "Potwierdzić";
+  if (std::strcmp(key, "timer_confirm") == 0) return "Potwierdź";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi dla gości";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Stan Wi-Fi nie zmienił się";
+  if (std::strcmp(key, "cover_art") == 0) return "Okładka";
+  if (std::strcmp(key, "connect") == 0) return "Połącz";
+  if (std::strcmp(key, "local_action") == 0) return "Akcja lokalna";
+  if (std::strcmp(key, "switch") == 0) return "Przełącznik";
+  if (std::strcmp(key, "lighting") == 0) return "Oświetlenie";
+  if (std::strcmp(key, "garage") == 0) return "Garaż";
+  if (std::strcmp(key, "sensor") == 0) return "Czujnik";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Zablokowany";
+  if (std::strcmp(key, "unlocked") == 0) return "Odblokowany";
+  if (std::strcmp(key, "locking") == 0) return "Blokowanie";
+  if (std::strcmp(key, "unlocking") == 0) return "Odblokowywanie";
+  if (std::strcmp(key, "jammed") == 0) return "Zacięty";
+  if (std::strcmp(key, "line_in") == 0) return "Wejście liniowe";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -8353,6 +8983,18 @@ inline const char *espcontrol_i18n_key_pt_br(const char *key) {
   if (std::strcmp(key, "october") == 0) return "outubro";
   if (std::strcmp(key, "november") == 0) return "novembro";
   if (std::strcmp(key, "december") == 0) return "dezembro";
+  if (std::strcmp(key, "month_day_january") == 0) return "de janeiro";
+  if (std::strcmp(key, "month_day_february") == 0) return "de fevereiro";
+  if (std::strcmp(key, "month_day_march") == 0) return "de março";
+  if (std::strcmp(key, "month_day_april") == 0) return "de abril";
+  if (std::strcmp(key, "month_day_may") == 0) return "de maio";
+  if (std::strcmp(key, "month_day_june") == 0) return "de junho";
+  if (std::strcmp(key, "month_day_july") == 0) return "de julho";
+  if (std::strcmp(key, "month_day_august") == 0) return "de agosto";
+  if (std::strcmp(key, "month_day_september") == 0) return "de setembro";
+  if (std::strcmp(key, "month_day_october") == 0) return "de outubro";
+  if (std::strcmp(key, "month_day_november") == 0) return "de novembro";
+  if (std::strcmp(key, "month_day_december") == 0) return "de dezembro";
   if (std::strcmp(key, "next") == 0) return "Próximo";
   if (std::strcmp(key, "no") == 0) return "Não";
   if (std::strcmp(key, "none") == 0) return "Nenhum";
@@ -8489,6 +9131,19 @@ inline const char *espcontrol_i18n_key_pt_br(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirmar";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi de convidados";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "O Wi-Fi não mudou";
+  if (std::strcmp(key, "cover_art") == 0) return "Capa do álbum";
+  if (std::strcmp(key, "connect") == 0) return "Conectar";
+  if (std::strcmp(key, "local_action") == 0) return "Ação local";
+  if (std::strcmp(key, "switch") == 0) return "Interruptor";
+  if (std::strcmp(key, "lighting") == 0) return "Iluminação";
+  if (std::strcmp(key, "garage") == 0) return "Garagem";
+  if (std::strcmp(key, "camera") == 0) return "Câmera";
+  if (std::strcmp(key, "locked") == 0) return "Bloqueado";
+  if (std::strcmp(key, "unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(key, "locking") == 0) return "Bloqueando";
+  if (std::strcmp(key, "unlocking") == 0) return "Desbloqueando";
+  if (std::strcmp(key, "jammed") == 0) return "Emperrado";
+  if (std::strcmp(key, "line_in") == 0) return "Entrada de linha";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -8594,6 +9249,18 @@ inline const char *espcontrol_i18n_key_pt(const char *key) {
   if (std::strcmp(key, "october") == 0) return "outubro";
   if (std::strcmp(key, "november") == 0) return "novembro";
   if (std::strcmp(key, "december") == 0) return "dezembro";
+  if (std::strcmp(key, "month_day_january") == 0) return "de janeiro";
+  if (std::strcmp(key, "month_day_february") == 0) return "de fevereiro";
+  if (std::strcmp(key, "month_day_march") == 0) return "de março";
+  if (std::strcmp(key, "month_day_april") == 0) return "de abril";
+  if (std::strcmp(key, "month_day_may") == 0) return "de maio";
+  if (std::strcmp(key, "month_day_june") == 0) return "de junho";
+  if (std::strcmp(key, "month_day_july") == 0) return "de julho";
+  if (std::strcmp(key, "month_day_august") == 0) return "de agosto";
+  if (std::strcmp(key, "month_day_september") == 0) return "de setembro";
+  if (std::strcmp(key, "month_day_october") == 0) return "de outubro";
+  if (std::strcmp(key, "month_day_november") == 0) return "de novembro";
+  if (std::strcmp(key, "month_day_december") == 0) return "de dezembro";
   if (std::strcmp(key, "next") == 0) return "Seguinte";
   if (std::strcmp(key, "no") == 0) return "Não";
   if (std::strcmp(key, "none") == 0) return "Nenhum";
@@ -8730,6 +9397,19 @@ inline const char *espcontrol_i18n_key_pt(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirmar";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi de convidados";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "O Wi-Fi não mudou";
+  if (std::strcmp(key, "cover_art") == 0) return "Capa do álbum";
+  if (std::strcmp(key, "connect") == 0) return "Ligar";
+  if (std::strcmp(key, "local_action") == 0) return "Ação local";
+  if (std::strcmp(key, "switch") == 0) return "Interruptor";
+  if (std::strcmp(key, "lighting") == 0) return "Iluminação";
+  if (std::strcmp(key, "garage") == 0) return "Garagem";
+  if (std::strcmp(key, "camera") == 0) return "Câmara";
+  if (std::strcmp(key, "locked") == 0) return "Bloqueado";
+  if (std::strcmp(key, "unlocked") == 0) return "Desbloqueado";
+  if (std::strcmp(key, "locking") == 0) return "A bloquear";
+  if (std::strcmp(key, "unlocking") == 0) return "A desbloquear";
+  if (std::strcmp(key, "jammed") == 0) return "Encravado";
+  if (std::strcmp(key, "line_in") == 0) return "Entrada de linha";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -8837,6 +9517,18 @@ inline const char *espcontrol_i18n_key_ro(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Octombrie";
   if (std::strcmp(key, "november") == 0) return "Noiembrie";
   if (std::strcmp(key, "december") == 0) return "Decembrie";
+  if (std::strcmp(key, "month_day_january") == 0) return "ianuarie";
+  if (std::strcmp(key, "month_day_february") == 0) return "februarie";
+  if (std::strcmp(key, "month_day_march") == 0) return "martie";
+  if (std::strcmp(key, "month_day_april") == 0) return "aprilie";
+  if (std::strcmp(key, "month_day_may") == 0) return "mai";
+  if (std::strcmp(key, "month_day_june") == 0) return "iunie";
+  if (std::strcmp(key, "month_day_july") == 0) return "iulie";
+  if (std::strcmp(key, "month_day_august") == 0) return "august";
+  if (std::strcmp(key, "month_day_september") == 0) return "septembrie";
+  if (std::strcmp(key, "month_day_october") == 0) return "octombrie";
+  if (std::strcmp(key, "month_day_november") == 0) return "noiembrie";
+  if (std::strcmp(key, "month_day_december") == 0) return "decembrie";
   if (std::strcmp(key, "next") == 0) return "Următor";
   if (std::strcmp(key, "no") == 0) return "Nu";
   if (std::strcmp(key, "nohold") == 0) return "Fără menținere";
@@ -8980,6 +9672,20 @@ inline const char *espcontrol_i18n_key_ro(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Confirmați";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi pentru oaspeți";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Starea Wi-Fi nu s-a schimbat";
+  if (std::strcmp(key, "cover_art") == 0) return "Copertă album";
+  if (std::strcmp(key, "connect") == 0) return "Conectează";
+  if (std::strcmp(key, "local_action") == 0) return "Acțiune locală";
+  if (std::strcmp(key, "switch") == 0) return "Comutator";
+  if (std::strcmp(key, "lighting") == 0) return "Iluminat";
+  if (std::strcmp(key, "garage") == 0) return "Garaj";
+  if (std::strcmp(key, "sensor") == 0) return "Senzor";
+  if (std::strcmp(key, "camera") == 0) return "Cameră";
+  if (std::strcmp(key, "locked") == 0) return "Blocat";
+  if (std::strcmp(key, "unlocked") == 0) return "Deblocat";
+  if (std::strcmp(key, "locking") == 0) return "Se blochează";
+  if (std::strcmp(key, "unlocking") == 0) return "Se deblochează";
+  if (std::strcmp(key, "jammed") == 0) return "Înțepenit";
+  if (std::strcmp(key, "line_in") == 0) return "Intrare linie";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -9091,6 +9797,18 @@ inline const char *espcontrol_i18n_key_ru(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Октябрь";
   if (std::strcmp(key, "november") == 0) return "Ноябрь";
   if (std::strcmp(key, "december") == 0) return "Декабрь";
+  if (std::strcmp(key, "month_day_january") == 0) return "января";
+  if (std::strcmp(key, "month_day_february") == 0) return "февраля";
+  if (std::strcmp(key, "month_day_march") == 0) return "марта";
+  if (std::strcmp(key, "month_day_april") == 0) return "апреля";
+  if (std::strcmp(key, "month_day_may") == 0) return "мая";
+  if (std::strcmp(key, "month_day_june") == 0) return "июня";
+  if (std::strcmp(key, "month_day_july") == 0) return "июля";
+  if (std::strcmp(key, "month_day_august") == 0) return "августа";
+  if (std::strcmp(key, "month_day_september") == 0) return "сентября";
+  if (std::strcmp(key, "month_day_october") == 0) return "октября";
+  if (std::strcmp(key, "month_day_november") == 0) return "ноября";
+  if (std::strcmp(key, "month_day_december") == 0) return "декабря";
   if (std::strcmp(key, "next") == 0) return "Далее";
   if (std::strcmp(key, "night") == 0) return "Ночь";
   if (std::strcmp(key, "no") == 0) return "Нет";
@@ -9237,6 +9955,20 @@ inline const char *espcontrol_i18n_key_ru(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Подтвердить";
   if (std::strcmp(key, "guest_wifi") == 0) return "Гостевой Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Состояние Wi-Fi не изменилось";
+  if (std::strcmp(key, "cover_art") == 0) return "Обложка";
+  if (std::strcmp(key, "connect") == 0) return "Подключиться";
+  if (std::strcmp(key, "local_action") == 0) return "Локальное действие";
+  if (std::strcmp(key, "switch") == 0) return "Выключатель";
+  if (std::strcmp(key, "lighting") == 0) return "Освещение";
+  if (std::strcmp(key, "garage") == 0) return "Гараж";
+  if (std::strcmp(key, "sensor") == 0) return "Датчик";
+  if (std::strcmp(key, "camera") == 0) return "Камера";
+  if (std::strcmp(key, "locked") == 0) return "Заблокировано";
+  if (std::strcmp(key, "unlocked") == 0) return "Разблокировано";
+  if (std::strcmp(key, "locking") == 0) return "Блокируется";
+  if (std::strcmp(key, "unlocking") == 0) return "Разблокируется";
+  if (std::strcmp(key, "jammed") == 0) return "Заклинило";
+  if (std::strcmp(key, "line_in") == 0) return "Линейный вход";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -9341,6 +10073,18 @@ inline const char *espcontrol_i18n_key_sk(const char *key) {
   if (std::strcmp(key, "october") == 0) return "október";
   if (std::strcmp(key, "november") == 0) return "november";
   if (std::strcmp(key, "december") == 0) return "december";
+  if (std::strcmp(key, "month_day_january") == 0) return "januára";
+  if (std::strcmp(key, "month_day_february") == 0) return "februára";
+  if (std::strcmp(key, "month_day_march") == 0) return "marca";
+  if (std::strcmp(key, "month_day_april") == 0) return "apríla";
+  if (std::strcmp(key, "month_day_may") == 0) return "mája";
+  if (std::strcmp(key, "month_day_june") == 0) return "júna";
+  if (std::strcmp(key, "month_day_july") == 0) return "júla";
+  if (std::strcmp(key, "month_day_august") == 0) return "augusta";
+  if (std::strcmp(key, "month_day_september") == 0) return "septembra";
+  if (std::strcmp(key, "month_day_october") == 0) return "októbra";
+  if (std::strcmp(key, "month_day_november") == 0) return "novembra";
+  if (std::strcmp(key, "month_day_december") == 0) return "decembra";
   if (std::strcmp(key, "next") == 0) return "Ďalej";
   if (std::strcmp(key, "no") == 0) return "Nie";
   if (std::strcmp(key, "none") == 0) return "Žiadne";
@@ -9479,6 +10223,20 @@ inline const char *espcontrol_i18n_key_sk(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Potvrdiť";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi pre hostí";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Stav Wi-Fi sa nezmenil";
+  if (std::strcmp(key, "cover_art") == 0) return "Obal albumu";
+  if (std::strcmp(key, "connect") == 0) return "Pripojiť";
+  if (std::strcmp(key, "local_action") == 0) return "Miestna akcia";
+  if (std::strcmp(key, "switch") == 0) return "Prepínač";
+  if (std::strcmp(key, "lighting") == 0) return "Osvetlenie";
+  if (std::strcmp(key, "garage") == 0) return "Garáž";
+  if (std::strcmp(key, "sensor") == 0) return "Senzor";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Zamknuté";
+  if (std::strcmp(key, "unlocked") == 0) return "Odomknuté";
+  if (std::strcmp(key, "locking") == 0) return "Zamyká sa";
+  if (std::strcmp(key, "unlocking") == 0) return "Odomyká sa";
+  if (std::strcmp(key, "jammed") == 0) return "Zaseknuté";
+  if (std::strcmp(key, "line_in") == 0) return "Linkový vstup";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -9583,6 +10341,18 @@ inline const char *espcontrol_i18n_key_sl(const char *key) {
   if (std::strcmp(key, "july") == 0) return "Julij";
   if (std::strcmp(key, "august") == 0) return "Avgust";
   if (std::strcmp(key, "october") == 0) return "Oktober";
+  if (std::strcmp(key, "month_day_january") == 0) return "januar";
+  if (std::strcmp(key, "month_day_february") == 0) return "februar";
+  if (std::strcmp(key, "month_day_march") == 0) return "marec";
+  if (std::strcmp(key, "month_day_april") == 0) return "april";
+  if (std::strcmp(key, "month_day_may") == 0) return "maj";
+  if (std::strcmp(key, "month_day_june") == 0) return "junij";
+  if (std::strcmp(key, "month_day_july") == 0) return "julij";
+  if (std::strcmp(key, "month_day_august") == 0) return "avgust";
+  if (std::strcmp(key, "month_day_september") == 0) return "september";
+  if (std::strcmp(key, "month_day_october") == 0) return "oktober";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "december";
   if (std::strcmp(key, "next") == 0) return "Naslednje";
   if (std::strcmp(key, "no") == 0) return "Ne";
   if (std::strcmp(key, "nohold") == 0) return "Brez zadržanja";
@@ -9725,6 +10495,20 @@ inline const char *espcontrol_i18n_key_sl(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Potrdi";
   if (std::strcmp(key, "guest_wifi") == 0) return "Wi-Fi za goste";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Stanje Wi-Fi se ni spremenilo";
+  if (std::strcmp(key, "cover_art") == 0) return "Naslovnica";
+  if (std::strcmp(key, "connect") == 0) return "Poveži";
+  if (std::strcmp(key, "local_action") == 0) return "Lokalno dejanje";
+  if (std::strcmp(key, "switch") == 0) return "Stikalo";
+  if (std::strcmp(key, "lighting") == 0) return "Razsvetljava";
+  if (std::strcmp(key, "garage") == 0) return "Garaža";
+  if (std::strcmp(key, "sensor") == 0) return "Senzor";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Zaklenjeno";
+  if (std::strcmp(key, "unlocked") == 0) return "Odklenjeno";
+  if (std::strcmp(key, "locking") == 0) return "Zaklepanje";
+  if (std::strcmp(key, "unlocking") == 0) return "Odklepanje";
+  if (std::strcmp(key, "jammed") == 0) return "Zataknjeno";
+  if (std::strcmp(key, "line_in") == 0) return "Linijski vhod";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -9829,6 +10613,18 @@ inline const char *espcontrol_i18n_key_sv(const char *key) {
   if (std::strcmp(key, "october") == 0) return "oktober";
   if (std::strcmp(key, "november") == 0) return "november";
   if (std::strcmp(key, "december") == 0) return "december";
+  if (std::strcmp(key, "month_day_january") == 0) return "januari";
+  if (std::strcmp(key, "month_day_february") == 0) return "februari";
+  if (std::strcmp(key, "month_day_march") == 0) return "mars";
+  if (std::strcmp(key, "month_day_april") == 0) return "april";
+  if (std::strcmp(key, "month_day_may") == 0) return "maj";
+  if (std::strcmp(key, "month_day_june") == 0) return "juni";
+  if (std::strcmp(key, "month_day_july") == 0) return "juli";
+  if (std::strcmp(key, "month_day_august") == 0) return "augusti";
+  if (std::strcmp(key, "month_day_september") == 0) return "september";
+  if (std::strcmp(key, "month_day_october") == 0) return "oktober";
+  if (std::strcmp(key, "month_day_november") == 0) return "november";
+  if (std::strcmp(key, "month_day_december") == 0) return "december";
   if (std::strcmp(key, "next") == 0) return "Nästa";
   if (std::strcmp(key, "no") == 0) return "Nej";
   if (std::strcmp(key, "none") == 0) return "Ingen";
@@ -9962,6 +10758,18 @@ inline const char *espcontrol_i18n_key_sv(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Bekräfta";
   if (std::strcmp(key, "guest_wifi") == 0) return "Gäst-Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi ändrades inte";
+  if (std::strcmp(key, "cover_art") == 0) return "Albumomslag";
+  if (std::strcmp(key, "connect") == 0) return "Anslut";
+  if (std::strcmp(key, "local_action") == 0) return "Lokal åtgärd";
+  if (std::strcmp(key, "switch") == 0) return "Brytare";
+  if (std::strcmp(key, "lighting") == 0) return "Belysning";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Låst";
+  if (std::strcmp(key, "unlocked") == 0) return "Upplåst";
+  if (std::strcmp(key, "locking") == 0) return "Låser";
+  if (std::strcmp(key, "unlocking") == 0) return "Låser upp";
+  if (std::strcmp(key, "jammed") == 0) return "Fastnat";
+  if (std::strcmp(key, "line_in") == 0) return "Linjeingång";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -10069,6 +10877,18 @@ inline const char *espcontrol_i18n_key_tr(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Ekim";
   if (std::strcmp(key, "november") == 0) return "Kasım";
   if (std::strcmp(key, "december") == 0) return "Aralık";
+  if (std::strcmp(key, "month_day_january") == 0) return "Ocak";
+  if (std::strcmp(key, "month_day_february") == 0) return "Şubat";
+  if (std::strcmp(key, "month_day_march") == 0) return "Mart";
+  if (std::strcmp(key, "month_day_april") == 0) return "Nisan";
+  if (std::strcmp(key, "month_day_may") == 0) return "Mayıs";
+  if (std::strcmp(key, "month_day_june") == 0) return "Haziran";
+  if (std::strcmp(key, "month_day_july") == 0) return "Temmuz";
+  if (std::strcmp(key, "month_day_august") == 0) return "Ağustos";
+  if (std::strcmp(key, "month_day_september") == 0) return "Eylül";
+  if (std::strcmp(key, "month_day_october") == 0) return "Ekim";
+  if (std::strcmp(key, "month_day_november") == 0) return "Kasım";
+  if (std::strcmp(key, "month_day_december") == 0) return "Aralık";
   if (std::strcmp(key, "next") == 0) return "Sonraki";
   if (std::strcmp(key, "no") == 0) return "Hayır";
   if (std::strcmp(key, "nohold") == 0) return "Tutma yok";
@@ -10212,6 +11032,20 @@ inline const char *espcontrol_i18n_key_tr(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Onayla";
   if (std::strcmp(key, "guest_wifi") == 0) return "Misafir Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Wi-Fi durumu değişmedi";
+  if (std::strcmp(key, "cover_art") == 0) return "Albüm kapağı";
+  if (std::strcmp(key, "connect") == 0) return "Bağlan";
+  if (std::strcmp(key, "local_action") == 0) return "Yerel eylem";
+  if (std::strcmp(key, "switch") == 0) return "Anahtar";
+  if (std::strcmp(key, "lighting") == 0) return "Aydınlatma";
+  if (std::strcmp(key, "garage") == 0) return "Garaj";
+  if (std::strcmp(key, "sensor") == 0) return "Sensör";
+  if (std::strcmp(key, "camera") == 0) return "Kamera";
+  if (std::strcmp(key, "locked") == 0) return "Kilitli";
+  if (std::strcmp(key, "unlocked") == 0) return "Kilit açık";
+  if (std::strcmp(key, "locking") == 0) return "Kilitleniyor";
+  if (std::strcmp(key, "unlocking") == 0) return "Kilit açılıyor";
+  if (std::strcmp(key, "jammed") == 0) return "Sıkıştı";
+  if (std::strcmp(key, "line_in") == 0) return "Hat girişi";
   return espcontrol_i18n_key_en(key);
 }
 
@@ -10321,6 +11155,18 @@ inline const char *espcontrol_i18n_key_uk(const char *key) {
   if (std::strcmp(key, "october") == 0) return "Жовтень";
   if (std::strcmp(key, "november") == 0) return "Листопад";
   if (std::strcmp(key, "december") == 0) return "Грудень";
+  if (std::strcmp(key, "month_day_january") == 0) return "січня";
+  if (std::strcmp(key, "month_day_february") == 0) return "лютого";
+  if (std::strcmp(key, "month_day_march") == 0) return "березня";
+  if (std::strcmp(key, "month_day_april") == 0) return "квітня";
+  if (std::strcmp(key, "month_day_may") == 0) return "травня";
+  if (std::strcmp(key, "month_day_june") == 0) return "червня";
+  if (std::strcmp(key, "month_day_july") == 0) return "липня";
+  if (std::strcmp(key, "month_day_august") == 0) return "серпня";
+  if (std::strcmp(key, "month_day_september") == 0) return "вересня";
+  if (std::strcmp(key, "month_day_october") == 0) return "жовтня";
+  if (std::strcmp(key, "month_day_november") == 0) return "листопада";
+  if (std::strcmp(key, "month_day_december") == 0) return "грудня";
   if (std::strcmp(key, "next") == 0) return "Далі";
   if (std::strcmp(key, "no") == 0) return "Ні";
   if (std::strcmp(key, "nohold") == 0) return "Без утримання";
@@ -10464,6 +11310,20 @@ inline const char *espcontrol_i18n_key_uk(const char *key) {
   if (std::strcmp(key, "timer_confirm") == 0) return "Підтвердити";
   if (std::strcmp(key, "guest_wifi") == 0) return "Гостьовий Wi-Fi";
   if (std::strcmp(key, "wifi_did_not_change") == 0) return "Стан Wi-Fi не змінився";
+  if (std::strcmp(key, "cover_art") == 0) return "Обкладинка";
+  if (std::strcmp(key, "connect") == 0) return "Під’єднатися";
+  if (std::strcmp(key, "local_action") == 0) return "Локальна дія";
+  if (std::strcmp(key, "switch") == 0) return "Перемикач";
+  if (std::strcmp(key, "lighting") == 0) return "Освітлення";
+  if (std::strcmp(key, "garage") == 0) return "Гараж";
+  if (std::strcmp(key, "sensor") == 0) return "Датчик";
+  if (std::strcmp(key, "camera") == 0) return "Камера";
+  if (std::strcmp(key, "locked") == 0) return "Заблоковано";
+  if (std::strcmp(key, "unlocked") == 0) return "Розблоковано";
+  if (std::strcmp(key, "locking") == 0) return "Блокується";
+  if (std::strcmp(key, "unlocking") == 0) return "Розблоковується";
+  if (std::strcmp(key, "jammed") == 0) return "Заклинило";
+  if (std::strcmp(key, "line_in") == 0) return "Лінійний вхід";
   return espcontrol_i18n_key_en(key);
 }
 
