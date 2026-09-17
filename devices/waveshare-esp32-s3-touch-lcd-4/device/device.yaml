@@ -119,6 +119,11 @@ esphome:
     # Keep C++ literals close to their functions on the S3 firmware image;
     # the modal code is large enough to otherwise trip Xtensa l32r range limits.
     - "-mtext-section-literals"
+    # This panel scans out at about 38 Hz, so the stock tap feedback (wait for
+    # Home Assistant, then a three-frame fade) looks like a blink. Flip toggle
+    # cards as soon as the action is sent and fade the colour over 200 ms.
+    - "-DESPCONTROL_OPTIMISTIC_TOGGLE=1"
+    - "-DESPCONTROL_TOGGLE_TRANSITION_MS=200"
   on_boot:
     # The ESPHome expander driver starts with every EXIO pin driven high, which
     # turns the buzzer on. Silence it before anything else can delay startup
@@ -171,6 +176,10 @@ esphome:
             }
     - priority: -100
       then:
+        # ESPHome idles 16 ms between loop passes, which stacks on top of the
+        # render time and leaves LVGL drawing fewer frames than the panel shows.
+        # A short idle lets the 16 ms LVGL refresh timer set the pace instead.
+        - lambda: 'App.set_loop_interval(5);'
         - lambda: 'id(screen_rotation_ready) = true;'
         - script.execute: apply_screen_rotation
         - script.execute: clock_bar_apply
