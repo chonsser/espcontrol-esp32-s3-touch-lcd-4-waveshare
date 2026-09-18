@@ -51,6 +51,12 @@ target_compile_options(control_modal_service_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(control_modal_service_test PRIVATE ../../components/espcontrol)
 add_test(NAME control_modal_service_test COMMAND control_modal_service_test)
 
+add_executable(switch_confirmation_test switch_confirmation_test.cpp)
+target_compile_features(switch_confirmation_test PRIVATE cxx_std_17)
+target_compile_options(switch_confirmation_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+target_include_directories(switch_confirmation_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME switch_confirmation_test COMMAND switch_confirmation_test)
+
 add_executable(guest_wifi_state_test guest_wifi_state_test.cpp)
 target_compile_features(guest_wifi_state_test PRIVATE cxx_std_17)
 target_compile_options(guest_wifi_state_test PRIVATE -Wall -Wextra -Werror)
