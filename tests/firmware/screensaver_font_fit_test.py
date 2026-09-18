@@ -220,8 +220,97 @@ def main():
         source, binary = Path(directory) / "test.cpp", Path(directory) / "test"
         source.write_text(cpp)
         subprocess.run([os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra", "-Werror", "-UNDEBUG",
-                        str(source), "-o", str(binary)], check=True)
+                        "-I", str(ROOT / "components/espcontrol"), str(source), "-o", str(binary)], check=True)
         subprocess.run([str(binary)], check=True)
+    # Execute the real card fit helper against the same compiled glyph tables.
+    # This covers the smaller card bounds and width compensation, not merely the
+    # fullscreen fit helper that originally motivated this raster harness.
+    card_cpp = '#define main existing_registry_test\n#include "date_time_text_size_test.cpp"\n#undef main\nint main() {\n'
+    for (font_id, size), variable in font_variables.items():
+        glyphs, height, _ = raster(font_id, size)
+        card_cpp += f'lv_font_t {variable}{{{height}, 0}};\n'
+        for ch, g in glyphs.items():
+            card_cpp += f'{variable}.glyphs[{ord(ch)}] = {{{g.advance}, {g.offset_x}, {g.width}}};\n'
+    card_cpp += 'const std::string shapes[] = {' + ','.join(cpp_string(s) for s in shapes) + '};\n'
+    card_cpp += r'''
+      lv_obj_t button, container, value, label;
+      container.parent = &button; value.parent = &container; label.parent = &button;
+      label.text = "2026-09-18";
+      value.text.reserve(64); label.text.reserve(64);
+      auto ink_fits = [](lv_obj_t &obj, const std::string &shape, int scale, int width) {
+        const auto measured = measure_clock_screensaver_shape(obj.font, shape);
+        assert(obj.pad_left == measured.pad && obj.pad_right == measured.pad);
+        assert((measured.width * scale + 255) / 256 <= width);
+        for (char digit = '0'; digit <= '9'; ++digit) {
+          long pen = obj.pad_left;
+          for (char ch : shape) {
+            if (ch >= '0' && ch <= '9') ch = digit;
+            const auto &g = obj.font->glyphs.at(ch);
+            assert(pen + g.ofs_x >= 0);
+            assert(pen + g.ofs_x + g.box_w <= measured.width);
+            pen += g.adv_w;
+          }
+        }
+      };
+    '''
+    for name, width, height, legacy in profiles:
+        for family in FAMILIES:
+            variables = [font_variables[(f"{family}_{size}", size)] for size in SIZES]
+            variables += [font_variables[(family, legacy)]]
+            card_cpp += '{ const ClockCardFontPool pool{{' + ','.join(f'&{v}' for v in variables) + '}};\n'
+            card_cpp += 'set_clock_card_font_pools(pool, pool, pool);\n'
+            card_cpp += r'''
+              ClockCardAppearance settings;
+              settings.enabled = true; settings.large = true;
+              settings.legacy_fonts[0] = pool.fonts[0];
+              settings.legacy_fonts[1] = pool.fonts[2];
+              settings.legacy_fonts[2] = pool.fonts[4];
+              for (int family : {0, 1, 2, 3}) for (int scale : {256, 384}) {
+                settings.family = family;
+                container.scale_x = label.scale_x = scale;
+            '''
+            dimensions = [(80, 48), (120, 100), (width // 2, height // 2), (height // 2, width // 2), (width, height // 2)]
+            card_cpp += 'for (auto dimensions : {' + ','.join(f'std::pair<int,int>{{{w},{h}}}' for w, h in dimensions) + '}) {\n'
+            card_cpp += r'''
+                button.width = dimensions.first; button.height = dimensions.second;
+                for (const auto &time_shape : shapes) for (const auto &date_shape : shapes) {
+                  settings.time_shape = time_shape; settings.date_shape = date_shape;
+                  fit_clock_card_text(&value, &label, settings);
+                  if (lv_obj_has_flag(&container, LV_OBJ_FLAG_HIDDEN)) {
+                    assert(lv_obj_has_flag(&label, LV_OBJ_FLAG_HIDDEN));
+                    continue;
+                  }
+                  ink_fits(value, time_shape, scale, button.width);
+                  if (!lv_obj_has_flag(&label, LV_OBJ_FLAG_HIDDEN)) {
+                    ink_fits(label, date_shape, scale, button.width);
+                    assert(value.font->line_height + 4 + label.font->line_height <= button.height);
+                  } else {
+                    assert(value.font->line_height <= button.height);
+                  }
+                  const auto *previous = value.font;
+                  const int writes = font_writes + pad_writes;
+                  value.text = "11:11:11";
+                  tracked_allocations = 0; track_allocations = true;
+                  fit_clock_card_text(&value, &label, settings);
+                  track_allocations = false;
+                  assert(tracked_allocations == 0);
+                  assert(value.font == previous && font_writes + pad_writes == writes);
+                  value.text = "88:88:88";
+                  fit_clock_card_text(&value, &label, settings);
+                  assert(value.font == previous && font_writes + pad_writes == writes);
+                }
+              }
+            } }
+            '''
+    card_cpp += '}\n'
+    with tempfile.TemporaryDirectory(prefix="clock-card-font-fit-") as directory:
+        source, binary = Path(directory) / "test.cpp", Path(directory) / "test"
+        source.write_text(card_cpp)
+        subprocess.run([os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra", "-Werror", "-UNDEBUG",
+                        "-I", str(ROOT / "components/espcontrol"), "-I", str(ROOT / "tests/firmware"),
+                        "-I", str(ROOT / "tests/firmware/stubs"), str(source), "-o", str(binary)], check=True)
+        subprocess.run([str(binary)], check=True)
+    print("Clock-card raster fitting passed: all font tables, narrow/rotated cards, compensation, stable sizes, no repeated writes/allocations")
     assert profiles
     if legacy_clipping:
         print(f"Existing Thin clipping ({len(legacy_clipping)} cases, legacy size unchanged):")

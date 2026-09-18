@@ -1109,6 +1109,46 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         ],
         "defaultValue": "",
         "omitDefault": true
+      },
+      {
+        "name": "clock_font",
+        "label": "Clock font",
+        "kind": "choice",
+        "values": [
+          "",
+          "thin",
+          "bold",
+          "mono"
+        ],
+        "defaultValue": "",
+        "omitDefault": true
+      },
+      {
+        "name": "time_format",
+        "label": "Time format",
+        "kind": "text",
+        "defaultValue": "",
+        "omitDefault": true
+      },
+      {
+        "name": "date_format",
+        "label": "Date format",
+        "kind": "text",
+        "defaultValue": "",
+        "omitDefault": true
+      },
+      {
+        "name": "date_size",
+        "label": "Date size",
+        "kind": "choice",
+        "values": [
+          "",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultValue": "",
+        "omitDefault": true
       }
     ],
     "normalization": {
@@ -1148,7 +1188,11 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
       "unknownOptions": "drop",
       "canonicalOptionOrder": [
         "large_numbers",
-        "text_size"
+        "text_size",
+        "clock_font",
+        "time_format",
+        "date_format",
+        "date_size"
       ],
       "optionHook": "normalize_date_time_options"
     },
@@ -4754,6 +4798,7 @@ export const CARD_CONTRACT_OPTION_NAMES: Readonly<Record<string, string>> = {
   "active_color": "active_color",
   "alarm_card_type": "alarm_card_type",
   "climate_tabs": "climate_tabs",
+  "clock_font": "clock_font",
   "confirm_message": "confirm_message",
   "confirm_no": "confirm_no",
   "confirm_off": "confirm_off",
@@ -4766,6 +4811,8 @@ export const CARD_CONTRACT_OPTION_NAMES: Readonly<Record<string, string>> = {
   "cover_mode": "cover_mode",
   "cover_position": "cover_position",
   "cover_tabs": "cover_tabs",
+  "date_format": "date_format",
+  "date_size": "date_size",
   "date_time_mode": "date_time_mode",
   "fan_light_entity": "fan_light_entity",
   "fan_tabs": "fan_tabs",
@@ -4811,6 +4858,7 @@ export const CARD_CONTRACT_OPTION_NAMES: Readonly<Record<string, string>> = {
   "subpage_kind": "subpage_kind",
   "temperature_step": "temperature_step",
   "text_size": "text_size",
+  "time_format": "time_format",
   "time_unit": "time_unit",
   "vacuum_mode": "vacuum_mode",
   "volume_max": "volume_max",

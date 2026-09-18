@@ -1159,6 +1159,8 @@ def main() -> int:
         shutil.copy2(LAYOUT_HEADER, tmp_path / "button_grid_layout.h")
         shutil.copy2(LIMITS_HEADER, tmp_path / "button_grid_limits.h")
         shutil.copy2(STRING_HEADER, tmp_path / "button_grid_string.h")
+        for header in ("clock_numeric_format.h", "clock_font_measure.h"):
+            shutil.copy2(ROOT / "components" / "espcontrol" / header, tmp_path / header)
         shutil.copy2(DISPLAY_TEXT_HEADER, tmp_path / "display_text.h")
         lvgl_stub = tmp_path / "esphome" / "components" / "lvgl" / "lvgl_esphome.h"
         lvgl_stub.parent.mkdir(parents=True, exist_ok=True)

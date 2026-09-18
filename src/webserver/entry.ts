@@ -421,6 +421,7 @@ function composeApplicationContext(): ApplicationContext {
     state: AppInstance.state,
     now: core.now,
     renderButtonSettings: () => buttonSettings.render(),
+    renderPreview: () => preview.render(),
     effectiveTimezoneOption: (value) => environment.effectiveTimezoneOptionForWeb(value),
     timezoneId: (value) => statusPreview.getTzId(value),
     timezoneOptionsWithFallback: (options, selected) => environment.timezoneOptionsWithFallback(options, selected),

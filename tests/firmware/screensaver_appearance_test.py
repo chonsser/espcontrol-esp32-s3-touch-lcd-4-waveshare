@@ -311,7 +311,7 @@ def run_cases(cpp_source, names):
         cpp, binary = Path(directory) / "test.cpp", Path(directory) / "test"
         cpp.write_text(cpp_source)
         subprocess.run([sys.argv[1] if len(sys.argv) > 1 else "c++", "-std=c++17",
-                        "-Wall", "-Wextra", "-Werror", "-UNDEBUG", str(cpp), "-o", str(binary)],
+                        "-Wall", "-Wextra", "-Werror", "-UNDEBUG", "-I", str(HEADERS), str(cpp), "-o", str(binary)],
                        check=True)
         failures = []
         for name in names:

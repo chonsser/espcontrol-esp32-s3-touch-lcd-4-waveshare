@@ -56,14 +56,16 @@ export function configOptionValue(options: unknown, name: string): string {
   return "";
 }
 
-export function setConfigOptionValue(options: unknown, name: string, value: unknown): string {
+export function setConfigOptionValue(options: unknown, name: string, value: unknown, preserveWhitespace = false): string {
   const prefix = name + "=";
   const out: string[] = [];
   for (const part of String(options || "").split(",")) {
     if (!part || part.indexOf(prefix) === 0) continue;
     if (out.indexOf(part) < 0) out.push(part);
   }
-  const text = String(value || "").trim();
+  // Bounded clock formats validate their raw ASCII input and preserve literal spaces.
+  const raw = String(value || "");
+  const text = preserveWhitespace ? raw : raw.trim();
   if (text) out.push(prefix + encodeConfigField(text));
   return out.join(",");
 }

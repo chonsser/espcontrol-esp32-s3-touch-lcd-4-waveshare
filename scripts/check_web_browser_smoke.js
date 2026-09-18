@@ -6310,6 +6310,7 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     "--test",
     path.join(ROOT, "tests/web/date_time_text_size_browser.test.js"),
     path.join(ROOT, "tests/web/screensaver_clock_format_browser.test.js"),
+    path.join(ROOT, "tests/web/clock_card_appearance_browser.test.js"),
   ], { cwd: ROOT, stdio: "inherit" });
   const browser = await chromium.launch();
   const acceptanceOnly = process.env.ESPCONTROL_BROWSER_ACCEPTANCE_ONLY === "1";

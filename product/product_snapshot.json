@@ -3378,6 +3378,46 @@
             ],
             "defaultValue": "",
             "omitDefault": true
+          },
+          {
+            "name": "clock_font",
+            "label": "Clock font",
+            "kind": "choice",
+            "values": [
+              "",
+              "thin",
+              "bold",
+              "mono"
+            ],
+            "defaultValue": "",
+            "omitDefault": true
+          },
+          {
+            "name": "time_format",
+            "label": "Time format",
+            "kind": "text",
+            "defaultValue": "",
+            "omitDefault": true
+          },
+          {
+            "name": "date_format",
+            "label": "Date format",
+            "kind": "text",
+            "defaultValue": "",
+            "omitDefault": true
+          },
+          {
+            "name": "date_size",
+            "label": "Date size",
+            "kind": "choice",
+            "values": [
+              "",
+              "small",
+              "medium",
+              "large"
+            ],
+            "defaultValue": "",
+            "omitDefault": true
           }
         ],
         "normalization": {
@@ -3417,7 +3457,11 @@
           "unknownOptions": "drop",
           "canonicalOptionOrder": [
             "large_numbers",
-            "text_size"
+            "text_size",
+            "clock_font",
+            "time_format",
+            "date_format",
+            "date_size"
           ],
           "optionHook": "normalize_date_time_options"
         },

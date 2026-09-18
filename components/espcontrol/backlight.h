@@ -352,88 +352,7 @@ inline void refresh_screensaver_fullscreen(lv_obj_t *clock_overlay,
   screensaver_fill_screen(dim_guard);
 }
 
-// Numeric-only, locale-independent format language. Empty is valid and neutral:
-// the time caller chooses the legacy formatter, the date caller hides its label.
-struct ClockScreensaverFormat {
-  bool valid = false;
-  bool seconds = false;
-  std::string shape;  // Expanded digits replaced by '0' for stable font fitting.
-};
-
-inline ClockScreensaverFormat parse_clock_screensaver_format(const std::string &format) {
-  ClockScreensaverFormat result;
-  if (format.size() > 32) return result;
-  bool digit = false;
-  for (size_t i = 0; i < format.size(); ++i) {
-    const char ch = format[i];
-    if (ch == '%') {
-      if (++i == format.size()) return {};
-      const char token = format[i];
-      switch (token) {
-        case 'H': case 'I': case 'M': case 'S': case 'd': case 'm': case 'y':
-          result.shape += "00";
-          break;
-        case 'Y': result.shape += "0000"; break;
-        default: return {};
-      }
-      digit = true;
-      result.seconds |= token == 'S';
-    } else if (ch >= '0' && ch <= '9') {
-      result.shape += '0';
-      digit = true;
-    } else if (ch == ' ' || ch == ':' || ch == '.' || ch == '/' || ch == '-') {
-      result.shape += ch;
-    } else {
-      return {};
-    }
-    if (result.shape.size() > 32) return {};
-  }
-  result.valid = format.empty() || digit;
-  if (!result.valid) return {};
-  return result;
-}
-
-struct ClockScreensaverTime {
-  int hour, minute, second, day, month, year;
-};
-
-inline bool format_clock_screensaver_numeric(const std::string &format,
-                                             const ClockScreensaverTime &time,
-                                             std::string &out) {
-  out.clear();
-  if (!parse_clock_screensaver_format(format).valid) return false;
-  for (size_t i = 0; i < format.size(); ++i) {
-    if (format[i] != '%') {
-      out += format[i];
-      continue;
-    }
-    const char token = format[++i];
-    int value = 0;
-    switch (token) {
-      case 'H': value = time.hour; break;
-      case 'I': value = time.hour % 12; if (value == 0) value = 12; break;
-      case 'M': value = time.minute; break;
-      case 'S': value = time.second; break;
-      case 'd': value = time.day; break;
-      case 'm': value = time.month; break;
-      case 'Y': value = time.year; break;
-      case 'y': value = time.year % 100; break;
-    }
-    const int digits = token == 'Y' ? 4 : 2;
-    if (value < 0 || value > (digits == 4 ? 9999 : 99)) { out.clear(); return false; }
-    char number[5];
-    snprintf(number, sizeof(number), digits == 4 ? "%04d" : "%02d", value);
-    out += number;
-  }
-  return true;
-}
-
-inline bool clock_screensaver_needs_seconds(const std::string &time_format,
-                                            const std::string &date_format) {
-  const auto time = parse_clock_screensaver_format(time_format);
-  const auto date = parse_clock_screensaver_format(date_format);
-  return (time.valid && time.seconds) || (date.valid && date.seconds);
-}
+#include "clock_numeric_format.h"
 
 inline uint32_t parse_clock_screensaver_text_color(const std::string &hex) {
   if (hex.size() != 6) return 0xFFFFFF;
@@ -526,42 +445,7 @@ struct ClockScreensaverSettings {
   std::string time_format, date_format, time_size, date_size, color;
 };
 
-struct ClockScreensaverMeasure {
-  lv_coord_t width = 0, height = 0, pad = 0;
-};
-
-// Measure the compiled LVGL advances, reserving the widest digit in every numeric
-// slot. Symmetric padding also protects raster overhang (notably Bold's slash).
-// Neither the chosen size nor the label box depends on the current seconds.
-inline ClockScreensaverMeasure measure_clock_screensaver_shape(
-    const lv_font_t *font, const std::string &shape) {
-  ClockScreensaverMeasure result;
-  if (shape.empty()) return result;
-  lv_coord_t digit_width = 0, digit_pad = 0;
-  auto metrics = [&](char ch, lv_coord_t &width, lv_coord_t &pad) {
-    lv_font_glyph_dsc_t glyph{};
-    if (lv_font_get_glyph_dsc(font, &glyph, static_cast<uint32_t>(ch), 0)) {
-      width = glyph.adv_w;
-      pad = std::max<lv_coord_t>(0, std::max<lv_coord_t>(-glyph.ofs_x,
-                                                       glyph.ofs_x + glyph.box_w - glyph.adv_w));
-    }
-  };
-  for (char ch = '0'; ch <= '9'; ++ch) {
-    lv_coord_t width = 0, pad = 0;
-    metrics(ch, width, pad);
-    digit_width = std::max(digit_width, width);
-    digit_pad = std::max(digit_pad, pad);
-  }
-  for (char ch : shape) {
-    lv_coord_t width = digit_width, pad = digit_pad;
-    if (ch < '0' || ch > '9') metrics(ch, width, pad);
-    result.width += width;
-    result.pad = std::max(result.pad, pad);
-  }
-  result.width += 2 * result.pad;
-  result.height = font->line_height;
-  return result;
-}
+#include "clock_font_measure.h"
 
 struct ClockScreensaverLayout {
   const lv_font_t *time_font = nullptr, *date_font = nullptr;

@@ -8,6 +8,24 @@
 # drift it for burn-in prevention.
 # =============================================================================
 
+# Share the already-compiled numeric families with clock cards before grid boot.
+# Absent card family options still use the device's original sensor fonts.
+esphome:
+  on_boot:
+    priority: 500
+    then:
+      - lambda: |-
+          set_clock_card_font_pools(
+            {{id(font_number_clock_24)->get_lv_font(), id(font_number_clock_40)->get_lv_font(),
+              id(font_number_clock_64)->get_lv_font(), id(font_number_clock_96)->get_lv_font(),
+              id(font_number_clock_128)->get_lv_font(), id(font_number_clock)->get_lv_font()}},
+            {{id(font_number_clock_bold_24)->get_lv_font(), id(font_number_clock_bold_40)->get_lv_font(),
+              id(font_number_clock_bold_64)->get_lv_font(), id(font_number_clock_bold_96)->get_lv_font(),
+              id(font_number_clock_bold_128)->get_lv_font(), id(font_number_clock_bold)->get_lv_font()}},
+            {{id(font_number_clock_mono_24)->get_lv_font(), id(font_number_clock_mono_40)->get_lv_font(),
+              id(font_number_clock_mono_64)->get_lv_font(), id(font_number_clock_mono_96)->get_lv_font(),
+              id(font_number_clock_mono_128)->get_lv_font(), id(font_number_clock_mono)->get_lv_font()}});
+
 font:
   - file: &clock_thin_source "gfonts://Roboto@Thin"
     id: font_number_clock

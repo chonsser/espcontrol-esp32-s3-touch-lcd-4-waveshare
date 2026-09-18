@@ -430,9 +430,11 @@ add_test(NAME saved_config_parser_test COMMAND saved_config_parser_test)
 
 add_executable(date_time_text_size_test date_time_text_size_test.cpp)
 target_compile_features(date_time_text_size_test PRIVATE cxx_std_17)
-target_compile_options(date_time_text_size_test PRIVATE -Wall -Wextra -Werror)
+target_compile_options(date_time_text_size_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_include_directories(date_time_text_size_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME date_time_text_size_test COMMAND date_time_text_size_test)
+add_test(NAME clock_card_wiring_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/clock_card_wiring_test.py ${CMAKE_CXX_COMPILER})
 
 set(CLIMATE_UPDATE_TEST_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/climate_update_test.cpp)
 add_custom_command(
