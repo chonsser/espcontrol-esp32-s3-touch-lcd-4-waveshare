@@ -27,7 +27,7 @@ inline void fit_date_time_card_text(lv_obj_t *value, lv_obj_t *label,
     const lv_font_t *font = size.fonts[index];
     if (!font) continue;
     lv_point_t measured;
-    lv_txt_get_size(&measured, text, font,
+    lv_text_get_size(&measured, text, font,
       lv_obj_get_style_text_letter_space(value, LV_PART_MAIN),
       lv_obj_get_style_text_line_space(value, LV_PART_MAIN),
       LV_COORD_MAX, LV_TEXT_FLAG_NONE);

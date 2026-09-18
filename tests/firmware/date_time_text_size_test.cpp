@@ -50,7 +50,7 @@ inline void lv_obj_add_flag(lv_obj_t *o, int f) { o->flags |= f; }
 inline void lv_obj_clear_flag(lv_obj_t *o, int f) { o->flags &= ~f; }
 inline bool lv_obj_has_flag(lv_obj_t *o, int f) { return (o->flags & f) != 0; }
 inline void lv_obj_align(lv_obj_t *, int, int, int) {}
-inline void lv_txt_get_size(lv_point_t *out, const char *s, const lv_font_t *f, int, int, int, int) {
+inline void lv_text_get_size(lv_point_t *out, const char *s, const lv_font_t *f, int, int, int, int) {
   out->x = static_cast<int>(std::strlen(s)) * f->glyph_width;
   out->y = f->line_height;
 }
