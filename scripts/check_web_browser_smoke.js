@@ -6218,8 +6218,8 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     await page.waitForFunction(() =>
       document.querySelector('.sp-main [data-slot="2"] .sp-btn-label')?.textContent === "Energy");
   }
-  async function waitForPausedPost(label) {
-    const deadline = Date.now() + 10000;
+  async function waitForPausedPost(label, timeout = 10000) {
+    const deadline = Date.now() + timeout;
     while (!pausedPost && Date.now() < deadline)
       await new Promise(resolve => setTimeout(resolve, 25));
     assert(pausedPost, `${label}: expected device POST did not arrive`);
@@ -6288,7 +6288,9 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     const beforeRestore = navigations;
     const beforePosts = posts.length;
     await uploadPolishBackup(backup, "english-backup-from-polish");
-    await waitForPausedPost("paused backup setting POST");
+    // The 15-slot profile queues 135 button/subpage writes before settings;
+    // the real transport's 75ms pacing alone exceeds the card-save 10s budget.
+    await waitForPausedPost("paused backup setting POST", 30000);
     await page.waitForTimeout(900);
     assert.strictEqual(navigations, beforeRestore, "backup locale echo cannot reload halfway through restore");
     pauseBackupSetting = false;
