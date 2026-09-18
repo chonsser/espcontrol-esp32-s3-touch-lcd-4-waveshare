@@ -142,6 +142,17 @@ export function createScreensaverClockFormatFeature(
             ];
             let custom = false;
             let dirty = false;
+            let draftRevision = 0;
+            let pendingRevision: number | undefined;
+            function saveDraft(value: string) {
+                const revision = draftRevision;
+                pendingRevision = revision;
+                void set(key, value).catch(() => false).finally(() => {
+                    if (pendingRevision === revision) pendingRevision = undefined;
+                    if (draftRevision === revision) dirty = false;
+                    syncUi();
+                });
+            }
             const input = fields.textInput(id, state[CLOCK_SETTINGS[key].state], isTime ? "%H:%M:%S" : "%d.%m.%Y") as HTMLInputElement;
             input.maxLength = 32;
             input.setAttribute("aria-label", isTime ? i18n("Custom Time Format") : i18n("Custom Date Format"));
@@ -157,16 +168,19 @@ export function createScreensaverClockFormatFeature(
             customFields.appendChild(help);
             customFields.appendChild(error);
             const preset = fields.selectField(label, id + "-preset", [...presets, { value: "__custom", label: i18n("Custom") }], "", function (this: HTMLSelectElement) {
+                draftRevision++;
                 custom = this.value === "__custom";
                 customFields.hidden = !custom;
                 if (custom) { input.focus(); return; }
                 dirty = false;
                 input.setCustomValidity("");
+                input.setAttribute("aria-invalid", "false");
                 error.hidden = true;
-                void set(key, this.value);
+                saveDraft(this.value);
             });
             preset.field.appendChild(customFields);
             input.addEventListener("input", () => {
+                draftRevision++;
                 dirty = true;
                 const valid = isValidScreensaverClockFormat(input.value) && input.value.length <= capabilities[key].maxLength;
                 input.setCustomValidity(valid ? "" : validationMessage);
@@ -175,12 +189,12 @@ export function createScreensaverClockFormatFeature(
                 error.hidden = valid;
             });
             input.addEventListener("blur", () => {
-                if (!dirty || !input.validity.valid) return;
-                void set(key, input.value).finally(() => { dirty = false; syncUi(); });
+                if (!dirty || !input.validity.valid || pendingRevision === draftRevision) return;
+                saveDraft(input.value);
             });
             input.addEventListener("keydown", event => { if (event.key === "Enter") input.blur(); });
             els.clockAppearanceControls[key] = { field: preset.field, sync(value: string) {
-                if (dirty) return;
+                if (dirty || pendingRevision !== undefined) return;
                 input.value = value;
                 const known = presets.some(preset => preset.value === value);
                 preset.select.value = custom || !known ? "__custom" : value;
