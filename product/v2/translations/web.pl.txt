@@ -148,6 +148,11 @@ stop=Zatrzymaj
 set_position=Ustaw pozycję
 
 # src/webserver/application/config_date_time_options.ts
+text_size=Rozmiar tekstu
+auto=Automatyczny
+small=Mały
+medium=Średni
+large=Duży
 large_clock=Duży zegar
 large_time=Duża godzina
 large_world_clock=Duży zegar światowy
@@ -430,6 +435,27 @@ duration_hours.few={count} godziny
 duration_hours.many={count} godzin
 duration_hours.other={count} godziny
 
+# src/webserver/application/screensaver_clock_font.ts
+clock_font_was_skipped_because_this_firmware_does_not_support_th=Pominięto czcionkę zegara, ponieważ ta wersja firmware nie obsługuje wybranej czcionki ani Roboto Thin.
+could_not_restore_the_clock_font=Nie można przywrócić czcionki zegara.
+
+# src/webserver/application/screensaver_clock_format.ts
+clock_format_or_text_size_was_skipped_because_this_firmware_does=Pominięto format zegara lub rozmiar tekstu, ponieważ ta wersja firmware go nie obsługuje.
+could_not_restore_the_clock_format_or_text_size=Nie można przywrócić formatu zegara lub rozmiaru tekstu.
+use_h_i_m_s_d_m_y_or_y_digits_and_spaces_only_maximum_32_charact=Używaj wyłącznie kodów %H, %I, %M, %S, %d, %m, %Y lub %y, cyfr, spacji oraz znaków : . / -. Maksymalnie 32 znaki, również po sformatowaniu.
+enter_a_numeric_date_or_time_format_using_the_supported_tokens_m=Wpisz liczbowy format daty lub godziny z obsługiwanymi kodami (maksymalnie 32 znaki).
+time_format=Format godziny
+date_format=Format daty
+default_global_12_24_hour_setting=Domyślny (globalne ustawienie 12/24-godzinne)
+24_hour_with_seconds=24-godzinny z sekundami
+12_hour_with_seconds=12-godzinny z sekundami
+hidden=Ukryta
+custom_time_format=Własny format godziny
+custom_date_format=Własny format daty
+time_text_size=Rozmiar tekstu godziny
+date_text_size=Rozmiar tekstu daty
+larger_text_is_reduced_automatically_when_needed_to_fit_the_scre=Większy tekst jest w razie potrzeby automatycznie zmniejszany, aby zmieścił się na ekranie bez przycinania.
+
 # src/webserver/application/settings_cover_art_section.ts
 show_cover_art=Pokaż okładkę
 keep_screen_awake_during_playback=Nie wygaszaj ekranu podczas odtwarzania
@@ -462,6 +488,10 @@ nighttime_brightness=Jasność w nocy
 dawn=Świt
 dusk=Zmierzch
 backlight=Podświetlenie ekranu
+font_and_colour_apply_to_the_clock_in_timer_sensor_and_night_sch=Czcionka i kolor dotyczą zegara w trybach timera, czujnika i harmonogramu nocnego.
+clock_font=Czcionka zegara
+clock_text_colour=Kolor tekstu zegara
+clock_appearance=Wygląd zegara
 timezone=Strefa czasowa
 clock_format=Format zegara
 custom_ntp_servers=Własne serwery NTP
@@ -547,7 +577,6 @@ screen_off=Ekran wyłączony
 when_woken_idle_time_to_screen_off=Czas bezczynności do wyłączenia ekranu po wybudzeniu
 when_woken_screen_brightness=Jasność ekranu po wybudzeniu
 clock_brightness=Jasność zegara
-clock_text_colour=Kolor tekstu zegara
 schedule_on=Harmonogram włączony
 night_schedule=Harmonogram nocny
 
@@ -771,7 +800,6 @@ large_sensor_numbers=Duże cyfry czujnika
 lit_when_active=Podświetlenie, gdy aktywne
 e_g_ups_runtime=np. Czas pracy UPS
 incoming_value_unit=Jednostka wartości wejściowej
-auto=Auto
 seconds=Sekundy
 minutes=Minuty
 hours=Godziny

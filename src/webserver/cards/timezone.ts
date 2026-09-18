@@ -52,6 +52,7 @@ export function registerTimezoneCardTypes(
                 helpers.saveField("label", "");
             }
             helpers.renderCardModeSelector(panel, b, helpers, metadata);
+            dateTimeOptions.renderTextSizeSelector(panel, b, helpers);
             helpers.renderCardLargeNumbersToggle(panel, b, helpers, metadata);
             var tzSelect: any = documentService.createElement("select");
             tzSelect.className = "sp-select";
@@ -74,9 +75,10 @@ export function registerTimezoneCardTypes(
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var tz: any = b.entity || defaultTimezoneCardEntity();
             var time: any = timezoneCardTimeParts(tz);
-            var hideLabel: any = cardLargeNumbersHidePreviewLabel(b, helpers, metadata);
+            const sizeClass = dateTimeOptions.textSizePreviewClass(b);
+            var hideLabel: any = !sizeClass && cardLargeNumbersHidePreviewLabel(b, helpers, metadata);
             return {
-                buttonClass: hideLabel ? "sp-date-time-wide-large" : undefined,
+                buttonClass: sizeClass || (hideLabel ? "sp-date-time-wide-large" : undefined),
                 iconHtml: cardSensorPreviewHtml(b, helpers, time.value, time.unit),
                 labelHtml: hideLabel ? "" : cardBadgeLabelHtml(helpers, timezoneCardCityLabel(tz), metadata.preview.timezoneBadge),
             };

@@ -1,5 +1,4 @@
 import { state } from "../state/app_instance";
-import { normalizeHexColor } from "../model/settings";
 import { i18n } from "../i18n";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
@@ -169,17 +168,10 @@ export function createSettingsScheduleSectionFeature(codec: Pick<ConfigCodecFeat
             syncScreenScheduleUi();
         });
         clockOptions.appendChild(clockBrightnessSlider.wrap);
-        clockOptions.appendChild(fieldLabel(i18n("Clock Text Colour")));
-        var clockTextColor: any = colorField("sp-set-schedule-clock-text-color", state.scheduleClockTextColor, function (this: any, hex?: any) {
-            state.scheduleClockTextColor = normalizeHexColor(hex, "FFFFFF");
-            requestApi.postText(entityName("screen_schedule_clock_text_color"), state.scheduleClockTextColor);
-        });
-        clockOptions.appendChild(clockTextColor);
         scheduleActions.appendChild(clockOptions);
         els.setScheduleClockOptions = clockOptions;
         els.setScheduleClockBrightness = clockBrightnessSlider.range;
         els.setScheduleClockBrightnessVal = clockBrightnessSlider.val;
-        els.setScheduleClockTextColor = clockTextColor;
         scheduleBody.appendChild(scheduleActions);
         els.setScheduleActions = scheduleActions;
         function setScheduleTrigger(this: any, trigger?: any) {

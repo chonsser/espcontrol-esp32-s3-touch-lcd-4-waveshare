@@ -81,10 +81,37 @@ inline bool date_time_driver_large_layout(
   return large_number_square_card_layout(row_span, col_span);
 }
 
+inline bool date_time_driver_text_size_layout(
+    BtnSlot &slot, const ParsedCfg &config, const DisplayProfile &display) {
+  const std::string value = cfg_option_value(config.options, "text_size");
+  DateTimeCardTextSize size;
+  size.requested = value == "small" ? 1 : value == "medium" ? 2 : value == "large" ? 3 : 0;
+  if (size.requested) {
+    size.fonts[0] = lv_obj_get_style_text_font(slot.text_lbl, LV_PART_MAIN);
+    size.fonts[1] = display_sensor_font(display);
+    size.fonts[2] = display_large_sensor_font(display);
+    lv_obj_clear_flag(slot.text_lbl, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(slot.sensor_container, LV_ALIGN_TOP_LEFT, 0, 0);
+    if (slot.unit_lbl) lv_obj_set_style_translate_y(slot.unit_lbl, 0, LV_PART_MAIN);
+  }
+  for (int i = 0; i < calendar_card_count(); ++i) {
+    auto &ref = calendar_card_refs()[i];
+    if (ref.value_lbl == slot.sensor_lbl) ref.text_size = size;
+  }
+  for (int i = 0; i < timezone_card_count(); ++i) {
+    auto &ref = timezone_card_refs()[i];
+    if (ref.value_lbl == slot.sensor_lbl) ref.text_size = size;
+  }
+  if (!size.requested) lv_obj_clear_flag(slot.sensor_container, LV_OBJ_FLAG_HIDDEN);
+  fit_date_time_card_text(slot.sensor_lbl, slot.text_lbl, size);
+  return size.requested != 0;
+}
+
 inline bool date_time_driver_refresh_layout(
     BtnSlot &slot, const ParsedCfg &config, const Context &context,
     const DisplayProfile &display, int row_span, int col_span) {
   if (!date_time_driver_matches(context)) return false;
+  if (date_time_driver_text_size_layout(slot, config, display)) return true;
   if (context.runtime.type == card_runtime::CardTypeId::CALENDAR) {
     if (large_number_square_card_layout(row_span, col_span) &&
         card_large_numbers_active_for_layout(config, row_span, col_span) &&

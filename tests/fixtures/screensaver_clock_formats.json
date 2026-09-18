@@ -1,0 +1,176 @@
+{
+  "sample": {
+    "year": 2026,
+    "month": 9,
+    "day": 18,
+    "hour": 0,
+    "minute": 7,
+    "second": 9
+  },
+  "cases": [
+    {
+      "format": "",
+      "valid": true,
+      "length": 0,
+      "seconds": false,
+      "sample": ""
+    },
+    {
+      "format": "%H:%M",
+      "valid": true,
+      "length": 5,
+      "seconds": false,
+      "sample": "00:07"
+    },
+    {
+      "format": "%H:%M:%S",
+      "valid": true,
+      "length": 8,
+      "seconds": true,
+      "sample": "00:07:09"
+    },
+    {
+      "format": "%I:%M:%S",
+      "valid": true,
+      "length": 8,
+      "seconds": true,
+      "sample": "12:07:09"
+    },
+    {
+      "format": "%d.%m.%Y",
+      "valid": true,
+      "length": 10,
+      "seconds": false,
+      "sample": "18.09.2026"
+    },
+    {
+      "format": "%Y-%m-%d",
+      "valid": true,
+      "length": 10,
+      "seconds": false,
+      "sample": "2026-09-18"
+    },
+    {
+      "format": "%d/%m/%y",
+      "valid": true,
+      "length": 8,
+      "seconds": false,
+      "sample": "18/09/26"
+    },
+    {
+      "format": "%d.%m.%Y %H:%M:%S",
+      "valid": true,
+      "length": 19,
+      "seconds": true,
+      "sample": "18.09.2026 00:07:09"
+    },
+    {
+      "format": "%S",
+      "valid": true,
+      "length": 2,
+      "seconds": true,
+      "sample": "09"
+    },
+    {
+      "format": "01 : 02 . 03 / 04 - 05",
+      "valid": true,
+      "length": 22,
+      "seconds": false,
+      "sample": "01 : 02 . 03 / 04 - 05"
+    },
+    {
+      "format": "%Y%Y%Y%Y%Y%Y%Y%Y",
+      "valid": true,
+      "length": 32,
+      "seconds": false,
+      "sample": "20262026202620262026202620262026"
+    },
+    {
+      "format": "%Y%Y%Y%Y%Y%Y%Y%Y%Y",
+      "valid": false
+    },
+    {
+      "format": "12345678901234567890123456789012",
+      "valid": true,
+      "length": 32,
+      "seconds": false,
+      "sample": "12345678901234567890123456789012"
+    },
+    {
+      "format": "123456789012345678901234567890123",
+      "valid": false
+    },
+    {
+      "format": " ",
+      "valid": false
+    },
+    {
+      "format": ":./-",
+      "valid": false
+    },
+    {
+      "format": "%",
+      "valid": false
+    },
+    {
+      "format": "%%",
+      "valid": false
+    },
+    {
+      "format": "%H:%M %p",
+      "valid": false
+    },
+    {
+      "format": "%A %d %B",
+      "valid": false
+    },
+    {
+      "format": "%S %a",
+      "valid": false
+    },
+    {
+      "format": "%H:%M\n",
+      "valid": false
+    },
+    {
+      "format": "%H\t%M",
+      "valid": false
+    },
+    {
+      "format": "%H:%M\r",
+      "valid": false
+    },
+    {
+      "format": "%H:%M\u00a0",
+      "valid": false
+    },
+    {
+      "format": "%H:%M\u200b",
+      "valid": false
+    },
+    {
+      "format": "%H:%M\u0000",
+      "valid": false
+    },
+    {
+      "format": "%H:%M \ud83d\udd70",
+      "valid": false
+    },
+    {
+      "format": "Godzina %H:%M",
+      "valid": false
+    },
+    {
+      "format": "%h:%m",
+      "valid": false
+    },
+    {
+      "format": "%0H:%M",
+      "valid": false
+    },
+    {
+      "format": "%H:%M:%S%",
+      "valid": false
+    }
+  ]
+}

@@ -100,6 +100,11 @@ export function createWebStyles(dragAnimation: boolean): string {
         ".sp-forecast-preview{white-space:nowrap;gap:0}" +
         ".sp-sensor-value{font-size:var(--btn-icon);line-height:1;font-weight:300}" +
         ".sp-sensor-unit{font-size:var(--btn-label);line-height:1;color:#fff}" +
+        ".sp-date-time-text-small{--date-time-font:var(--btn-label)}" +
+        ".sp-date-time-text-medium{--date-time-font:var(--btn-icon)}" +
+        ".sp-date-time-text-large{--date-time-font:calc(var(--btn-icon)*2.5)}" +
+        ".sp-date-time-text .sp-sensor-preview{container-type:size;flex:1;min-height:0;min-width:0;width:100%;align-items:flex-start}" +
+        ".sp-btn.sp-date-time-text .sp-sensor-preview .sp-sensor-value{font-size:min(var(--date-time-font),31.25cqw,100cqh);font-weight:300;white-space:nowrap}" +
         ".sp-slider-preview{position:absolute;inset:0;border-radius:var(--r);overflow:hidden;pointer-events:none}" +
         ".sp-slider-track{width:100%;height:100%;position:relative}" +
         ".sp-slider-fill{position:absolute;left:0;bottom:0;width:100%;height:80%;background:var(--accent);" +

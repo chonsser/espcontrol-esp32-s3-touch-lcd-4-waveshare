@@ -44,14 +44,15 @@ export function registerClockCardTypes(
             b.unit = "";
             b.precision = "";
             helpers.renderCardModeSelector(panel, b, helpers, metadata);
+            dateTimeOptions.renderTextSizeSelector(panel, b, helpers);
             helpers.renderCardLargeNumbersToggle(panel, b, helpers, metadata);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var time: any = dateTimeCardTimeParts();
             return {
-                buttonClass: cardLargeNumbersHidePreviewLabel(b, helpers, metadata)
+                buttonClass: dateTimeOptions.textSizePreviewClass(b) || (cardLargeNumbersHidePreviewLabel(b, helpers, metadata)
                     ? "sp-clock-wide-large"
-                    : undefined,
+                    : undefined),
                 iconHtml: cardSensorPreviewHtml(b, helpers, time.value, time.unit),
                 labelHtml: "",
             };

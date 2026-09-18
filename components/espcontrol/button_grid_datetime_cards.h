@@ -2,11 +2,62 @@
 
 // Internal implementation detail for button_grid.h. Include button_grid.h from device YAML.
 
+// Explicit per-card sizes reuse the display's existing label, sensor and large
+// sensor fonts. Empty/unknown options leave the legacy layout entirely alone.
+struct DateTimeCardTextSize {
+  const lv_font_t *fonts[3] = {nullptr, nullptr, nullptr};
+  uint8_t requested = 0;
+};
+
+inline void fit_date_time_card_text(lv_obj_t *value, lv_obj_t *label,
+                                    const DateTimeCardTextSize &size) {
+  if (!size.requested || !value || !label) return;
+  lv_obj_t *container = lv_obj_get_parent(value);
+  lv_obj_t *button = lv_obj_get_parent(label);
+  if (!container || !button) return;
+  lv_obj_update_layout(button);
+  const int width = lv_obj_get_content_width(button);
+  int height = lv_obj_get_content_height(button);
+  if (!lv_obj_has_flag(label, LV_OBJ_FLAG_HIDDEN) && *lv_label_get_text(label)) {
+    height -= (lv_obj_get_height(label) * lv_obj_get_style_transform_scale_y(label, LV_PART_MAIN) + 255) / 256 + 4;
+  }
+  const char *text = lv_label_get_text(value);
+  const lv_font_t *selected = nullptr;
+  for (int index = size.requested - 1; index >= 0; --index) {
+    const lv_font_t *font = size.fonts[index];
+    if (!font) continue;
+    lv_point_t measured;
+    lv_txt_get_size(&measured, text, font,
+      lv_obj_get_style_text_letter_space(value, LV_PART_MAIN),
+      lv_obj_get_style_text_line_space(value, LV_PART_MAIN),
+      LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+    const int visible_width = (measured.x * lv_obj_get_style_transform_scale_x(container, LV_PART_MAIN) + 255) / 256;
+    const int visible_height = (measured.y * lv_obj_get_style_transform_scale_y(container, LV_PART_MAIN) + 255) / 256;
+    if (visible_width <= width && visible_height <= height) {
+      selected = font;
+      break;
+    }
+  }
+  // Extremely small/temporarily collapsed cards must not draw clipped digits.
+  // A later size/text refresh unhides the value as soon as a font fits again.
+  if (!selected) {
+    lv_obj_add_flag(container, LV_OBJ_FLAG_HIDDEN);
+    return;
+  }
+  lv_obj_clear_flag(container, LV_OBJ_FLAG_HIDDEN);
+  lv_style_value_t local;
+  if (lv_obj_get_local_style_prop(value, LV_STYLE_TEXT_FONT, &local, LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
+      local.ptr != selected) {
+    lv_obj_set_style_text_font(value, selected, LV_PART_MAIN);
+  }
+}
+
 struct CalendarCardRef {
   lv_obj_t *value_lbl;
   lv_obj_t *unit_lbl;
   lv_obj_t *label_lbl;
   bool show_time;
+  DateTimeCardTextSize text_size;
 };
 
 inline CalendarCardRef *calendar_card_refs() {
@@ -76,7 +127,7 @@ inline void register_calendar_card(lv_obj_t *value_lbl, lv_obj_t *unit_lbl,
     ESP_LOGW("calendar", "Too many calendar cards; skipping date updates");
     return;
   }
-  calendar_card_refs()[count++] = {value_lbl, unit_lbl, label_lbl, show_time};
+  calendar_card_refs()[count++] = {value_lbl, unit_lbl, label_lbl, show_time, {}};
   CalendarDateState &state = calendar_date_state();
   apply_calendar_card_text(calendar_card_refs()[count - 1], state);
 }
@@ -136,6 +187,7 @@ inline void apply_calendar_card_text(const CalendarCardRef &ref,
   if (ref.value_lbl) lv_label_set_display_text(ref.value_lbl, value_text);
   if (ref.unit_lbl) lv_label_set_display_text(ref.unit_lbl, unit_text);
   if (ref.label_lbl) lv_label_set_display_text(ref.label_lbl, label_text);
+  fit_date_time_card_text(ref.value_lbl, ref.label_lbl, ref.text_size);
 }
 
 inline void refresh_calendar_cards() {
@@ -267,6 +319,7 @@ struct TimezoneCardRef {
   std::string timezone;
   std::string label;
   bool show_label;
+  DateTimeCardTextSize text_size;
 };
 
 inline TimezoneCardRef *timezone_card_refs() {
@@ -329,6 +382,7 @@ inline void apply_timezone_card_text(const TimezoneCardRef &ref,
   if (ref.value_lbl) lv_label_set_display_text(ref.value_lbl, value_text);
   if (ref.unit_lbl) lv_label_set_display_text(ref.unit_lbl, unit_text);
   if (ref.label_lbl) lv_label_set_display_text(ref.label_lbl, label.c_str());
+  fit_date_time_card_text(ref.value_lbl, ref.label_lbl, ref.text_size);
 }
 
 inline bool timezone_card_ref_ready(const TimezoneCardRef &ref) {
@@ -361,7 +415,7 @@ inline void register_timezone_card(lv_obj_t *value_lbl, lv_obj_t *unit_lbl,
     ESP_LOGW("timezone", "Too many timezone cards; skipping time updates");
     return;
   }
-  timezone_card_refs()[count++] = {value_lbl, unit_lbl, label_lbl, timezone, label, show_label};
+  timezone_card_refs()[count++] = {value_lbl, unit_lbl, label_lbl, timezone, label, show_label, {}};
   apply_timezone_card_text(timezone_card_refs()[count - 1], false, 0, timezone, false);
 }
 

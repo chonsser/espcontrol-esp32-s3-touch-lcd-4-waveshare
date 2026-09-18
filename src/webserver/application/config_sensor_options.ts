@@ -168,15 +168,17 @@ export function createConfigSensorOptionsFeature(cardRegistry: CardRegistry) {
         return out;
     }
     function normalizeDateTimeOptions(this: any, type?: any, options?: any, precision?: any) {
-        if (configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION) &&
+        let out = "";
+        if ((configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION) || largeNumbersExplicitlyDisabled(options)) &&
             cardContractOptionSupportedFor(type, SENSOR_LARGE_NUMBERS_OPTION, { precision: precision })) {
-            return copyLargeNumbersOption("", options);
+            out = copyLargeNumbersOption(out, options);
         }
-        if (largeNumbersExplicitlyDisabled(options) &&
-            cardContractOptionSupportedFor(type, SENSOR_LARGE_NUMBERS_OPTION, { precision: precision })) {
-            return copyLargeNumbersOption("", options);
+        const size = configOptionValue(options, "text_size");
+        if ((type === "calendar" || type === "clock" || type === "timezone") &&
+            (size === "small" || size === "medium" || size === "large")) {
+            out = setConfigOptionValue(out, "text_size", size);
         }
-        return "";
+        return out;
     }
     function normalizeDoorWindowSubtype(this: any, value?: any) {
         value = String(value || "").trim();

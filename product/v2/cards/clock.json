@@ -18,7 +18,8 @@
       "label": "Large Clock",
       "kind": "flag",
       "omitDefault": true
-    }
+    },
+    { "name": "text_size", "label": "Text size", "kind": "choice", "values": ["", "small", "medium", "large"], "defaultValue": "", "omitDefault": true }
   ],
   "normalization": {
     "fields": {
@@ -33,7 +34,7 @@
       "options": { "policy": "hook", "hook": "normalize_date_time_options" }
     },
     "unknownOptions": "drop",
-    "canonicalOptionOrder": ["large_numbers"],
+    "canonicalOptionOrder": ["large_numbers", "text_size"],
     "optionHook": "normalize_date_time_options"
   },
   "default": {

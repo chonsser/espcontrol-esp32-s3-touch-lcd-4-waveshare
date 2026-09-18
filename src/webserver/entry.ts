@@ -26,6 +26,8 @@ import { createEntityStateFeature } from "./application/entity_state";
 import { createClockBarFeature, type ClockBarFeature } from "./application/clock_bar_state";
 import { createFirmwareUpdateFeature, type FirmwareUpdateFeature } from "./application/firmware_update_state";
 import { createScreensaverTimeoutFeature } from "./application/screensaver_timeout";
+import { createScreensaverClockFontFeature } from "./application/screensaver_clock_font";
+import { createScreensaverClockFormatFeature } from "./application/screensaver_clock_format";
 import { createC6FirmwareFeature, type C6FirmwareFeature } from "./application/c6_firmware_ui";
 import { createGridFeature } from "./application/grid";
 import {
@@ -492,6 +494,10 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout,
     shell,
   );
+  const screensaverClockFont = createScreensaverClockFontFeature(runtime, requestApi, entityState, shell);
+  void screensaverClockFont.load();
+  const screensaverClockFormat = createScreensaverClockFormatFeature(runtime, requestApi, entityState, shell);
+  void screensaverClockFormat.load();
   firmwarePostApi = createFirmwareUpdatePostApiFeature(entityState, requestApi);
   const artworkPostApi = createArtworkPostApiFeature(entityState, requestApi);
   const schedulePostApi = createScreenSchedulePostApiFeature(entityState, requestApi);
@@ -699,6 +705,8 @@ function composeApplicationContext(): ApplicationContext {
     grid,
     settingsHelpers,
     preview,
+    screensaverClockFont,
+    screensaverClockFormat,
   );
   const backupModel = createBackupFeature({
     deviceId: layout.deviceId,
@@ -822,6 +830,8 @@ function composeApplicationContext(): ApplicationContext {
     core,
     screenScheduleState,
     screensaverTimeout,
+    screensaverClockFont,
+    screensaverClockFormat,
     firmwareUpdate,
     clockBar: clockBarState,
     entityState,
@@ -838,8 +848,11 @@ function composeApplicationContext(): ApplicationContext {
   });
   const reconnect = createReconnectController<unknown>({
     eventStreamEnabled: stateLoader.eventStreamEnabled,
-    loadInitialState: (handleState, markConnected) =>
-      stateLoader.loadInitialState(handleState, markConnected),
+    loadInitialState: (handleState, markConnected) => {
+      void screensaverClockFont.load();
+      void screensaverClockFormat.load();
+      return stateLoader.loadInitialState(handleState, markConnected);
+    },
     createEventSource: dom.createEventSource,
     getActiveSource: () => runtime.eventSource,
     setActiveSource: (source) => { runtime.eventSource = source; },
@@ -892,7 +905,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout, screenRotation, appearance, clockBarState, entityState,
     shell, requestApi, statusPreview, artworkPostApi, schedulePostApi,
     clockBarPostApi, fields, settingsHelpers, scheduleSection, coverArtSection,
-    systemSection, preview,
+    systemSection, preview, screensaverClockFont, screensaverClockFormat,
   );
   requestApi.connectReconnect(appEvents.connect);
   // Start after composition; the service retries on a later Settings visit if offline.

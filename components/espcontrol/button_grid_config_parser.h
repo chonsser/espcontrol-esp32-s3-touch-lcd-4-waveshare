@@ -872,14 +872,19 @@ inline bool card_large_numbers_supported(const ParsedCfg &p) {
 
 inline std::string date_time_card_options_normalized(const std::string &options,
                                                      const ParsedCfg &p) {
-  if (!card_large_numbers_supported(p)) return "";
-  if (cfg_option_token_present(options, "large_numbers") ||
-      large_numbers_explicitly_disabled(options)) {
-    std::string out;
+  std::string out;
+  if (card_large_numbers_supported(p) &&
+      (cfg_option_token_present(options, "large_numbers") ||
+       large_numbers_explicitly_disabled(options))) {
     append_large_numbers_option(out, options);
-    return out;
   }
-  return "";
+  const std::string size = cfg_option_value(options, "text_size");
+  if ((p.type == "calendar" || p.type == "clock" || p.type == "timezone") &&
+      (size == "small" || size == "medium" || size == "large")) {
+    if (!out.empty()) out += ",";
+    out += "text_size=" + size;
+  }
+  return out;
 }
 
 inline std::string normalize_garage_label_display(const std::string &value) {

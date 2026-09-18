@@ -19,6 +19,11 @@ export const SSE_ALIAS_GROUPS = {
   alarmDelayFinalCountdown: ["number-alarm_delay__final_countdown", "number-alarm_delay_final_countdown", "number-alarm_delay_final_countdown_seconds"],
   temperatureDegreeSymbol: ["switch-screen__temperature_degree_symbol", "switch-screen_temperature_degree_symbol", "switch-temperature_degree_symbol_enabled"],
   subpageChevron: ["switch-screen__subpage_chevron", "switch-screen_subpage_chevron", "switch-subpage_chevrons_enabled"],
+  screensaverClockFont: ["select-screen_saver_clock_font", "select-screensaver_clock_font"],
+  screensaverClockTimeFormat: ["text-screen_saver_clock_time_format", "text-screensaver_clock_time_format"],
+  screensaverClockDateFormat: ["text-screen_saver_clock_date_format", "text-screensaver_clock_date_format"],
+  screensaverClockTimeSize: ["select-screen_saver_clock_time_size", "select-screensaver_clock_time_size"],
+  screensaverClockDateSize: ["select-screen_saver_clock_date_size", "select-screensaver_clock_date_size"],
   screensaverTimeout: ["number-screensaver_timeout", "number-screen_saver__timeout", "number-screen_saver_timeout"],
   clockScreensaver: ["switch-screen_saver__clock", "switch-screen_saver_clock", "switch-clock_screensaver_enabled"],
   mediaPlayerSleepPrevention: ["switch-screen_saver__media_player_sleep_prevention", "switch-screen_saver_media_player_sleep_prevention", "switch-media_player_sleep_prevention_enabled"],
@@ -73,6 +78,11 @@ export function applySseHandlerAliases(handlers: SseHandlers): void {
   addSseAliases(handlers, SSE_ALIAS_GROUPS.alarmDelayFinalCountdown, "number-alarm_delay__final_countdown");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.temperatureDegreeSymbol, "switch-screen__temperature_degree_symbol");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.subpageChevron, "switch-screen__subpage_chevron");
+  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockFont, "select-screen_saver_clock_font");
+  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockTimeFormat, "text-screen_saver_clock_time_format");
+  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockDateFormat, "text-screen_saver_clock_date_format");
+  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockTimeSize, "select-screen_saver_clock_time_size");
+  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockDateSize, "select-screen_saver_clock_date_size");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverTimeout, "number-screensaver_timeout");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.clockScreensaver, "switch-screen_saver__clock");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.mediaPlayerSleepPrevention, "switch-screen_saver__media_player_sleep_prevention");

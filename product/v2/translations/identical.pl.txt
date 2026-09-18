@@ -24,7 +24,6 @@ firmware:home_assistant  # product name
 
 web:alarm  # same word in Polish
 web:album  # same word in Polish
-web:auto  # established abbreviation of automatic/automatyczny
 web:auto_home_assistant  # shared abbreviation and unchanged product name
 web:firmware  # established technical term, used consistently throughout the UI
 web:media  # same word in Polish

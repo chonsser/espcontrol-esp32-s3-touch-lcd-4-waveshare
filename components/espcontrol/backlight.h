@@ -323,16 +323,116 @@ inline bool screensaver_action_dimmed_mode(const std::string &action) {
 
 // ── Screensaver layout helpers ──────────────────────────────────────
 
+inline bool clock_screensaver_local_number_is(lv_obj_t *obj, lv_style_prop_t prop,
+                                              lv_coord_t value) {
+  lv_style_value_t local;
+  return lv_obj_get_local_style_prop(obj, prop, &local, LV_PART_MAIN) == LV_STYLE_RES_FOUND &&
+         local.num == value;
+}
+
+inline void clock_screensaver_set_pos(lv_obj_t *obj, lv_coord_t x, lv_coord_t y) {
+  if (!clock_screensaver_local_number_is(obj, LV_STYLE_X, x) ||
+      !clock_screensaver_local_number_is(obj, LV_STYLE_Y, y)) lv_obj_set_pos(obj, x, y);
+}
+
+inline void clock_screensaver_set_size(lv_obj_t *obj, lv_coord_t w, lv_coord_t h) {
+  if (!clock_screensaver_local_number_is(obj, LV_STYLE_WIDTH, w) ||
+      !clock_screensaver_local_number_is(obj, LV_STYLE_HEIGHT, h)) lv_obj_set_size(obj, w, h);
+}
+
 inline void screensaver_fill_screen(lv_obj_t *obj) {
   if (!obj) return;
-  lv_obj_set_pos(obj, 0, 0);
-  lv_obj_set_size(obj, lv_pct(100), lv_pct(100));
+  clock_screensaver_set_pos(obj, 0, 0);
+  clock_screensaver_set_size(obj, lv_pct(100), lv_pct(100));
 }
 
 inline void refresh_screensaver_fullscreen(lv_obj_t *clock_overlay,
                                            lv_obj_t *dim_guard) {
   screensaver_fill_screen(clock_overlay);
   screensaver_fill_screen(dim_guard);
+}
+
+// Numeric-only, locale-independent format language. Empty is valid and neutral:
+// the time caller chooses the legacy formatter, the date caller hides its label.
+struct ClockScreensaverFormat {
+  bool valid = false;
+  bool seconds = false;
+  std::string shape;  // Expanded digits replaced by '0' for stable font fitting.
+};
+
+inline ClockScreensaverFormat parse_clock_screensaver_format(const std::string &format) {
+  ClockScreensaverFormat result;
+  if (format.size() > 32) return result;
+  bool digit = false;
+  for (size_t i = 0; i < format.size(); ++i) {
+    const char ch = format[i];
+    if (ch == '%') {
+      if (++i == format.size()) return {};
+      const char token = format[i];
+      switch (token) {
+        case 'H': case 'I': case 'M': case 'S': case 'd': case 'm': case 'y':
+          result.shape += "00";
+          break;
+        case 'Y': result.shape += "0000"; break;
+        default: return {};
+      }
+      digit = true;
+      result.seconds |= token == 'S';
+    } else if (ch >= '0' && ch <= '9') {
+      result.shape += '0';
+      digit = true;
+    } else if (ch == ' ' || ch == ':' || ch == '.' || ch == '/' || ch == '-') {
+      result.shape += ch;
+    } else {
+      return {};
+    }
+    if (result.shape.size() > 32) return {};
+  }
+  result.valid = format.empty() || digit;
+  if (!result.valid) return {};
+  return result;
+}
+
+struct ClockScreensaverTime {
+  int hour, minute, second, day, month, year;
+};
+
+inline bool format_clock_screensaver_numeric(const std::string &format,
+                                             const ClockScreensaverTime &time,
+                                             std::string &out) {
+  out.clear();
+  if (!parse_clock_screensaver_format(format).valid) return false;
+  for (size_t i = 0; i < format.size(); ++i) {
+    if (format[i] != '%') {
+      out += format[i];
+      continue;
+    }
+    const char token = format[++i];
+    int value = 0;
+    switch (token) {
+      case 'H': value = time.hour; break;
+      case 'I': value = time.hour % 12; if (value == 0) value = 12; break;
+      case 'M': value = time.minute; break;
+      case 'S': value = time.second; break;
+      case 'd': value = time.day; break;
+      case 'm': value = time.month; break;
+      case 'Y': value = time.year; break;
+      case 'y': value = time.year % 100; break;
+    }
+    const int digits = token == 'Y' ? 4 : 2;
+    if (value < 0 || value > (digits == 4 ? 9999 : 99)) { out.clear(); return false; }
+    char number[5];
+    snprintf(number, sizeof(number), digits == 4 ? "%04d" : "%02d", value);
+    out += number;
+  }
+  return true;
+}
+
+inline bool clock_screensaver_needs_seconds(const std::string &time_format,
+                                            const std::string &date_format) {
+  const auto time = parse_clock_screensaver_format(time_format);
+  const auto date = parse_clock_screensaver_format(date_format);
+  return (time.valid && time.seconds) || (date.valid && date.seconds);
 }
 
 inline uint32_t parse_clock_screensaver_text_color(const std::string &hex) {
@@ -383,7 +483,7 @@ inline void position_clock_screensaver_label(lv_obj_t *overlay, lv_obj_t *label,
   // than an inverted clamp range (its compiled size is intentionally unchanged).
   const lv_coord_t max_x = std::max<lv_coord_t>(0, screen_w - w);
   const lv_coord_t max_y = std::max<lv_coord_t>(0, screen_h - h);
-  lv_obj_set_pos(label, std::clamp<lv_coord_t>(screen_w / 2 + ox - w / 2, 0, max_x),
+  clock_screensaver_set_pos(label, std::clamp<lv_coord_t>(screen_w / 2 + ox - w / 2, 0, max_x),
                  std::clamp<lv_coord_t>(screen_h / 2 + oy - h / 2, 0, max_y));
 }
 
@@ -395,7 +495,13 @@ inline const lv_font_t *clock_screensaver_font(
   return thin;  // Includes missing/unknown restored options and legacy default.
 }
 
-// Shared by CLOCK entry, live appearance edits and the existing 30-second tick.
+inline void apply_clock_screensaver_font(lv_obj_t *label, const lv_font_t *font) {
+  lv_style_value_t local;
+  if (lv_obj_get_local_style_prop(label, LV_STYLE_TEXT_FONT, &local, LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
+      local.ptr != font) lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
+}
+
+// Legacy presentation used when custom time/date/size settings are neutral.
 // This updates the existing label only: no navigation, reveal, refresh or PWM.
 inline void update_clock_screensaver_appearance(
     lv_obj_t *overlay, lv_obj_t *label, const std::string &option,
@@ -403,17 +509,180 @@ inline void update_clock_screensaver_appearance(
     const std::string &hex, const char *text, int minute) {
   if (!label) return;  // Restored settings can arrive before LVGL setup.
   const lv_font_t *font = clock_screensaver_font(option, thin, bold, mono);
-  lv_style_value_t local;
-  if (lv_obj_get_local_style_prop(label, LV_STYLE_TEXT_FONT, &local,
-                                 LV_PART_MAIN) != LV_STYLE_RES_FOUND ||
-      local.ptr != font) {
-    lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
-  }
+  apply_clock_screensaver_font(label, font);
   apply_clock_screensaver_text_color(label, hex);
   // Invalid time keeps the last label text, not LVGL's explicit nullptr refresh.
   if (text) lv_label_set_display_text(label, text);
   // Flush pending font/text geometry before measuring and clamping drift.
   position_clock_screensaver_label(overlay, label, minute);
+}
+
+struct ClockScreensaverFont {
+  int size;
+  const lv_font_t *font;
+};
+
+struct ClockScreensaverSettings {
+  std::string time_format, date_format, time_size, date_size, color;
+};
+
+struct ClockScreensaverMeasure {
+  lv_coord_t width = 0, height = 0, pad = 0;
+};
+
+// Measure the compiled LVGL advances, reserving the widest digit in every numeric
+// slot. Symmetric padding also protects raster overhang (notably Bold's slash).
+// Neither the chosen size nor the label box depends on the current seconds.
+inline ClockScreensaverMeasure measure_clock_screensaver_shape(
+    const lv_font_t *font, const std::string &shape) {
+  ClockScreensaverMeasure result;
+  if (shape.empty()) return result;
+  lv_coord_t digit_width = 0, digit_pad = 0;
+  auto metrics = [&](char ch, lv_coord_t &width, lv_coord_t &pad) {
+    lv_font_glyph_dsc_t glyph{};
+    if (lv_font_get_glyph_dsc(font, &glyph, static_cast<uint32_t>(ch), 0)) {
+      width = glyph.adv_w;
+      pad = std::max<lv_coord_t>(0, std::max<lv_coord_t>(-glyph.ofs_x,
+                                                       glyph.ofs_x + glyph.box_w - glyph.adv_w));
+    }
+  };
+  for (char ch = '0'; ch <= '9'; ++ch) {
+    lv_coord_t width = 0, pad = 0;
+    metrics(ch, width, pad);
+    digit_width = std::max(digit_width, width);
+    digit_pad = std::max(digit_pad, pad);
+  }
+  for (char ch : shape) {
+    lv_coord_t width = digit_width, pad = digit_pad;
+    if (ch < '0' || ch > '9') metrics(ch, width, pad);
+    result.width += width;
+    result.pad = std::max(result.pad, pad);
+  }
+  result.width += 2 * result.pad;
+  result.height = font->line_height;
+  return result;
+}
+
+struct ClockScreensaverLayout {
+  const lv_font_t *time_font = nullptr, *date_font = nullptr;
+  ClockScreensaverMeasure time, date;
+};
+
+// Pool is ordered smallest to largest, with the unchanged profile font last.
+// Prefer the largest fitting time, then the largest date within its own bound.
+inline ClockScreensaverLayout choose_clock_screensaver_layout(
+    const ClockScreensaverFont *pool, size_t count, const std::string &time_shape,
+    const std::string &date_shape, int time_upper, int date_upper,
+    lv_coord_t screen_w, lv_coord_t screen_h) {
+  ClockScreensaverLayout result;
+  for (size_t t = count; t-- > 0;) {
+    if (pool[t].size > time_upper) continue;
+    const auto time = measure_clock_screensaver_shape(pool[t].font, time_shape);
+    if (time.width > screen_w || time.height > screen_h) continue;
+    if (date_shape.empty()) return {pool[t].font, nullptr, time, {}};
+    for (size_t d = count; d-- > 0;) {
+      if (pool[d].size > date_upper) continue;
+      const auto date = measure_clock_screensaver_shape(pool[d].font, date_shape);
+      if (date.width <= screen_w && time.height + 8 + date.height <= screen_h)
+        return {pool[t].font, pool[d].font, time, date};
+    }
+  }
+  // All supported profiles fit the bounded 32-character outputs at 24px.
+  // A future smaller display must provide a smaller compiled pool, not scale.
+  return result;
+}
+
+inline void clock_screensaver_set_pad(lv_obj_t *label, lv_coord_t pad) {
+  if (!clock_screensaver_local_number_is(label, LV_STYLE_PAD_LEFT, pad))
+    lv_obj_set_style_pad_left(label, pad, LV_PART_MAIN);
+  if (!clock_screensaver_local_number_is(label, LV_STYLE_PAD_RIGHT, pad))
+    lv_obj_set_style_pad_right(label, pad, LV_PART_MAIN);
+}
+
+inline void clock_screensaver_set_hidden(lv_obj_t *label, bool hidden) {
+  if (!label || lv_obj_has_flag(label, LV_OBJ_FLAG_HIDDEN) == hidden) return;
+  if (hidden) lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+  else lv_obj_clear_flag(label, LV_OBJ_FLAG_HIDDEN);
+}
+
+// One appearance path for entry, settings, 30s and conditional 1s updates.
+// No recreation, display refresh, fullscreen invalidation, navigation or PWM.
+inline void update_clock_screensaver_labels(
+    lv_obj_t *overlay, lv_obj_t *label, lv_obj_t *date_label,
+    const ClockScreensaverFont *pool, size_t count,
+    const ClockScreensaverSettings &settings, const ClockScreensaverTime &now,
+    bool valid_time, bool use_12h) {
+  if (!label || !date_label || !pool || count == 0) return;
+  if (!overlay) overlay = lv_obj_get_parent(label);
+  const auto time_format = parse_clock_screensaver_format(settings.time_format);
+  const auto date_format = parse_clock_screensaver_format(settings.date_format);
+  const bool default_time = !time_format.valid || settings.time_format.empty();
+  std::string time_text, date_text;
+  if (valid_time) {
+    if (default_time) {
+      char buf[8];
+      format_clock_time_without_suffix(buf, sizeof(buf), now.hour, now.minute, use_12h);
+      time_text = buf;
+    } else {
+      format_clock_screensaver_numeric(settings.time_format, now, time_text);
+    }
+    if (date_format.valid) format_clock_screensaver_numeric(settings.date_format, now, date_text);
+  }
+  const bool show_date = !date_text.empty();
+  clock_screensaver_set_hidden(date_label, !show_date);
+  // An invalid clock retains the last time, but never displays a stale date or
+  // a startup placeholder. Its previous text is also used for safe size fitting.
+  const char *text = valid_time && !time_text.empty() ? time_text.c_str() : nullptr;
+  const int minute = valid_time ? now.minute : 0;
+  const int legacy_size = pool[count - 1].size;
+  const int time_upper = settings.time_size == "Small" ? std::min(64, legacy_size) :
+                         settings.time_size == "Medium" ? std::min(96, legacy_size) : legacy_size;
+  const int date_upper = settings.date_size == "Small" ? 24 : settings.date_size == "Large" ? 64 : 40;
+  if (valid_time && default_time && !show_date && time_upper == legacy_size) {
+    // Restore content sizing after leaving a custom layout, preserving the
+    // original unpadded 12h string and its exact centering/drift.
+    clock_screensaver_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    clock_screensaver_set_pad(label, 0);
+    const auto *font = pool[count - 1].font;
+    update_clock_screensaver_appearance(overlay, label, "", font, font, font,
+                                        settings.color, text, minute);
+    return;
+  }
+  screensaver_fill_screen(overlay);
+  if (overlay) lv_obj_update_layout(overlay);
+  lv_coord_t screen_w = overlay ? lv_obj_get_width(overlay) : 0;
+  lv_coord_t screen_h = overlay ? lv_obj_get_height(overlay) : 0;
+  lv_disp_t *disp = lv_disp_get_default();
+  if (screen_w <= 0) screen_w = disp ? lv_disp_get_hor_res(disp) : 480;
+  if (screen_h <= 0) screen_h = disp ? lv_disp_get_ver_res(disp) : 480;
+  const std::string time_shape = !valid_time ? lv_label_get_text(label) :
+                                 default_time ? "00:00" : time_format.shape;
+  const auto layout = choose_clock_screensaver_layout(pool, count, time_shape,
+      show_date ? date_format.shape : "", time_upper, date_upper, screen_w, screen_h);
+  if (!layout.time_font) { clock_screensaver_set_hidden(date_label, true); return; }
+  apply_clock_screensaver_font(label, layout.time_font);
+  apply_clock_screensaver_text_color(label, settings.color);
+  clock_screensaver_set_pad(label, layout.time.pad);
+  clock_screensaver_set_size(label, layout.time.width, layout.time.height);
+  if (text) lv_label_set_display_text(label, text);
+  const lv_coord_t total_h = layout.time.height + (show_date ? 8 + layout.date.height : 0);
+  const lv_coord_t y = std::clamp<lv_coord_t>(screen_h / 2 + (minute * 13) % 41 - 20 - total_h / 2,
+                                            0, std::max<lv_coord_t>(0, screen_h - total_h));
+  auto x = [&](lv_coord_t width) {
+    return std::clamp<lv_coord_t>(screen_w / 2 + (minute * 7) % 61 - 30 - width / 2,
+                                  0, std::max<lv_coord_t>(0, screen_w - width));
+  };
+  clock_screensaver_set_pos(label, x(layout.time.width), y);
+  if (show_date) {
+    apply_clock_screensaver_font(date_label, layout.date_font);
+    apply_clock_screensaver_text_color(date_label, settings.color);
+    clock_screensaver_set_pad(date_label, layout.date.pad);
+    clock_screensaver_set_size(date_label, layout.date.width, layout.date.height);
+    lv_label_set_display_text(date_label, date_text.c_str());
+    clock_screensaver_set_pos(date_label, x(layout.date.width), y + layout.time.height + 8);
+    lv_obj_update_layout(date_label);
+  }
+  lv_obj_update_layout(label);
 }
 
 // ── Firmware update interval ─────────────────────────────────────────

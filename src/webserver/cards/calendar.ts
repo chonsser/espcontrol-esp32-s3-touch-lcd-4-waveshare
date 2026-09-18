@@ -77,15 +77,17 @@ export function registerCalendarCardTypes(
             if (!button.entity) button.entity = "sensor.date";
             if (button.precision !== "datetime") button.precision = "";
             helpers.renderCardModeSelector(panel, button, helpers, metadata);
+            dateTimeOptions.renderTextSizeSelector(panel, button, helpers);
             helpers.renderCardLargeNumbersToggle(panel, button, helpers, metadata);
         },
         renderPreview: function (button?: any, helpers?: any) {
             const current = now();
             const isDateTime = button.precision === "datetime";
-            const hideLabel = cardLargeNumbersHidePreviewLabel(button, helpers, metadata);
-            const buttonClass = hideLabel
+            const sizeClass = dateTimeOptions.textSizePreviewClass(button);
+            const hideLabel = !sizeClass && cardLargeNumbersHidePreviewLabel(button, helpers, metadata);
+            const buttonClass = sizeClass || (hideLabel
                 ? (isDateTime ? "sp-clock-wide-large" : "sp-date-time-wide-large")
-                : undefined;
+                : undefined);
             const day = String(current.getUTCDate());
             const month = monthNameForIndex(current.getUTCMonth());
             if (isDateTime) {

@@ -9,27 +9,104 @@
 # =============================================================================
 
 font:
-  - file: "gfonts://Roboto@Thin"
+  - file: &clock_thin_source "gfonts://Roboto@Thin"
     id: font_number_clock
     size: ${clock_font_size}
     bpp: 4
-    glyphs: " 0123456789:"
+    glyphs: " 0123456789:./-"
 
   # Pinned static Google Fonts builds; fetched by ESPHome at build time only.
   # URLs work for builds/, device wrappers and remotely included packages alike.
   # Exact source copies for reproducible metric tests, provenance and matching
   # copyright/OFL notices live in common/assets/fonts/.
-  - file: "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf"
+  - file: &clock_bold_source "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYjammT.ttf"
     id: font_number_clock_bold
     size: ${clock_font_size}
     bpp: 4
-    glyphs: " 0123456789:"
+    glyphs: " 0123456789:./-"
 
-  - file: "https://fonts.gstatic.com/s/robotomono/v31/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vqPQw.ttf"
+  - file: &clock_mono_source "https://fonts.gstatic.com/s/robotomono/v31/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vqPQw.ttf"
     id: font_number_clock_mono
     size: ${clock_font_size}
     bpp: 4
-    glyphs: " 0123456789:"
+    glyphs: " 0123456789:./-"
+
+  # Compiled, bounded size pool; no runtime bitmap scaling or font transfer.
+  - file: *clock_thin_source
+    id: font_number_clock_24
+    size: 24
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_thin_source
+    id: font_number_clock_40
+    size: 40
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_thin_source
+    id: font_number_clock_64
+    size: 64
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_thin_source
+    id: font_number_clock_96
+    size: 96
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_thin_source
+    id: font_number_clock_128
+    size: 128
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_bold_source
+    id: font_number_clock_bold_24
+    size: 24
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_bold_source
+    id: font_number_clock_bold_40
+    size: 40
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_bold_source
+    id: font_number_clock_bold_64
+    size: 64
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_bold_source
+    id: font_number_clock_bold_96
+    size: 96
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_bold_source
+    id: font_number_clock_bold_128
+    size: 128
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_mono_source
+    id: font_number_clock_mono_24
+    size: 24
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_mono_source
+    id: font_number_clock_mono_40
+    size: 40
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_mono_source
+    id: font_number_clock_mono_64
+    size: 64
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_mono_source
+    id: font_number_clock_mono_96
+    size: 96
+    bpp: 4
+    glyphs: " 0123456789:./-"
+  - file: *clock_mono_source
+    id: font_number_clock_mono_128
+    size: 128
+    bpp: 4
+    glyphs: " 0123456789:./-"
 
 lvgl:
   top_layer:
@@ -55,6 +132,16 @@ lvgl:
                 text_font: font_number_clock
                 text_color: 0xFFFFFF
                 text: "00:00"
+                text_align: CENTER
+                pad_all: 0
+            - label:
+                id: clock_date_label
+                text_font: font_number_clock_40
+                text_color: 0xFFFFFF
+                text: ""
+                text_align: CENTER
+                pad_all: 0
+                hidden: true
       - obj:
           id: dim_screensaver_touch_guard
           x: 0

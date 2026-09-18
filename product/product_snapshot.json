@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 9,
     "cardTypes": 43,
-    "entityNames": 101,
+    "entityNames": 106,
     "icons": 352,
     "structuralIcons": 22,
     "compatibilityFixtureGroups": 2
@@ -3266,6 +3266,19 @@
             "label": "Large Clock",
             "kind": "flag",
             "omitDefault": true
+          },
+          {
+            "name": "text_size",
+            "label": "Text size",
+            "kind": "choice",
+            "values": [
+              "",
+              "small",
+              "medium",
+              "large"
+            ],
+            "defaultValue": "",
+            "omitDefault": true
           }
         ],
         "normalization": {
@@ -3310,7 +3323,8 @@
           },
           "unknownOptions": "drop",
           "canonicalOptionOrder": [
-            "large_numbers"
+            "large_numbers",
+            "text_size"
           ],
           "optionHook": "normalize_date_time_options"
         },
@@ -3351,6 +3365,19 @@
             "label": "Large Clock",
             "kind": "flag",
             "omitDefault": true
+          },
+          {
+            "name": "text_size",
+            "label": "Text size",
+            "kind": "choice",
+            "values": [
+              "",
+              "small",
+              "medium",
+              "large"
+            ],
+            "defaultValue": "",
+            "omitDefault": true
           }
         ],
         "normalization": {
@@ -3389,7 +3416,8 @@
           },
           "unknownOptions": "drop",
           "canonicalOptionOrder": [
-            "large_numbers"
+            "large_numbers",
+            "text_size"
           ],
           "optionHook": "normalize_date_time_options"
         },
@@ -5837,6 +5865,19 @@
             "label": "Large Clock",
             "kind": "flag",
             "omitDefault": true
+          },
+          {
+            "name": "text_size",
+            "label": "Text size",
+            "kind": "choice",
+            "values": [
+              "",
+              "small",
+              "medium",
+              "large"
+            ],
+            "defaultValue": "",
+            "omitDefault": true
           }
         ],
         "normalization": {
@@ -5876,7 +5917,8 @@
           },
           "unknownOptions": "drop",
           "canonicalOptionOrder": [
-            "large_numbers"
+            "large_numbers",
+            "text_size"
           ],
           "optionHook": "normalize_date_time_options"
         },
@@ -6940,6 +6982,66 @@
           "screen_saver__action",
           "screen_saver_action",
           "screensaver_action"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_saver_clock_font",
+        "domain": "select",
+        "name": "Screen Saver Clock Font",
+        "objectIds": [
+          "screen_saver_clock_font",
+          "screensaver_clock_font"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_saver_clock_time_format",
+        "domain": "text",
+        "name": "Screen Saver Clock Time Format",
+        "objectIds": [
+          "screen_saver_clock_time_format",
+          "screensaver_clock_time_format"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_saver_clock_date_format",
+        "domain": "text",
+        "name": "Screen Saver Clock Date Format",
+        "objectIds": [
+          "screen_saver_clock_date_format",
+          "screensaver_clock_date_format"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_saver_clock_time_size",
+        "domain": "select",
+        "name": "Screen Saver Clock Time Size",
+        "objectIds": [
+          "screen_saver_clock_time_size",
+          "screensaver_clock_time_size"
+        ],
+        "groups": [
+          "settings"
+        ]
+      },
+      {
+        "key": "screen_saver_clock_date_size",
+        "domain": "select",
+        "name": "Screen Saver Clock Date Size",
+        "objectIds": [
+          "screen_saver_clock_date_size",
+          "screensaver_clock_date_size"
         ],
         "groups": [
           "settings"

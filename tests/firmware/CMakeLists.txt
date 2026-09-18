@@ -422,6 +422,12 @@ target_include_directories(saved_config_parser_test PRIVATE
 )
 add_test(NAME saved_config_parser_test COMMAND saved_config_parser_test)
 
+add_executable(date_time_text_size_test date_time_text_size_test.cpp)
+target_compile_features(date_time_text_size_test PRIVATE cxx_std_17)
+target_compile_options(date_time_text_size_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(date_time_text_size_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME date_time_text_size_test COMMAND date_time_text_size_test)
+
 set(CLIMATE_UPDATE_TEST_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/climate_update_test.cpp)
 add_custom_command(
   OUTPUT ${CLIMATE_UPDATE_TEST_SOURCE}

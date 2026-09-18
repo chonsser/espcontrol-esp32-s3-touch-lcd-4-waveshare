@@ -3,6 +3,7 @@ import { CARD_SIZE_LARGE, CARD_SIZE_SINGLE, CARD_SIZE_WIDE } from "../model/grid
 import { normalizeLanguage } from "../model/settings";
 import { cardContractOptionSpec } from "./config_option_core";
 import { i18n, i18nDevice } from "../i18n";
+import { configOptionValue, setConfigOptionValue } from "../model/config_primitives";
 
 export interface ConfigDateTimeOptionsDependencies {
     readonly state: AppState;
@@ -20,6 +21,30 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
         if (button && button.type === "clock") return "clock";
         if (button && button.type === "timezone") return "timezone";
         return button && button.precision === "datetime" ? "datetime" : "";
+    }
+
+    function dateTimeTextSize(button: any): string {
+        const size = configOptionValue(button && button.options, "text_size");
+        return size === "small" || size === "medium" || size === "large" ? size : "";
+    }
+
+    function renderTextSizeSelector(panel: any, button: any, helpers: any): void {
+        const field = helpers.selectField(i18n("Text size"), helpers.idPrefix + "date-time-text-size", [
+            { value: "", label: i18n("Auto") },
+            { value: "small", label: i18n("Small") },
+            { value: "medium", label: i18n("Medium") },
+            { value: "large", label: i18n("Large") },
+        ], dateTimeTextSize(button), function (this: HTMLSelectElement) {
+            button.options = setConfigOptionValue(button.options, "text_size", this.value);
+            helpers.saveField("options", button.options);
+            dependencies.renderButtonSettings();
+        });
+        panel.appendChild(field.field);
+    }
+
+    function textSizePreviewClass(button: any): string | undefined {
+        const size = dateTimeTextSize(button);
+        return size ? "sp-date-time-text sp-date-time-text-" + size : undefined;
     }
 
     function dateTimeLargeNumbersLabel(this: any, button?: any) {
@@ -145,6 +170,7 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
             },
         },
         largeNumbers: {
+            isVisible: (button: any) => !dateTimeTextSize(button),
             label: function (button?: any) { return dateTimeLargeNumbersLabel(button); },
             idSuffix: "large-date-time-numbers",
             supportedCardSize: function (button?: any, helpers?: any) {
@@ -166,6 +192,9 @@ export function createConfigDateTimeOptionsFeature(dependencies: ConfigDateTimeO
         dateTimeCardTimeParts,
         dateTimeLargeNumbersLabel,
         dateTimeModeOptionValues,
+        dateTimeTextSize,
+        renderTextSizeSelector,
+        textSizePreviewClass,
         defaultTimezoneCardEntity,
         metadata,
         monthNameForIndex: dependencies.monthNameForIndex,

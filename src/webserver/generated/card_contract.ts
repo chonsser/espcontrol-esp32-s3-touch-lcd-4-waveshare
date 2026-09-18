@@ -997,6 +997,19 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         "label": "Large Clock",
         "kind": "flag",
         "omitDefault": true
+      },
+      {
+        "name": "text_size",
+        "label": "Text size",
+        "kind": "choice",
+        "values": [
+          "",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultValue": "",
+        "omitDefault": true
       }
     ],
     "normalization": {
@@ -1041,7 +1054,8 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
       },
       "unknownOptions": "drop",
       "canonicalOptionOrder": [
-        "large_numbers"
+        "large_numbers",
+        "text_size"
       ],
       "optionHook": "normalize_date_time_options"
     },
@@ -1082,6 +1096,19 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         "label": "Large Clock",
         "kind": "flag",
         "omitDefault": true
+      },
+      {
+        "name": "text_size",
+        "label": "Text size",
+        "kind": "choice",
+        "values": [
+          "",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultValue": "",
+        "omitDefault": true
       }
     ],
     "normalization": {
@@ -1120,7 +1147,8 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
       },
       "unknownOptions": "drop",
       "canonicalOptionOrder": [
-        "large_numbers"
+        "large_numbers",
+        "text_size"
       ],
       "optionHook": "normalize_date_time_options"
     },
@@ -3568,6 +3596,19 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
         "label": "Large Clock",
         "kind": "flag",
         "omitDefault": true
+      },
+      {
+        "name": "text_size",
+        "label": "Text size",
+        "kind": "choice",
+        "values": [
+          "",
+          "small",
+          "medium",
+          "large"
+        ],
+        "defaultValue": "",
+        "omitDefault": true
       }
     ],
     "normalization": {
@@ -3607,7 +3648,8 @@ export const CARD_CONTRACT_CARDS: Readonly<Record<string, CardTypeSpec>> = {
       },
       "unknownOptions": "drop",
       "canonicalOptionOrder": [
-        "large_numbers"
+        "large_numbers",
+        "text_size"
       ],
       "optionHook": "normalize_date_time_options"
     },
@@ -4768,6 +4810,7 @@ export const CARD_CONTRACT_OPTION_NAMES: Readonly<Record<string, string>> = {
   "state_unit": "state_unit",
   "subpage_kind": "subpage_kind",
   "temperature_step": "temperature_step",
+  "text_size": "text_size",
   "time_unit": "time_unit",
   "vacuum_mode": "vacuum_mode",
   "volume_max": "volume_max",

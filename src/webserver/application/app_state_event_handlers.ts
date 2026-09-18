@@ -38,6 +38,8 @@ import { getActiveScreensaverMode } from "./screensaver_state";
 import type { EnvironmentStateFeature } from "./environment_state";
 import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
+import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
+import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
 import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { AppearanceFeature } from "./appearance_state";
 import type { FirmwareVersionFeature } from "./firmware_version_state";
@@ -73,6 +75,8 @@ export function createAppStateEventHandlersFeature(
     grid: Pick<GridFeature, "applyButtonOrderValue">,
     settingsHelpers: Pick<SettingsPageHelpersFeature, "syncAlarmDelayAudioUi" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">,
     preview: Pick<PreviewRenderFeature, "render">,
+    screensaverClockFont: ScreensaverClockFontFeature,
+    screensaverClockFormat: ScreensaverClockFormatFeature,
 ): AppStateEventHandlersFeature {
     const { syncAlarmDelayAudioUi, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = settingsHelpers;
     const { render: renderPreview } = preview;
@@ -276,6 +280,13 @@ export function createAppStateEventHandlersFeature(
                 state.clockBrightnessSplitReceived = true;
                 state.clockBrightnessNight = normalizeClockBrightness(val, state.clockBrightnessDay);
                 syncClockScreensaverControls();
+            },
+            "text-screen_saver_clock_time_format": (_value, data) => screensaverClockFormat.applyState("timeFormat", data),
+            "text-screen_saver_clock_date_format": (_value, data) => screensaverClockFormat.applyState("dateFormat", data),
+            "select-screen_saver_clock_time_size": (_value, data) => screensaverClockFormat.applyState("timeSize", data),
+            "select-screen_saver_clock_date_size": (_value, data) => screensaverClockFormat.applyState("dateSize", data),
+            "select-screen_saver_clock_font": function (this: any, val?: any, d?: any) {
+                screensaverClockFont.applyState({ ...d, value: d?.value ?? val });
             },
             "select-screen_saver__action": function (this: any, val?: any, d?: any) {
                 state._screensaverActionReceived = true;

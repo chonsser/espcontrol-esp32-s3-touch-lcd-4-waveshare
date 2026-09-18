@@ -145,6 +145,11 @@ stop=Stop
 set_position=Set Position
 
 # src/webserver/application/config_date_time_options.ts
+text_size=Text size
+auto=Auto
+small=Small
+medium=Medium
+large=Large
 large_clock=Large Clock
 large_time=Large Time
 large_world_clock=Large World Clock
@@ -405,6 +410,27 @@ duration_minutes.other={count} minutes
 duration_hours.one={count} hour
 duration_hours.other={count} hours
 
+# src/webserver/application/screensaver_clock_font.ts
+clock_font_was_skipped_because_this_firmware_does_not_support_th=Clock font was skipped because this firmware does not support the requested font or Roboto Thin.
+could_not_restore_the_clock_font=Could not restore the clock font.
+
+# src/webserver/application/screensaver_clock_format.ts
+clock_format_or_text_size_was_skipped_because_this_firmware_does=Clock format or text size was skipped because this firmware does not support it.
+could_not_restore_the_clock_format_or_text_size=Could not restore the clock format or text size.
+use_h_i_m_s_d_m_y_or_y_digits_and_spaces_only_maximum_32_charact=Use %H, %I, %M, %S, %d, %m, %Y or %y, digits and spaces, : . / - only. Maximum 32 characters, including the formatted result.
+enter_a_numeric_date_or_time_format_using_the_supported_tokens_m=Enter a numeric date or time format using the supported tokens (maximum 32 characters).
+time_format=Time Format
+date_format=Date Format
+default_global_12_24_hour_setting=Default (global 12/24-hour setting)
+24_hour_with_seconds=24-hour with seconds
+12_hour_with_seconds=12-hour with seconds
+hidden=Hidden
+custom_time_format=Custom Time Format
+custom_date_format=Custom Date Format
+time_text_size=Time Text Size
+date_text_size=Date Text Size
+larger_text_is_reduced_automatically_when_needed_to_fit_the_scre=Larger text is reduced automatically when needed to fit the screen without clipping.
+
 # src/webserver/application/settings_cover_art_section.ts
 show_cover_art=Show Cover Art
 keep_screen_awake_during_playback=Keep Screen Awake During Playback
@@ -437,6 +463,10 @@ nighttime_brightness=Nighttime Brightness
 dawn=Dawn
 dusk=Dusk
 backlight=Backlight
+font_and_colour_apply_to_the_clock_in_timer_sensor_and_night_sch=Font and colour apply to the clock in Timer, Sensor and Night Schedule modes.
+clock_font=Clock Font
+clock_text_colour=Clock Text Colour
+clock_appearance=Clock Appearance
 timezone=Timezone
 clock_format=Clock Format
 custom_ntp_servers=Custom NTP Servers
@@ -522,7 +552,6 @@ screen_off=Screen Off
 when_woken_idle_time_to_screen_off=When Woken, Idle Time to Screen Off
 when_woken_screen_brightness=When Woken, Screen Brightness
 clock_brightness=Clock Brightness
-clock_text_colour=Clock Text Colour
 schedule_on=Schedule on
 night_schedule=Night Schedule
 
@@ -746,7 +775,6 @@ large_sensor_numbers=Large Sensor Numbers
 lit_when_active=Lit When Active
 e_g_ups_runtime=e.g. UPS Runtime
 incoming_value_unit=Incoming Value Unit
-auto=Auto
 seconds=Seconds
 minutes=Minutes
 hours=Hours

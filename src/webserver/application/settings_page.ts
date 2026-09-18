@@ -3,6 +3,7 @@ import { NTP_SERVER_DEFAULTS } from "../state/app_state";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
 import {
     normalizeBrightnessMode,
+    normalizeHexColor,
     normalizeLanguage,
     normalizeTemperatureUnit,
     normalizeTimeOfDay,
@@ -20,6 +21,8 @@ import type { EnvironmentStateFeature } from "./environment_state";
 import { durationMinutesLabel, durationSecondsLabel } from "./screen_schedule_state";
 import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
+import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
+import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
 import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { AppearanceFeature } from "./appearance_state";
 import type { ClockBarFeature } from "./clock_bar_state";
@@ -41,7 +44,7 @@ export interface SettingsPageFeature {
     buildSettingsPage(...args: any[]): any;
 }
 
-export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postSelect" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus" | "postVoiceServices">, fields: Pick<ControlsFieldsFeature, "colorField" | "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "buildAlarmDelayAudioSettingsCard" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">): SettingsPageFeature {
+export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postSelect" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus" | "postVoiceServices">, fields: Pick<ControlsFieldsFeature, "colorField" | "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "buildAlarmDelayAudioSettingsCard" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">, screensaverClockFont: ScreensaverClockFontFeature, screensaverClockFormat: ScreensaverClockFormatFeature): SettingsPageFeature {
     const { render: renderPreview } = preview;
     const { appendSettingsSection, buildAlarmDelayAudioSettingsCard, createScreensaverThenControls, createTimeInput, statusBadge, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = helpers;
     const { buildScreenScheduleSettingsCard } = scheduleSection;
@@ -178,6 +181,27 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         updateSunInfo();
         var backlightCard: any = makeCollapsibleCard(i18n("Backlight"), blBody, true);
         var scheduleCard: any = buildScreenScheduleSettingsCard();
+        const clockAppearanceBody = document.createElement("div");
+        const clockAppearanceInfo = document.createElement("p");
+        clockAppearanceInfo.textContent = i18n("Font and colour apply to the clock in Timer, Sensor and Night Schedule modes.");
+        clockAppearanceBody.appendChild(clockAppearanceInfo);
+        const clockFont = selectField(i18n("Clock Font"), "sp-set-screensaver-clock-font", [], state.screensaverClockFont, function (this: HTMLSelectElement) {
+            void screensaverClockFont.setFont(this.value);
+        });
+        els.setScreensaverClockFont = clockFont.select;
+        els.setScreensaverClockFontField = clockFont.field;
+        clockAppearanceBody.appendChild(clockFont.field);
+        screensaverClockFont.syncUi();
+        clockAppearanceBody.appendChild(screensaverClockFormat.buildControls(fields));
+        clockAppearanceBody.appendChild(fieldLabel(i18n("Clock Text Colour")));
+        const clockTextColor = colorField("sp-set-schedule-clock-text-color", state.scheduleClockTextColor, function (hex: string) {
+            state.scheduleClockTextColor = normalizeHexColor(hex, "FFFFFF");
+            postText(entityName("screen_schedule_clock_text_color"), state.scheduleClockTextColor);
+        });
+        els.setScheduleClockTextColor = clockTextColor;
+        clockAppearanceBody.appendChild(clockTextColor);
+        const clockAppearanceCard = makeCollapsibleCard(i18n("Clock Appearance"), clockAppearanceBody, true);
+        clockAppearanceCard.id = "sp-clock-appearance";
         var clockBody: any = document.createElement("div");
         var tzField: any = document.createElement("div");
         tzField.className = "sp-field";
@@ -524,6 +548,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         appendSettingsSection(config, i18n("Sleep & Schedule"), [
             coverArtCard,
             screensaverCard,
+            clockAppearanceCard,
             scheduleCard,
         ]);
         appendSettingsSection(config, i18n("Preferences"), [
