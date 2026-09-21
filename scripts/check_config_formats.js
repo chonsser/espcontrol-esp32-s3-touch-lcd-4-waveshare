@@ -3879,4 +3879,17 @@ const largeSubpage = {
 const largeEncoded = assertSubpageRoundTrip(hooks, "oversized subpage", largeSubpage, false);
 assert(largeEncoded.length > 255, "oversized subpage should exceed one ESPHome text value");
 
+// Shared interactions must survive each card family's option normalization.
+for (const type of ["", "sensor", "action", "push", "media", "subpage", "clock", "light_control"]) {
+  const config = buttonShape({
+    type, entity: "light.kitchen", sensor: type === "action" ? "script.turn_on" : "",
+    options: "long_press=more_info,long_press_entity=sensor.kitchen_power,long_press_text=Power%2C today%3B details",
+  });
+  const normalized = hooks.parseButtonConfig(hooks.serializeButtonConfig(config));
+  assert(normalized.options.includes("long_press=more_info"), `${type}: long press action survives save`);
+  assert(normalized.options.includes("long_press_entity=sensor.kitchen_power"), `${type}: info entity survives save`);
+  assert(normalized.options.includes("long_press_text=Power%2C today%3B details"), `${type}: info text survives save`);
+  const subpage = hooks.parseSubpageConfig(hooks.serializeSubpageConfig({order: ["1", "B"], buttons: [normalized]}));
+  assert.strictEqual(subpage.buttons[0].options, normalized.options, `${type}: subpage round trip`);
+}
 console.log("Config format current tests passed.");

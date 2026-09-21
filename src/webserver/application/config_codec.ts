@@ -1,3 +1,4 @@
+import { copyLongPressOptions } from "./config_long_press_options";
 import { state } from "../state/app_instance";
 import * as EspControlModel from "../model";
 import { configOptionEnabled, configOptionValue, setConfigOptionValue } from "../model/config_primitives";
@@ -440,6 +441,7 @@ export function createConfigCodecFeature(
         return normalizeSubpageOptions(options || "", b && b.sensor, b && b.precision);
     }
     function normalizeButtonConfig(this: any, b?: any) {
+        const longPressOptions = b && b.options || "";
         if (b)
             b.options = b.options || "";
         if (b)
@@ -483,6 +485,7 @@ export function createConfigCodecFeature(
         if (b && !normalizedSavedSensor && !normalizedSavedSwitch && !normalizedSavedAccess && !normalizedSavedOccupancy && !normalizedSavedStatic && !normalizedSavedFan && !normalizedSavedMower && b.type !== "action" && b.type !== "alarm" && b.type !== "alarm_action" && !isClimateCardType(b.type) && b.type !== "webhook" && b.type !== "media" && b.type !== "subpage" && b.type !== "image" && b.type !== "wifi_qr" && b.type !== "wifi_qr_card" && b.type !== "light_control" && b.type !== "vacuum" && !cardLargeNumbersSupported(b)) {
             b.options = "";
         }
+        if (b) b.options = copyLongPressOptions(b.options, longPressOptions);
         return b;
     }
     function isBrightnessSliderType(this: any, type?: any) {
@@ -739,6 +742,7 @@ export function createConfigCodecFeature(
             unit = "";
             precision = "";
         }
+        options = copyLongPressOptions(options, b && b.options);
         return trimConfigFields([
             (type === "door_window" || type === "presence" || type === "screen_lock") ? "" : (b && b.entity || ""),
             label,

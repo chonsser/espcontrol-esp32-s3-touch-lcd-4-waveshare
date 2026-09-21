@@ -476,3 +476,21 @@ add_test(NAME timer_subpage_cleanup_test
 
 add_test(NAME camera_feedback_test COMMAND
   ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/camera_feedback_test.py ${CMAKE_CXX_COMPILER})
+
+add_executable(long_press_config_test long_press_config_test.cpp)
+target_compile_features(long_press_config_test PRIVATE cxx_std_17)
+target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(long_press_config_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME long_press_config_test COMMAND long_press_config_test)
+
+add_executable(long_press_runtime_test long_press_runtime_test.cpp)
+target_compile_features(long_press_runtime_test PRIVATE cxx_std_17)
+target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(long_press_runtime_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME long_press_runtime_test COMMAND long_press_runtime_test)
+
+add_executable(more_info_modal_test more_info_modal_test.cpp)
+target_compile_features(more_info_modal_test PRIVATE cxx_std_17)
+target_compile_options(more_info_modal_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(more_info_modal_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME more_info_modal_test COMMAND more_info_modal_test)

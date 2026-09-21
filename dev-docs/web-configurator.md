@@ -163,3 +163,20 @@ exact edit, generation, and verification steps, or the
 The web playbook owns browser checks and the physical-display loop. Browsers
 cache `www.js` aggressively, so physical testing must hard reload after each
 rebuild.
+
+### Shared long-press options
+
+Button cards store `long_press=more_info` or `long_press=none` in `options`;
+absence preserves the existing tap behavior. `more_info` optionally uses
+`long_press_entity` and `long_press_text`, encoded with the usual option-value
+escaping. The shared codec and firmware parser preserve these fields after
+family normalization. The editor also preserves them around card-specific
+renderers and field changes, because those normalizers only own their own fields.
+Slider surfaces are excluded by matching web and firmware support policies.
+
+The main-grid YAML dispatches `on_long_press` separately from `on_short_click`.
+Subpages install their hold handler before the family tap handler and consume
+LVGL's release-time `CLICKED` event after a hold. Media shortcuts defer their
+press-time action when a custom hold is configured. The information overlay owns
+its HA callbacks and releases them before closing; delayed callbacks also check
+the overlay generation.

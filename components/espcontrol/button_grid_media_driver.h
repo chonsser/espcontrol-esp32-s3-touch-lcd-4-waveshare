@@ -496,7 +496,8 @@ inline bool media_driver_bind_subpage(
     if (!saved) return;
     media_driver_handle_click(
       card_runtime_context(*saved, Surface::SUBPAGE), *saved, target);
-  }, media_fast_press_mode(mode) ? LV_EVENT_PRESSED : LV_EVENT_CLICKED, click);
+  }, media_fast_press_mode(mode) && card_long_press_action(config).empty()
+       ? LV_EVENT_PRESSED : LV_EVENT_CLICKED, click);
   return true;
 }
 
