@@ -29,11 +29,23 @@ Subpages can contain Switch, Lights, Action, Local Action, Option Select, Webhoo
 
 ## Choose a Screen From an Entity
 
-In the web page, open **Settings > Display > Screen from Home Assistant** and enter a Home Assistant
-entity, for example `input_select.aktualny_ekran`. Add a rule for each value you
-want to use, select **Home** or an existing subpage, then save. For example,
-`Salon` can open your living-room subpage and `Start` can return home. The panel
-must be connected to Home Assistant through its ESPHome integration.
+In the web page, open **Screen**. Use the **+** beside the screen selector to
+create a named screen, then add cards in its editor. Each independent screen
+has a full grid: it does not need a home-screen card or reserve a Back card.
+Use the selector to switch between editors. Existing Subpage cards keep their
+normal Back card and continue to work as before.
+
+Enter the Home Assistant entity that selects the screen, for example
+`input_select.aktualny_ekran`. Select each screen and enter the entity value
+that should open it, then save the navigation settings. For example, `Salon`
+can open a living-room screen and `Start` can return home. The panel must be
+connected to Home Assistant through its ESPHome integration.
+
+You can rename or delete an independent screen here. Deleting it removes its
+cards and matching navigation rules, while keeping home-screen cards intact.
+Independent screens and ordinary subpages share the device's screen capacity;
+the editor tells you when no more screens fit. Update older firmware before
+creating independent screens.
 
 Values match exactly, including capital letters and spaces. Use the entity's
 actual state from Home Assistant's Developer Tools. `unknown`, `unavailable`,
@@ -51,10 +63,10 @@ is awake. A screen lock, setup screen, alarm takeover, or active interactive
 control temporarily holds the latest selection; it applies once the panel is
 available. An unmatched value cancels a waiting selection.
 
-Clear the entity and save to disable this feature. The form shows the available
-rule storage and rejects rules that exceed it. Backups include these settings;
-when importing onto another panel, rules follow subpages that fit the new layout.
-Rules for subpages that cannot be restored are omitted with a notice.
+Clear the entity and save to disable this feature. The form rejects rules that
+exceed available storage. Backups include screens, names and these settings;
+when importing onto another panel, rules follow screens that fit the new layout.
+Rules for screens that cannot be restored are omitted with a notice.
 
 ## Open or Activate a Target From Home Assistant
 

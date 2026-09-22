@@ -923,8 +923,12 @@ export function createConfigCodecFeature(
             (raw && raw.ext2 || "") + (raw && raw.ext3 || "") +
             (raw && raw.ext4 || "") + (raw && raw.ext5 || "") +
             (raw && raw.ext6 || "") + (raw && raw.ext7 || "");
+        // Native records remain authoritative even after a matching legacy echo.
+        // Later chunks may still belong to an old or failed compatibility mirror.
+        if (Object.prototype.hasOwnProperty.call(state.subpageNativeRaw, slot) && combined !== state.subpageNativeRaw[slot])
+            return;
         var pending: any = state.subpageSavePending[slot];
-        if (pending) {
+        if (Object.prototype.hasOwnProperty.call(state.subpageSavePending, slot)) {
             if (combined !== pending) {
                 if (state.editingSubpage === slot)
                     renderQueue.schedule();
@@ -991,6 +995,7 @@ export function createConfigCodecFeature(
         return EspControlModel.serializeSubpageGrid(sp.grid, sp.sizes || {}, sp.backLabel || "Back", sp.standalone === true);
     }
     function enterSubpage(this: any, homeSlot?: any) {
+        if (state.subpages[homeSlot]?.standaloneInvalid === true) return;
         state.editingSubpage = homeSlot;
         state.subpageSelectedSlots = [];
         state.subpageLastClicked = -1;

@@ -175,6 +175,16 @@ export class NativePanelConfigController {
     });
   }
 
+  replaceStandaloneScreen(slot: number, expected: string, value: string): Promise<NativePanelConfigSaveOutcome> | null | false {
+    if (!Number.isInteger(slot) || slot < 1 || slot > this.dependencies.slotCount()) return false;
+    return this.schedule((current) => {
+      if (current.subpages[slot] !== expected) {
+        throw new NativePanelConfigConflictError("The screen changed in another browser.");
+      }
+      return updateNativePanelConfigDocument(current, this.dependencies.deviceProfile(), "subpages", slot, value);
+    });
+  }
+
   writeDocument(document: PanelConfigDocument): Promise<NativePanelConfigSaveOutcome> | null {
     if (!this.client_) return null;
     return this.schedule((current) => {

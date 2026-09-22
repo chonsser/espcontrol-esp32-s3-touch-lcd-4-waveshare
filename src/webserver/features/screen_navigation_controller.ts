@@ -19,6 +19,7 @@ export interface ScreenNavigationController {
   load(): Promise<void>;
   edit(change: Partial<ScreenNavigationDraft>): void;
   save(): Promise<boolean>;
+  removeTarget(target: number): Promise<boolean>;
   backup(): Promise<Record<string, unknown>>;
   suspendForRestore(settings?: Record<string, unknown>): Promise<void>;
   restore(settings: Record<string, unknown>): Promise<void>;
@@ -115,6 +116,26 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
         state.status = "error";
         state.message = errorMessage();
         state.dirty = true;
+        return false;
+      } finally { notify(); }
+    },
+    async removeTarget(target) {
+      if (target === 0 || state.status === "saving") return false;
+      state.status = "saving";
+      revision += 1;
+      notify();
+      try {
+        const saved = await dependencies.read();
+        if (!saved) throw new Error(errorMessage());
+        const rows = parseScreenNavigationRules(saved.rules).filter(row => row.target !== target);
+        await writeSettings({ ...saved, rules: serializeScreenNavigationRules(rows) });
+        state.draft.rows = state.draft.rows.filter(row => row.target !== target);
+        state.status = "ready";
+        state.message = "";
+        return true;
+      } catch {
+        state.status = "error";
+        state.message = errorMessage();
         return false;
       } finally { notify(); }
     },

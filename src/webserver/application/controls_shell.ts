@@ -31,6 +31,8 @@ export interface ControlsShellDependencies {
     readonly schedule: typeof setTimeout;
     readonly cancelSchedule: (handle: any) => void;
     readonly buildSettingsPage: (parent: HTMLElement) => void;
+    readonly buildScreenToolbar?: () => HTMLElement;
+    readonly buildScreenSettings?: () => HTMLElement;
     readonly closeSettings: () => void;
     readonly postButtonPress: (name: string) => Promise<Response>;
     readonly waitForReboot: () => void;
@@ -170,6 +172,7 @@ export function createControlsShellFeature(
         var page: any = document.createElement("div");
         page.id = "sp-screen";
         page.className = "sp-page";
+        if (dependencies.buildScreenToolbar) page.appendChild(dependencies.buildScreenToolbar());
         var selectionBar: any = document.createElement("div");
         selectionBar.className = "sp-selection-bar";
         els.selectionBar = selectionBar;
@@ -201,6 +204,7 @@ export function createControlsShellFeature(
         hint.textContent = i18n("tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage");
         els.previewHint = hint;
         page.appendChild(hint);
+        if (dependencies.buildScreenSettings) page.appendChild(dependencies.buildScreenSettings());
         var overlay: any = document.createElement("div");
         overlay.className = "sp-settings-overlay";
         var modal: any = document.createElement("div");

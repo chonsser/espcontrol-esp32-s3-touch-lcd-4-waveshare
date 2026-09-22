@@ -185,3 +185,42 @@ test("unsupported restore is rejected before the imported layout can replace slo
   await assert.rejects(() => value.suspendForRestore({ screen_navigation_entity: "input_select.screen" }));
   assert.deepEqual(writes, []);
 });
+
+test("deleting a screen removes saved and draft mappings without saving other draft changes", async () => {
+  const { value, writes, saved } = setup({ targets: () => [0, 4, 5] });
+  await value.load();
+  value.edit({ rows: [{ target: 4, state: "Media" }, { target: 5, state: "Other draft" }], entity: "input_select.draft" });
+  assert.equal(await value.removeTarget(4), true);
+  assert.equal(saved().entity, "input_select.screen");
+  assert.deepEqual(value.view().draft.rows, [{ target: 5, state: "Other draft" }]);
+  assert.equal(value.view().draft.entity, "input_select.draft");
+  assert.equal(value.view().dirty, true);
+  assert.deepEqual(writes, [["entity", ""], ["rules", "0\tHome"], ["wake", true], ["entity", "input_select.screen"]]);
+});
+
+test("deleting a screen removes every persisted matching state and retains other screens", async () => {
+  const writes = [];
+  const { value } = setup({
+    read: async () => ({ ...defaults, rules: "0\tHome\n4\tMusic\n4\tRadio" }),
+    write: async (key, value) => { writes.push([key, value]); return true; },
+  });
+  await value.load();
+  assert.equal(await value.removeTarget(4), true);
+  assert.deepEqual(writes, [["entity", ""], ["rules", "0\tHome"], ["wake", true], ["entity", defaults.entity]]);
+  assert.deepEqual(value.view().draft.rows, [{ target: 0, state: "Home" }]);
+  assert.equal(await value.removeTarget(0), false, "home cannot be removed");
+});
+
+test("failed mapping cleanup never reenables the source or discards its draft", async () => {
+  const writes = [];
+  const { value } = setup({
+    read: async () => ({ ...defaults, rules: "4\tMusic" }),
+    write: async (key, value) => { writes.push([key, value]); return key !== "rules"; },
+  });
+  await value.load();
+  value.edit({ rows: [{ target: 4, state: "Draft" }] });
+  assert.equal(await value.removeTarget(4), false);
+  assert.deepEqual(writes, [["entity", ""], ["rules", ""]]);
+  assert.deepEqual(value.view().draft.rows, [{ target: 4, state: "Draft" }]);
+  assert.equal(value.view().dirty, true);
+});

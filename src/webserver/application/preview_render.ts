@@ -22,6 +22,7 @@ import type { GridFeature } from "./grid";
 import type { ButtonSettingsSelectionFeature } from "./button_settings_selection";
 import { i18nDevice } from "../i18n";
 export interface PreviewRenderDependencies {
+    readonly syncScreenNavigation?: () => void;
     readonly updateClockBarItemUi: () => void;
     readonly document: Document;
     readonly layout: ApplicationLayoutState;
@@ -98,6 +99,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
         if (!document.hidden && els.previewMain?.isConnected) renderPreview();
     });
     function renderPreview(this: any) {
+        dependencies.syncScreenNavigation?.();
         // One scoped clock refresh per rendered grid, replaced on every redraw.
         if (clockRefreshTimer !== undefined) clearTimeout(clockRefreshTimer);
         clockRefreshTimer = undefined;

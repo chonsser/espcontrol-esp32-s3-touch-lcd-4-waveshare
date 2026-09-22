@@ -260,6 +260,7 @@ export interface AppState {
   subpages: Record<string, RuntimeSubpage>;
   subpageRaw: Record<string, Record<string, string>>;
   subpageSavePending: Record<string, string>;
+  subpageNativeRaw: Record<string, string>;
   editingSubpage: number | null;
   subpageSelectedSlots: number[];
   subpageLastClicked: number;

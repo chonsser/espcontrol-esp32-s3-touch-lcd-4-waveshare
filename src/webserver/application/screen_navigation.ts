@@ -1,6 +1,8 @@
 import { i18n } from "../i18n";
 import type { DeviceApi } from "../api/device_api";
 import type { CardConfig } from "../contracts/types";
+import type { AppState } from "../state/types";
+import { firstFreeStandaloneScreenSlot, isStandaloneSubpage, standaloneScreenNameError } from "../model/standalone_screens";
 import { createScreenNavigationController, type ScreenNavigationController } from "../features/screen_navigation_controller";
 import type { ScreenNavigationDraft } from "../features/screen_navigation_controller";
 import type { ScreenNavigationSettings } from "../model/screen_navigation";
@@ -9,7 +11,7 @@ import type { EntityStateFeature } from "./entity_state";
 import type { ControlsFieldsFeature } from "./controls_fields";
 import { holdWebLocaleReload } from "./language_state";
 
-export interface ScreenNavigationFeature extends ScreenNavigationController { buildCard(): HTMLElement }
+export interface ScreenNavigationFeature extends ScreenNavigationController { buildCard(): HTMLElement; buildToolbar(): HTMLElement; sync(): void }
 export interface ScreenNavigationFeatureDependencies {
   document: Document;
   deviceApi: Pick<DeviceApi, "getJson">;
@@ -17,11 +19,31 @@ export interface ScreenNavigationFeatureDependencies {
   entityState: Pick<EntityStateFeature, "entityName" | "entityInput">;
   fields: Pick<ControlsFieldsFeature, "makeCollapsibleCard" | "fieldLabel" | "toggleRow">;
   buttons(): readonly Partial<CardConfig>[];
+  editor?: {
+    state: AppState;
+    maxSlots(): number;
+    ready(): Promise<boolean>;
+    select(slot: number): void;
+    create(slot: number): Promise<unknown>;
+    replace(slot: number, label: string | null): Promise<unknown>;
+    confirm(message: string): boolean;
+  };
 }
 
 export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDependencies): ScreenNavigationFeature {
   const document = deps.document;
-  const targets = () => [0, ...deps.buttons().flatMap((button, index) => button.type === "subpage" ? [index + 1] : [])];
+  const screens = () => {
+    const values = new Map<number, string>([[0, i18n("Home screen")]]);
+    deps.buttons().forEach((button, index) => {
+      if (button.type === "subpage" && !deps.editor?.state.subpages[index + 1]?.standaloneInvalid)
+        values.set(index + 1, button.label || i18n("Subpage {number}", { number: index + 1 }));
+    });
+    Object.entries(deps.editor?.state.subpages || {}).forEach(([slot, screen]) => {
+      if (isStandaloneSubpage(screen)) values.set(Number(slot), screen.screenLabel || i18n("Screen {number}", { number: slot }));
+    });
+    return values;
+  };
+  const targets = () => [...screens().keys()];
   const controller = createScreenNavigationController({
     targets,
     async read() {
@@ -52,47 +74,156 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
     },
   });
   let releaseLocaleHold: (() => void) | undefined;
-  controller.subscribe(() => {
+  let syncToolbar = () => {};
+  let syncCard = () => {};
+  let nativeReady = false;
+  let busy = false;
+  let screenMessage = "";
+  const nameDrafts = new Map<number, string>();
+  const selected = () => deps.editor?.state.editingSubpage || 0;
+  const syncLocaleHold = () => {
+    for (const [slot, label] of nameDrafts) {
+      const screen = deps.editor?.state.subpages[slot];
+      if (!isStandaloneSubpage(screen) || label === screen.screenLabel) nameDrafts.delete(slot);
+    }
     const view = controller.view();
-    if ((view.dirty || view.status === "saving") && !releaseLocaleHold) releaseLocaleHold = holdWebLocaleReload();
-    else if (!view.dirty && view.status !== "saving" && releaseLocaleHold) { releaseLocaleHold(); releaseLocaleHold = undefined; }
-  });
+    const held = busy || nameDrafts.size > 0 || view.dirty || view.status === "saving";
+    if (held && !releaseLocaleHold) releaseLocaleHold = holdWebLocaleReload();
+    else if (!held && releaseLocaleHold) { releaseLocaleHold(); releaseLocaleHold = undefined; }
+  };
+  controller.subscribe(syncLocaleHold);
+  const sync = () => { syncLocaleHold(); syncToolbar(); syncCard(); };
+  function button(label: string, onClick: () => void): HTMLButtonElement {
+    const result = document.createElement("button");
+    result.type = "button";
+    result.className = "sp-fw-btn";
+    result.textContent = label;
+    result.addEventListener("click", onClick);
+    return result;
+  }
+  const durable = (result: unknown) => result === "saved" || result === "mirror-failed";
+  const failure = (result: unknown) => result === "conflict"
+    ? i18n("Configuration changed in another browser. Reload before saving again.")
+    : i18n("Could not save the configuration. Check the connection and try again.");
+  async function addScreen() {
+    const editor = deps.editor;
+    if (!editor || !nativeReady || busy || editor.state.configLocked) return;
+    const slot = firstFreeStandaloneScreenSlot(editor.state.subpages, deps.buttons(), editor.maxSlots());
+    if (slot === null) { screenMessage = i18n("No free screen storage. Delete an unused screen first."); sync(); return; }
+    busy = true;
+    screenMessage = "";
+    sync();
+    editor.state.subpages[slot] = { standalone: true, screenLabel: i18n("Screen {number}", { number: slot }), order: [], buttons: [], grid: [], sizes: {} };
+    try {
+      const result = await editor.create(slot);
+      if (durable(result)) editor.select(slot);
+      else screenMessage = failure(result);
+    } catch { screenMessage = failure("failed"); }
+    finally { busy = false; sync(); }
+  }
+  function buildToolbar(): HTMLElement {
+    const toolbar = document.createElement("div");
+    toolbar.className = "sp-screen-toolbar";
+    toolbar.append(deps.fields.fieldLabel(i18n("Screen"), "sp-screen-picker"));
+    const picker = document.createElement("select");
+    picker.id = "sp-screen-picker";
+    picker.className = "sp-select";
+    picker.addEventListener("change", () => {
+      if (!busy && !deps.editor?.state.configLocked) deps.editor?.select(Number(picker.value));
+      sync();
+    });
+    const add = button("+", () => { void addScreen(); });
+    add.id = "sp-screen-add";
+    add.setAttribute("aria-label", i18n("Add screen"));
+    add.title = i18n("Add screen");
+    const status = document.createElement("span");
+    status.className = "sp-hint";
+    status.setAttribute("role", "status");
+    toolbar.append(picker, add, status);
+    let signature = "";
+    syncToolbar = () => {
+      const options = [...screens()];
+      const next = JSON.stringify(options);
+      if (signature !== next) {
+        signature = next;
+        picker.replaceChildren(...options.map(([slot, label]) => {
+          const option = document.createElement("option");
+          option.value = String(slot); option.textContent = label; return option;
+        }));
+      }
+      picker.value = String(selected());
+      picker.disabled = busy || !!deps.editor?.state.configLocked;
+      add.disabled = busy || !nativeReady || !!deps.editor?.state.configLocked;
+      status.textContent = screenMessage;
+    };
+    sync();
+    void deps.editor?.ready().then(ready => {
+      nativeReady = ready;
+      if (!ready) screenMessage = i18n("Update the panel firmware to add screens.");
+      sync();
+    }).catch(() => {
+      screenMessage = i18n("Could not load screens. Reload the page to try again."); sync();
+    });
+    return toolbar;
+  }
   function buildCard(): HTMLElement {
     const body = document.createElement("div");
-    const explanation = document.createElement("p");
-    explanation.className = "sp-hint";
-    explanation.textContent = i18n("Match exact Home Assistant state values to the home screen or a subpage. Leave the entity empty to disable automatic navigation.");
-    body.append(explanation);
     const editor = document.createElement("fieldset");
-    editor.style.border = "0";
-    editor.style.padding = "0";
-    editor.style.margin = "0";
-    editor.style.minWidth = "0";
+    editor.className = "sp-screen-settings";
+    const metadata = document.createElement("div");
+    metadata.className = "sp-screen-name-row";
+    const name = document.createElement("input");
+    name.id = "sp-screen-name";
+    name.className = "sp-input";
+    name.addEventListener("input", () => { nameDrafts.set(selected(), name.value); syncLocaleHold(); });
+    const rename = button(i18n("Rename"), () => { void changeScreen(name.value); });
+    const remove = button(i18n("Delete screen"), () => {
+      const label = screens().get(selected()) || "";
+      if (deps.editor?.confirm(i18n('Delete screen "{name}" and its cards?', { name: label }))) void changeScreen(null);
+    });
+    metadata.append(deps.fields.fieldLabel(i18n("Screen name"), name.id), name, rename, remove);
+    body.append(metadata);
+    async function changeScreen(label: string | null) {
+      const slot = selected();
+      if (!slot || busy || !nativeReady || deps.editor?.state.configLocked || !isStandaloneSubpage(deps.editor?.state.subpages[slot])) return;
+      const nameError = label === null ? null : standaloneScreenNameError(label);
+      if (nameError) {
+        screenMessage = nameError === "required" ? i18n("Enter a screen name.") : nameError === "too-long" ? i18n("Screen name is too long. Shorten it.") : i18n("Screen name contains an unsupported character.");
+        sync(); return;
+      }
+      busy = true; screenMessage = ""; sync();
+      try {
+        if (label === null && !await controller.removeTarget(slot)) return;
+        const result = await deps.editor!.replace(slot, label);
+        if (durable(result)) {
+          nameDrafts.delete(slot);
+          if (label === null) deps.editor!.select(0);
+        } else screenMessage = failure(result);
+      } catch { screenMessage = failure("failed"); }
+      finally { busy = false; sync(); }
+    }
     const entityField = document.createElement("div");
     entityField.className = "sp-field";
     const entityId = "sp-set-screen-navigation-entity";
     entityField.append(deps.fields.fieldLabel(i18n("Entity"), entityId));
-    const entity: HTMLInputElement = deps.entityState.entityInput(entityId, "", "input_select.aktualny_ekran");
+    const entity: HTMLInputElement = deps.entityState.entityInput(entityId, "", "input_select.screen");
+    entity.classList.add("sp-input");
     entityField.append(entity);
     editor.append(entityField);
+    const explanation = document.createElement("p");
+    explanation.className = "sp-hint";
+    explanation.textContent = i18n("Enter the exact Home Assistant state that opens the selected screen. Leave the entity empty to disable automatic navigation.");
+    editor.append(explanation);
     const rows = document.createElement("div");
     editor.append(rows);
-    const button = (label: string, onClick: () => void): HTMLButtonElement => {
-      const result = document.createElement("button");
-      result.type = "button";
-      result.className = "sp-fw-btn";
-      result.textContent = label;
-      result.addEventListener("click", onClick);
-      return result;
-    };
-    const add = button(i18n("Add mapping"), () => {
-      const draft = controller.view().draft;
-      controller.edit({ rows: [...draft.rows, { target: 0, state: "" }] });
-    });
-    editor.append(add);
+    const unavailable = document.createElement("div");
+    editor.append(unavailable);
+    editor.append(button(i18n("Add state value"), () => {
+      controller.edit({ rows: [...controller.view().draft.rows, { target: selected(), state: "" }] });
+    }));
     const wake = deps.fields.toggleRow(i18n("Wake the screen when the state changes"), "sp-set-screen-navigation-wake", true);
     editor.append(wake.row);
-    const save = button(i18n("Save"), () => { void controller.save(); });
+    const save = button(i18n("Save screen settings"), () => { void controller.save(); });
     save.id = "sp-set-screen-navigation-save";
     editor.append(save);
     body.append(editor);
@@ -104,82 +235,78 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
     body.append(status);
     const retry = button(i18n("Reload settings"), () => { void controller.load(); });
     body.append(retry);
+    const draftSignature = (draft: ScreenNavigationDraft) => JSON.stringify([selected(), draft, targets()]);
     let signature = "";
+    let metadataSlot = -1;
     const edit = (change: Partial<ScreenNavigationDraft>) => {
-      signature = JSON.stringify({ ...controller.view().draft, ...change });
+      signature = draftSignature({ ...controller.view().draft, ...change });
       controller.edit(change);
     };
     entity.addEventListener("input", () => edit({ entity: entity.value }));
     entity.addEventListener("change", () => edit({ entity: entity.value }));
     wake.input.addEventListener("change", () => edit({ wake: wake.input.checked }));
     const renderDraft = (draft: ScreenNavigationDraft) => {
-      signature = JSON.stringify(draft);
+      signature = draftSignature(draft);
       entity.value = draft.entity;
       wake.input.checked = draft.wake;
       rows.replaceChildren();
-      draft.rows.forEach((row, index) => {
+      unavailable.replaceChildren();
+      draft.rows.filter(row => !targets().includes(row.target)).forEach((row, position) => {
         const wrap = document.createElement("div");
         wrap.className = "sp-field";
-        const stateId = `sp-set-screen-navigation-state-${index}`;
-        wrap.append(deps.fields.fieldLabel(i18n("State value {number}", { number: index + 1 }), stateId));
+        const label = document.createElement("p");
+        label.className = "sp-hint";
+        label.textContent = i18n("Unavailable screen {number}: {state}", { number: row.target, state: row.state });
+        wrap.append(label, button(i18n("Remove unavailable mapping {number}", { number: position + 1 }), () => {
+          controller.edit({ rows: controller.view().draft.rows.filter(candidate => candidate.target !== row.target || candidate.state !== row.state) });
+        }));
+        unavailable.append(wrap);
+      });
+      const matching = draft.rows.flatMap((row, index) => row.target === selected() ? [{ row, index }] : []);
+      if (!matching.length) matching.push({ row: { target: selected(), state: "" }, index: draft.rows.length });
+      matching.forEach(({ row, index }, position) => {
+        const wrap = document.createElement("div");
+        wrap.className = "sp-field sp-screen-state";
+        const stateId = `sp-set-screen-navigation-state-${position}`;
+        wrap.append(deps.fields.fieldLabel(i18n("State value {number}", { number: position + 1 }), stateId));
         const input = document.createElement("input");
         input.className = "sp-input";
-        input.type = "text";
-        input.id = stateId;
-        input.value = row.state;
+        input.type = "text"; input.id = stateId; input.value = row.state;
         input.addEventListener("input", () => {
           const next = controller.view().draft.rows;
-          next[index]!.state = input.value;
+          next[index] = { target: selected(), state: input.value };
           edit({ rows: next });
         });
-        wrap.append(input);
-        const selectId = `sp-set-screen-navigation-target-${index}`;
-        wrap.append(deps.fields.fieldLabel(i18n("Screen {number}", { number: index + 1 }), selectId));
-        const select = document.createElement("select");
-        select.id = selectId;
-        select.className = "sp-select";
-        const addOption = (value: number, label: string) => {
-          const option = document.createElement("option");
-          option.value = String(value);
-          option.textContent = label;
-          select.append(option);
-        };
-        addOption(0, i18n("Home screen"));
-        deps.buttons().forEach((target, slot) => {
-          if (target.type === "subpage") addOption(slot + 1, target.label || i18n("Subpage {number}", { number: slot + 1 }));
-        });
-        if (!targets().includes(row.target)) addOption(row.target, i18n("Removed subpage — choose another screen"));
-        select.value = String(row.target);
-        select.addEventListener("change", () => {
-          const next = controller.view().draft.rows;
-          next[index]!.target = Number(select.value);
-          edit({ rows: next });
-        });
-        wrap.append(select, button(i18n("Remove mapping {number}", { number: index + 1 }), () => {
-          controller.edit({ rows: controller.view().draft.rows.filter((_, position) => position !== index) });
+        wrap.append(input, button(i18n("Remove mapping {number}", { number: position + 1 }), () => {
+          controller.edit({ rows: controller.view().draft.rows.filter((_, i) => i !== index) });
         }));
         rows.append(wrap);
       });
     };
-    const sync = () => {
+    syncCard = () => {
       const view = controller.view();
-      if (signature !== JSON.stringify(view.draft)) renderDraft(view.draft);
-      editor.disabled = !view.supported || ["idle", "loading", "saving", "unsupported"].includes(view.status);
+      const slot = selected();
+      if (signature !== draftSignature(view.draft)) renderDraft(view.draft);
+      metadata.hidden = !isStandaloneSubpage(deps.editor?.state.subpages[slot]);
+      if (metadataSlot !== slot || document.activeElement !== name) {
+        name.value = nameDrafts.get(slot) ?? deps.editor?.state.subpages[slot]?.screenLabel ?? "";
+        metadataSlot = slot;
+      }
+      name.disabled = rename.disabled = remove.disabled = busy || !nativeReady || !!deps.editor?.state.configLocked;
+      editor.disabled = busy || !!deps.editor?.state.configLocked || !view.supported || ["idle", "loading", "saving", "unsupported"].includes(view.status);
       retry.hidden = view.status !== "error" || view.dirty;
       status.textContent = view.status === "loading" ? i18n("Loading screen navigation…") : view.status === "saving" ? i18n("Saving screen navigation…") : view.message;
     };
     controller.subscribe(sync);
     sync();
-    const card: HTMLElement = deps.fields.makeCollapsibleCard(i18n("Screen from Home Assistant"), body, true);
+    const card: HTMLElement = deps.fields.makeCollapsibleCard(i18n("Screen from Home Assistant"), body, false);
     card.id = "sp-set-screen-navigation";
+    card.classList.add("sp-screen-navigation");
     card.querySelector(".card-header")?.addEventListener("click", () => {
-      if (!card.classList.contains("collapsed")) {
-        // Refresh available subpage labels even when the mapping has a draft.
-        renderDraft(controller.view().draft);
-        void controller.load();
-      }
+      if (!card.classList.contains("collapsed")) { sync(); void controller.load(); }
     });
+    void controller.load();
     return card;
   }
-  return { ...controller, buildCard };
+  return { ...controller, buildCard, buildToolbar, sync };
 }

@@ -152,6 +152,15 @@ export async function runStandaloneScreenSafetyTests(): Promise<void> {
       `quarantined standalone data serializes byte-for-byte: ${raw}`);
   }
   equal(migrations.length, 0, "quarantined standalone data never schedules automatic normalization");
+  state.editingSubpage = null;
+  realCodec.enterSubpage(1);
+  equal(state.editingSubpage, null, "quarantined screens cannot open through a home-card action");
+  state.subpageSavePending[1] = "";
+  delete state.subpages[1];
+  realCodec.applySubpageRaw(1);
+  equal(state.subpages[1], undefined, "pending deletion blocks a late stale payload");
+  delete state.subpageSavePending[1];
+  realCodec.applySubpageRaw(1);
   const quarantined = state.subpages["1"];
   state.grid = [1, 0, 0];
   state.buttons = [empty("static"), empty(), empty()];

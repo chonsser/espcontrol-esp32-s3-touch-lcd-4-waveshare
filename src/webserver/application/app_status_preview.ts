@@ -266,9 +266,10 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
             container.innerHTML = "";
             if (section === "left" && state.editingSubpage != null) {
                 const parent = state.buttons[state.editingSubpage - 1];
+                const screen = state.subpages[state.editingSubpage];
                 const title = document.createElement("span");
                 title.className = "sp-clockbar-subpage-title";
-                title.textContent = String(parent?.label || "").trim() || i18nDevice("Subpage");
+                title.textContent = String((screen?.standalone ? screen.screenLabel : parent?.label) || "").trim() || i18nDevice("Subpage");
                 title.title = title.textContent;
                 container.className = "sp-clockbar-section sp-clockbar-left";
                 container.appendChild(title);

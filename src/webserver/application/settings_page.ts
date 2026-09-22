@@ -541,7 +541,6 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             idleCard,
             clockBarCard,
             rotationCard,
-            screenNavigation.buildCard(),
         ]);
         appendSettingsSection(config, i18n("Voice & Sounds"), [
             voiceServicesCard,

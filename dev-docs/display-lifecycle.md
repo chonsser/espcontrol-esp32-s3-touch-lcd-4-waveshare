@@ -135,6 +135,15 @@ it waits for `ACTIVE`. Unknown or unmatched states cancel a pending selection.
 Successful navigation refreshes ordinary activity and idle timers. Host tests
 cover the state machine and its actual subscription/navigation adapter.
 
+Independent screens share the bounded subpage payload pool, with a
+`@screen:<encoded-name>\n` envelope. Grid phase 2 registers these screens without
+a parent home card, parent indicator, or Back tile. Their own label is used in
+the clock bar. An empty home grid stores the valid order sentinel `0` while an
+independent screen exists, so setup readiness does not hide configured screens.
+Navigation waits for both grid refresh scripts before resolving pending targets.
+The web editor requires the `screen_navigation` version 2 standalone capability
+before creating these payloads.
+
 Three internal restored settings hold the source, rules, and wake preference.
 Rules are LF-separated `slot<TAB>state` records, with slot 0 for home and 1–32
 for subpage parent slots. Only `%`, TAB, LF, and CR are escaped (`%25`, `%09`,

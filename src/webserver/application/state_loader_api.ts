@@ -25,6 +25,7 @@ export interface StateLoaderDependencies {
 }
 
 export interface StateLoaderFeature {
+    whenComplete(): Promise<void>;
     eventStreamEnabled(): boolean;
     cardStateEntities(): any[];
     settingsStateEntities(): any[];
@@ -55,6 +56,8 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
         setUpdateAvailable: setC6FirmwareUpdateAvailable,
         syncUi: syncC6FirmwareUi,
     } = c6Firmware;
+    let complete: () => void;
+    const completed = new Promise<void>(resolve => { complete = resolve; });
     // ── State Loader API ──────────────────────────────────────────────────
     function eventStreamEnabled(this: any) {
         try {
@@ -131,7 +134,7 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
             clearTimeout(runtime.sliderMigrationTimer as any);
             runtime.pendingSliderSubpageMigrations = {};
             loadStateItems(settingsStateEntities(), handleState, 2).then(function (this: any) {
-                loadStateItems(subpageStateEntities(), handleState, 2);
+                return loadStateItems(subpageStateEntities(), handleState, 2).then(() => complete());
             });
         });
     }
@@ -234,6 +237,7 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
         }, 15000);
     }
     return {
+        whenComplete: () => completed,
         eventStreamEnabled,
         cardStateEntities,
         settingsStateEntities,

@@ -242,6 +242,7 @@ move_name_down=Move {name} down
 # src/webserver/application/config_post_api.ts
 wifi_sharing_requires_current_device_firmware_update_the_panel_b=Wifi Sharing requires current device firmware. Update the panel before saving this card.
 subpage_is_too_large_to_save_shorten_labels_or_entity_ids=Subpage is too large to save. Shorten labels or entity IDs.
+independent_screens_require_current_device_firmware=Independent screens require current device firmware.
 
 # src/webserver/application/config_robot_card_options.ts
 status=Status
@@ -414,16 +415,30 @@ firmware_uploaded_waiting_for_device_to_restart=Firmware uploaded. Waiting for d
 could_not_upload_firmware_update=Could not upload firmware update.
 
 # src/webserver/application/screen_navigation.ts
-could_not_load_screen_navigation_check_the_connection_and_try_ag=Could not load screen navigation. Check the connection and try again.
-match_exact_home_assistant_state_values_to_the_home_screen_or_a=Match exact Home Assistant state values to the home screen or a subpage. Leave the entity empty to disable automatic navigation.
-add_mapping=Add mapping
-wake_the_screen_when_the_state_changes=Wake the screen when the state changes
-reload_settings=Reload settings
-state_value_number=State value {number}
-screen_number=Screen {number}
 home_screen=Home screen
 subpage_number=Subpage {number}
-removed_subpage_choose_another_screen=Removed subpage — choose another screen
+screen_number=Screen {number}
+could_not_load_screen_navigation_check_the_connection_and_try_ag=Could not load screen navigation. Check the connection and try again.
+configuration_changed_in_another_browser_reload_before_saving_ag=Configuration changed in another browser. Reload before saving again.
+no_free_screen_storage_delete_an_unused_screen_first=No free screen storage. Delete an unused screen first.
+add_screen=Add screen
+update_the_panel_firmware_to_add_screens=Update the panel firmware to add screens.
+could_not_load_screens_reload_the_page_to_try_again=Could not load screens. Reload the page to try again.
+rename=Rename
+delete_screen=Delete screen
+delete_screen_name_and_its_cards=Delete screen "{name}" and its cards?
+screen_name=Screen name
+enter_a_screen_name=Enter a screen name.
+screen_name_is_too_long_shorten_it=Screen name is too long. Shorten it.
+screen_name_contains_an_unsupported_character=Screen name contains an unsupported character.
+enter_the_exact_home_assistant_state_that_opens_the_selected_scr=Enter the exact Home Assistant state that opens the selected screen. Leave the entity empty to disable automatic navigation.
+add_state_value=Add state value
+wake_the_screen_when_the_state_changes=Wake the screen when the state changes
+save_screen_settings=Save screen settings
+reload_settings=Reload settings
+unavailable_screen_number_state=Unavailable screen {number}: {state}
+remove_unavailable_mapping_number=Remove unavailable mapping {number}
+state_value_number=State value {number}
 remove_mapping_number=Remove mapping {number}
 loading_screen_navigation=Loading screen navigation…
 saving_screen_navigation=Saving screen navigation…
@@ -905,7 +920,6 @@ use_8_63_bytes_or_exactly_64_hexadecimal_characters=Use 8–63 bytes, or exactly
 these_credentials_are_too_long_to_save_on_the_panel=These credentials are too long to save on the panel.
 
 # src/webserver/controllers/native_panel_config_controller.ts
-configuration_changed_in_another_browser_reload_before_saving_ag=Configuration changed in another browser. Reload before saving again.
 the_configuration_saved_but_its_older_firmware_copy_did_not_do_n=The configuration saved, but its older-firmware copy did not. Do not downgrade this panel yet.
 this_firmware_requires_web_authentication_for_wifi_sharing_passw=This firmware requires web authentication for Wifi Sharing passwords. Sign in, enable web_server_auth, or update the panel firmware.
 
@@ -919,6 +933,7 @@ the_device_was_reset_reload_this_page_before_making_changes=The device was reset
 this_backup_was_taken_from_source_this_device_is_target_layout_w=This backup was taken from {source}; this device is {target}. Layout will be restored, but the native configuration will be skipped.
 config_was_exported_from_a_different_panel_device_layout_may_loo=Config was exported from a different panel ({device}) - layout may look different
 backup_has_imported_slots_current_config_has_current_adapting=Backup has {imported} slots, current config has {current} - adapting
+some_independent_screens_were_omitted_because_this_panel_has_no=Some independent screens were omitted because this panel has no free screen storage.
 some_screen_mappings_were_removed_because_their_subpages_are_una=Some screen mappings were removed because their subpages are unavailable on this panel.
 
 # src/webserver/features/backup_file_controller.ts

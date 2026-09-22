@@ -249,6 +249,7 @@ move_name_down=Przesuń zakładkę {name} w dół
 # src/webserver/application/config_post_api.ts
 wifi_sharing_requires_current_device_firmware_update_the_panel_b=Udostępnianie Wi-Fi wymaga aktualnej wersji firmware urządzenia. Zaktualizuj panel przed zapisaniem tej karty.
 subpage_is_too_large_to_save_shorten_labels_or_entity_ids=Podstrona jest za duża, aby ją zapisać. Skróć etykiety lub identyfikatory encji.
+independent_screens_require_current_device_firmware=Niezależne ekrany wymagają aktualnej wersji firmware urządzenia.
 
 # src/webserver/application/config_robot_card_options.ts
 status=Status
@@ -433,16 +434,30 @@ firmware_uploaded_waiting_for_device_to_restart=Przesłano firmware. Oczekiwanie
 could_not_upload_firmware_update=Nie można przesłać aktualizacji firmware.
 
 # src/webserver/application/screen_navigation.ts
-could_not_load_screen_navigation_check_the_connection_and_try_ag=Nie udało się wczytać nawigacji ekranów. Sprawdź połączenie i spróbuj ponownie.
-match_exact_home_assistant_state_values_to_the_home_screen_or_a=Przypisz dokładne wartości stanu z Home Assistant do ekranu głównego lub podstrony. Pozostaw pole encji puste, aby wyłączyć automatyczną nawigację.
-add_mapping=Dodaj przypisanie
-wake_the_screen_when_the_state_changes=Wybudzaj ekran przy zmianie stanu
-reload_settings=Wczytaj ustawienia ponownie
-state_value_number=Wartość stanu {number}
-screen_number=Ekran {number}
 home_screen=Ekran główny
 subpage_number=Podstrona {number}
-removed_subpage_choose_another_screen=Usunięta podstrona — wybierz inny ekran
+screen_number=Ekran {number}
+could_not_load_screen_navigation_check_the_connection_and_try_ag=Nie udało się wczytać nawigacji ekranów. Sprawdź połączenie i spróbuj ponownie.
+configuration_changed_in_another_browser_reload_before_saving_ag=Konfiguracja została zmieniona w innej przeglądarce. Odśwież stronę przed ponownym zapisaniem.
+no_free_screen_storage_delete_an_unused_screen_first=Brak miejsca na kolejny ekran. Najpierw usuń nieużywany ekran.
+add_screen=Dodaj ekran
+update_the_panel_firmware_to_add_screens=Zaktualizuj firmware panelu, aby dodawać ekrany.
+could_not_load_screens_reload_the_page_to_try_again=Nie udało się wczytać ekranów. Odśwież stronę, aby spróbować ponownie.
+rename=Zmień nazwę
+delete_screen=Usuń ekran
+delete_screen_name_and_its_cards=Usunąć ekran „{name}” i jego karty?
+screen_name=Nazwa ekranu
+enter_a_screen_name=Wpisz nazwę ekranu.
+screen_name_is_too_long_shorten_it=Nazwa ekranu jest za długa. Skróć ją.
+screen_name_contains_an_unsupported_character=Nazwa ekranu zawiera niedozwolony znak.
+enter_the_exact_home_assistant_state_that_opens_the_selected_scr=Wpisz dokładną wartość stanu z Home Assistant, która otwiera wybrany ekran. Pozostaw pole encji puste, aby wyłączyć automatyczną nawigację.
+add_state_value=Dodaj wartość stanu
+wake_the_screen_when_the_state_changes=Wybudzaj ekran przy zmianie stanu
+save_screen_settings=Zapisz ustawienia ekranu
+reload_settings=Wczytaj ustawienia ponownie
+unavailable_screen_number_state=Niedostępny ekran {number}: {state}
+remove_unavailable_mapping_number=Usuń niedostępne przypisanie {number}
+state_value_number=Wartość stanu {number}
 remove_mapping_number=Usuń przypisanie {number}
 loading_screen_navigation=Wczytywanie nawigacji ekranów…
 saving_screen_navigation=Zapisywanie nawigacji ekranów…
@@ -930,7 +945,6 @@ use_8_63_bytes_or_exactly_64_hexadecimal_characters=Użyj 8–63 bajtów lub dok
 these_credentials_are_too_long_to_save_on_the_panel=Te dane logowania są zbyt długie, aby zapisać je na panelu.
 
 # src/webserver/controllers/native_panel_config_controller.ts
-configuration_changed_in_another_browser_reload_before_saving_ag=Konfiguracja została zmieniona w innej przeglądarce. Odśwież stronę przed ponownym zapisaniem.
 the_configuration_saved_but_its_older_firmware_copy_did_not_do_n=Konfiguracja została zapisana, ale jej kopia dla starszej wersji firmware nie została zapisana. Nie instaluj jeszcze starszego firmware na tym panelu.
 this_firmware_requires_web_authentication_for_wifi_sharing_passw=Ta wersja firmware wymaga uwierzytelniania w interfejsie WWW dla haseł udostępniania Wi-Fi. Zaloguj się, włącz web_server_auth lub zaktualizuj firmware panelu.
 
@@ -944,6 +958,7 @@ the_device_was_reset_reload_this_page_before_making_changes=Urządzenie zostało
 this_backup_was_taken_from_source_this_device_is_target_layout_w=Ta kopia zapasowa pochodzi z urządzenia {source}, a to urządzenie to {target}. Układ zostanie przywrócony, ale konfiguracja natywna zostanie pominięta.
 config_was_exported_from_a_different_panel_device_layout_may_loo=Konfiguracja została wyeksportowana z innego panelu ({device}) – układ może wyglądać inaczej
 backup_has_imported_slots_current_config_has_current_adapting=Liczba pól w kopii zapasowej: {imported}, w bieżącej konfiguracji: {current} – dostosowywanie
+some_independent_screens_were_omitted_because_this_panel_has_no=Pominięto niektóre niezależne ekrany, ponieważ na tym panelu nie ma już na nie miejsca.
 some_screen_mappings_were_removed_because_their_subpages_are_una=Niektóre przypisania ekranów usunięto, ponieważ ich podstrony są niedostępne na tym panelu.
 
 # src/webserver/features/backup_file_controller.ts

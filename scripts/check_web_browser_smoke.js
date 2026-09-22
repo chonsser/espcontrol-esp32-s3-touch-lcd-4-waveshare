@@ -2310,6 +2310,10 @@ async function assertEmptyCellSettings(page, posts, label) {
   );
   const addPill = emptyCell.locator(".sp-add-pill");
   await page.mouse.move(0, 0);
+  await page.waitForFunction(
+    (el) => getComputedStyle(el).opacity === "0",
+    await addPill.elementHandle(),
+  );
   assert.strictEqual(
     await addPill.evaluate((el) => getComputedStyle(el).opacity),
     "0",
@@ -2631,7 +2635,7 @@ async function assertEmptyCellSettings(page, posts, label) {
     .click();
   await page.locator("#sp-inp-label").fill("New Card");
   await page.locator("#sp-inp-entity").fill("switch.new_card");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
     .locator(`.sp-main [data-pos="${pos}"][data-slot]`)
     .waitFor({ state: "visible" });
@@ -3416,7 +3420,7 @@ async function assertPlaylistValidationOpensSourcePanel(page, label) {
     `${label}: playlist source panel should be collapsed before validation`,
   );
 
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page.waitForFunction(() => {
     var input = document.querySelector("#sp-inp-playlist-content-id");
     var disclosure = input && input.closest(".sp-disclosure");
@@ -3456,7 +3460,7 @@ async function assertNumberActionRequiresValue(page, posts, label) {
     .locator("> .sp-disclosure-button")
     .click();
   await page.locator("#sp-inp-action-value").fill("");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
 
   assert(
     await page.getByText("Enter a value before saving.", { exact: true }).isVisible(),
@@ -3554,7 +3558,7 @@ async function assertSpeakerGroupEditorAndPreview(page, posts, label) {
   await page.waitForSelector('.sp-main [data-slot="4"] .mdi-home', { state: "attached" });
   assert(await page.locator('.sp-main [data-slot="4"] .mdi-home').count(), `${label}: speaker group preview should use its selected icon`);
   await helper.fill("");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await waitForPost(
     posts,
     { domain: "text", name: "button_4_config", action: "set" },
@@ -4276,7 +4280,7 @@ async function assertEditSmoke(page, posts, errors) {
     .click();
   await page.locator("#sp-inp-label").fill("Kitchen Main");
   await page.locator("#sp-inp-entity").fill("switch.kitchen_main");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await waitForPost(
     posts,
     {
@@ -4298,7 +4302,7 @@ async function assertEditSmoke(page, posts, errors) {
     .locator(".sp-disclosure-button")
     .click();
   await page.locator("#sp-inp-label").fill("Energy Usage");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await waitForPost(
     posts,
     {
@@ -4320,7 +4324,7 @@ async function assertEditSmoke(page, posts, errors) {
     .locator(".sp-disclosure-button")
     .click();
   await page.locator("#sp-inp-label").fill("Living Media");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await waitForPost(
     posts,
     {
@@ -6369,7 +6373,11 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
     assert.strictEqual(await page.locator('label[for="sp-set-language"]').textContent(), "Język");
     await assertPolishClockAppearance(page);
-    await page.getByText("Ekran z Home Assistant", { exact: true }).click();
+    assert.strictEqual(await page.locator("#sp-settings #sp-set-screen-navigation").count(), 0,
+      "screen navigation belongs to Screen, not the settings page");
+    await page.getByRole("tab", { name: "Ekran", exact: true }).click();
+    assert(await page.getByText("Ekran z Home Assistant", { exact: true }).isVisible(),
+      "screen navigation is visible in the Screen tab");
     await page.waitForFunction(() => {
       const status = document.querySelector("#sp-set-screen-navigation-status")?.textContent;
       return status && !status.startsWith("Wczytywanie");

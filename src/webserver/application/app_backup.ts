@@ -1,3 +1,4 @@
+import { resetNativeSubpageAuthority } from "./screen_navigation_editor";
 import type { PanelIdentityBackup } from "../model/panel_identity";
 import type { PanelIdentityFeature } from "./panel_identity";
 import type { ScreenNavigationController } from "../features/screen_navigation_controller";
@@ -466,6 +467,9 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                         state.buttons[canonicalButtonIndex] = parseButtonConfig(nativeDocument.buttons[canonicalButtonIndex + 1] || "");
                     state.subpages = {};
                     state.subpageRaw = {};
+                    resetNativeSubpageAuthority(state,
+                        layoutRestoreResult === "saved" || layoutRestoreResult === "mirror-failed" ? nativeDocument.subpages : null,
+                        controllers.layout.totalSlots);
                     for (var canonicalSubpageKey in nativeDocument.subpages) {
                         var canonicalSubpage: any = parseSubpageConfig(nativeDocument.subpages[Number(canonicalSubpageKey)] || "");
                         buildSubpageGrid(canonicalSubpage);

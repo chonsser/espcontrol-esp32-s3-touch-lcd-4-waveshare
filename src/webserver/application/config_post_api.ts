@@ -166,6 +166,8 @@ export function createConfigPersistenceFeature(
                     return rejectLegacyWifiSharingSave(api);
                 if (result === "legacy-fallback")
                     return saveSubpageEntityLegacy(slot, full, true);
+                if (result === "saved" || result === "mirror-failed")
+                    state.subpageNativeRaw[slot] = full;
                 if (result !== "saved")
                     api.postQueueError = true;
                 return result;
@@ -202,6 +204,8 @@ export function createConfigPersistenceFeature(
         state.subpageSavePending[slot] = full;
         var api: any = requests();
         api.postQueue = api.postQueue.then(function () { return nativeSave; }).then(function (result: any) {
+            if (result === "saved" || result === "mirror-failed")
+                state.subpageNativeRaw[slot] = full;
             if (result === "mirror-failed") {
                 api.postQueueError = true;
             }
