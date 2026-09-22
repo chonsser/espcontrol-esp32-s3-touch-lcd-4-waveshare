@@ -1995,7 +1995,6 @@ inline void grid_phase2(
   for (int si = 0; si < NS; si++) {
     ParsedCfg p = parse_cfg(slots[si].config->state);
     const auto parent_context = card_runtime_context(p);
-    if (!espcontrol::cards::navigation_driver_matches(parent_context)) continue;
 
     std::string sp_cfg = optional_text_state(sp_configs, si) +
       optional_text_state(sp_ext_configs, si) +
@@ -2006,13 +2005,19 @@ inline void grid_phase2(
       optional_text_state(sp_ext6_configs, si) +
       optional_text_state(sp_ext7_configs, si);
     if (sp_cfg.empty()) continue;
+    const auto screen_config = espcontrol::parse_standalone_screen_config(sp_cfg);
+    if (!screen_config.valid) continue;
+    const bool standalone = screen_config.standalone;
+    if (!standalone && !espcontrol::cards::navigation_driver_matches(parent_context)) continue;
+    const ParsedCfg *subpage_parent_config =
+      subpage_parent_config_for_screen(p, standalone);
 
     auto sp_btns = parse_subpage_config(sp_cfg);
     std::string sp_order_str = get_subpage_order(sp_cfg);
     std::string sp_back_label = get_subpage_back_label(sp_order_str);
 
     SubpageOrder sp_ord;
-    parse_subpage_order(sp_order_str, NS, sp_btns.size(), sp_ord);
+    parse_subpage_order(sp_order_str, NS, sp_btns.size(), sp_ord, standalone);
     normalize_subpage_order_spans(sp_ord, NS, COLS);
 
     lv_obj_t *sub_scr = lv_obj_create(NULL);
@@ -2023,8 +2028,12 @@ inline void grid_phase2(
         break;
       }
     }
-    espcontrol::cards::navigation_driver_own_subpage(
-      slots[si], p, parent_context, si + 1, display_order, sub_scr);
+    if (standalone) {
+      navigation_register_standalone_screen(si + 1, display_order, screen_config.label, sub_scr);
+    } else {
+      espcontrol::cards::navigation_driver_own_subpage(
+        slots[si], p, parent_context, si + 1, display_order, sub_scr);
+    }
     HaCallbackOwnerScope subpage_callback_owner(sub_scr);
     lv_obj_set_style_bg_color(sub_scr, lv_obj_get_style_bg_color(main_page_obj, LV_PART_MAIN), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(sub_scr, LV_OPA_COVER, LV_PART_MAIN);
@@ -2039,32 +2048,35 @@ inline void grid_phase2(
     lv_obj_clear_flag(sub_scr, LV_OBJ_FLAG_SCROLLABLE);
     clock_bar_clear_responsive_grid_cards(sub_scr);
 
-    lv_obj_t *back_btn = create_grid_card_button(
-      sub_scr, sp_radius, sp_pad, sp_btn_fnt, sp_txt_color);
-    apply_button_colors(back_btn, false, DEFAULT_SLIDER_COLOR, true, off_val);
-    set_grid_card_cell(
-      back_btn, sub_scr,
-      sp_ord.back_pos % COLS, sp_ord.back_pos / COLS,
-      sp_ord.back_col_span, sp_ord.back_row_span,
-      COLS, ROWS);
-    BtnSlot back_slot = create_dynamic_card_slot(
-      back_btn, sp_icon_fnt, display_sensor_font(display), sp_btn_fnt, sp_txt_color,
-      cfg.subpage_chevron_font);
-    display_apply_main_width(back_slot.icon_lbl, display);
-    display_apply_slot_text_width(back_slot, display);
-    lv_label_set_display_text(back_slot.icon_lbl, "\U000F0141");
-    lv_label_set_display_text(back_slot.text_lbl, sp_back_label.c_str());
-    apply_card_label_line_clamp(back_slot.text_lbl, cfg, sp_ord.back_row_span);
-    configure_button_label_wrap(back_slot.text_lbl);
+    if (!standalone) {
+      lv_obj_t *back_btn = create_grid_card_button(
+        sub_scr, sp_radius, sp_pad, sp_btn_fnt, sp_txt_color);
+      apply_button_colors(back_btn, false, DEFAULT_SLIDER_COLOR, true, off_val);
+      set_grid_card_cell(
+        back_btn, sub_scr,
+        sp_ord.back_pos % COLS, sp_ord.back_pos / COLS,
+        sp_ord.back_col_span, sp_ord.back_row_span,
+        COLS, ROWS);
+      BtnSlot back_slot = create_dynamic_card_slot(
+        back_btn, sp_icon_fnt, display_sensor_font(display), sp_btn_fnt, sp_txt_color,
+        cfg.subpage_chevron_font);
+      display_apply_main_width(back_slot.icon_lbl, display);
+      display_apply_slot_text_width(back_slot, display);
+      lv_label_set_display_text(back_slot.icon_lbl, "\U000F0141");
+      lv_label_set_display_text(back_slot.text_lbl, sp_back_label.c_str());
+      apply_card_label_line_clamp(back_slot.text_lbl, cfg, sp_ord.back_row_span);
+      configure_button_label_wrap(back_slot.text_lbl);
 
-    lv_obj_add_event_cb(back_btn, [](lv_event_t *e) {
-      lv_scr_load_anim((lv_obj_t *)lv_event_get_user_data(e), LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
-    }, LV_EVENT_CLICKED, main_page_obj);
-    screen_lock_register_controlled_button(back_btn);
-    navigation_register_subpage_back_button(si + 1, back_slot);
+      lv_obj_add_event_cb(back_btn, [](lv_event_t *e) {
+        lv_scr_load_anim((lv_obj_t *)lv_event_get_user_data(e), LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+      }, LV_EVENT_CLICKED, main_page_obj);
+      screen_lock_register_controlled_button(back_btn);
+      navigation_register_subpage_back_button(si + 1, back_slot);
+    }
 
     auto add_parent_indicator = [&](const std::string &entity_id,
                                     bool (*is_active_state)(esphome::StringRef) = is_entity_on_ref) {
+      if (standalone) return;
       espcontrol::cards::navigation_driver_add_child_indicator(
         navigation_child_indicators, slots[si], si, p, parent_context,
         entity_id, is_active_state);
@@ -2101,8 +2113,9 @@ inline void grid_phase2(
       const auto context = card_runtime_context(
           sb_cfg, espcontrol::cards::Surface::SUBPAGE);
       int col, row;
-      if (sp_ord.has_back_token) { col = gp % COLS; row = gp / COLS; }
-      else { int op = gp + 1; col = op % COLS; row = op / COLS; }
+      const int rendered_position = subpage_grid_position(sp_ord, gp);
+      col = rendered_position % COLS;
+      row = rendered_position / COLS;
       int rs = sp_ord.row_span[bn - 1] > 0 ? sp_ord.row_span[bn - 1] : 1;
 
       lv_obj_t *sb_btn = create_grid_card_button(
@@ -2147,7 +2160,7 @@ inline void grid_phase2(
             sub_slot, sb_cfg, context, climate_control_environment)) continue;
       auto alarm_environment = espcontrol::cards::alarm_driver_environment(
         palette, display, sub_slot, cfg, sub_scr, NS, COLS);
-      alarm_environment.parent_config = &p;
+      alarm_environment.parent_config = subpage_parent_config;
       alarm_environment.add_parent_indicator =
         [&](const std::string &entity_id) { add_parent_indicator(entity_id); };
       if (espcontrol::cards::alarm_driver_bind_subpage(
@@ -2172,7 +2185,7 @@ inline void grid_phase2(
       if (bind_basic_sensor_card(sub_slot, sb_cfg, context, palette, cs)) continue;
       espcontrol::cards::BasicActionSubpageEnvironment action_environment;
       action_environment.grid_config = &cfg;
-      action_environment.parent_config = &p;
+      action_environment.parent_config = subpage_parent_config;
       action_environment.palette = palette;
       action_environment.display = display;
       action_environment.grid_page = sub_scr;
@@ -2180,15 +2193,16 @@ inline void grid_phase2(
       action_environment.add_parent_indicator =
         [&](const std::string &entity_id) { add_parent_indicator(entity_id); };
       action_environment.parent_indicator_enabled =
-        espcontrol::cards::navigation_driver_aggregates_child_state(
-          p, parent_context);
+        !standalone &&
+          espcontrol::cards::navigation_driver_aggregates_child_state(
+            p, parent_context);
       action_environment.child_allocation_index =
         &navigation_child_indicators.next_child;
       action_environment.child_capacity = MAX_SUBPAGE_ITEMS;
       action_environment.child_was_on =
         navigation_child_indicators.child_was_on;
-      action_environment.parent_btn = slots[si].btn;
-      action_environment.parent_icon = slots[si].icon_lbl;
+      action_environment.parent_btn = standalone ? nullptr : slots[si].btn;
+      action_environment.parent_icon = standalone ? nullptr : slots[si].icon_lbl;
       action_environment.parent_index = si;
       action_environment.parent_has_icon_on =
         espcontrol::cards::navigation_driver_parent_has_alt_icon(
@@ -2199,8 +2213,8 @@ inline void grid_phase2(
       action_environment.parent_icon_on =
         espcontrol::cards::navigation_driver_parent_icon_on(
           p, parent_context);
-      action_environment.parent_on_count =
-        navigation_child_indicators.parent_on_count;
+      action_environment.parent_on_count = standalone
+        ? nullptr : navigation_child_indicators.parent_on_count;
       if (espcontrol::cards::basic_action_driver_bind_subpage(
             sub_slot, sb_cfg, context, action_environment)) continue;
       espcontrol::cards::NumericSelectableSubpageEnvironment

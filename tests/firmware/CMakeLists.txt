@@ -536,3 +536,13 @@ target_compile_features(entity_screen_navigation_runtime_test PRIVATE cxx_std_17
 target_compile_options(entity_screen_navigation_runtime_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(entity_screen_navigation_runtime_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME entity_screen_navigation_runtime_test COMMAND entity_screen_navigation_runtime_test)
+
+add_executable(standalone_screen_config_test standalone_screen_config_test.cpp)
+target_compile_features(standalone_screen_config_test PRIVATE cxx_std_17)
+target_compile_options(standalone_screen_config_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(standalone_screen_config_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME standalone_screen_config_test COMMAND standalone_screen_config_test)
+add_test(NAME standalone_screen_runtime_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/standalone_screen_runtime_test.py)
+add_test(NAME standalone_alarm_parent_runtime_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/standalone_alarm_parent_runtime_test.py)

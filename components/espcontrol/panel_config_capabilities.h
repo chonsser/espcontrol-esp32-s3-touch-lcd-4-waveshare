@@ -41,7 +41,8 @@ inline bool write_panel_config_capabilities_json(char *output,
       output, output_capacity,
       "{\"identity\":{\"version\":1},\"api\":{\"version\":%u},\"configuration\":{\"document_versions\":[%u],"
       "\"read\":%s,\"write\":%s},\"web_assets\":{\"versions\":[%u],"
-      "\"delivery\":\"%s\"},\"reset\":{\"modes\":[\"customization\",\"factory\"],\"status\":\"/api/v1/reset\"}}",
+      "\"delivery\":\"%s\"},\"reset\":{\"modes\":[\"customization\",\"factory\"],\"status\":\"/api/v1/reset\"},"
+      "\"screen_navigation\":{\"version\":2,\"standalone\":true}}",
       static_cast<unsigned>(PANEL_CONFIG_API_VERSION),
       static_cast<unsigned>(PANEL_CONFIG_DOCUMENT_VERSION),
       panel_config_read_supported() ? "true" : "false",

@@ -261,6 +261,20 @@ struct BasicActionSubpageEnvironment {
   int *parent_on_count = nullptr;
 };
 
+inline ParsedCfg basic_action_driver_effective_alarm_action_config(
+    const ParsedCfg &config,
+    const BasicActionSubpageEnvironment &environment) {
+  ParsedCfg effective = config;
+  if (!environment.parent_config) return effective;
+  if (effective.entity.empty()) {
+    effective.entity = environment.parent_config->entity;
+  }
+  if (effective.options.empty()) {
+    effective.options = environment.parent_config->options;
+  }
+  return effective;
+}
+
 inline void basic_action_driver_attach_subpage_toggle(
     BtnSlot &slot, const ParsedCfg &config) {
   ParsedCfg *click = grid_delete_with_owner(slot.btn, new ParsedCfg(config));
@@ -335,15 +349,9 @@ inline bool basic_action_driver_bind_subpage(
     }
     case Driver::ALARM_ACTION: {
       if (environment.grid_config) {
-        ParsedCfg effective_config = config;
-        if (environment.parent_config) {
-          if (effective_config.entity.empty()) {
-            effective_config.entity = environment.parent_config->entity;
-          }
-          if (effective_config.options.empty()) {
-            effective_config.options = environment.parent_config->options;
-          }
-        }
+        ParsedCfg effective_config =
+          basic_action_driver_effective_alarm_action_config(
+            config, environment);
         AlarmActionCtx *action = basic_action_driver_bind_alarm_action(
           slot, effective_config, context, environment.grid_page,
           *environment.grid_config, environment.palette,

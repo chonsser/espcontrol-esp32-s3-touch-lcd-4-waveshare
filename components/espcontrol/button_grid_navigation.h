@@ -21,6 +21,8 @@ struct NavigationSubpageEntry {
   int slot = 0;
   int display_order = 0;
   std::string kind;
+  bool standalone = false;
+  std::string label;
   lv_obj_t *screen = nullptr;
   lv_obj_t *back_button = nullptr;
   BtnSlot back_slot{};
@@ -164,6 +166,16 @@ inline void navigation_register_subpage(int slot, int display_order,
                       LV_EVENT_SCREEN_UNLOADED, nullptr);
 }
 
+inline void navigation_register_standalone_screen(int slot, int display_order,
+                                                  const std::string &label,
+                                                  lv_obj_t *screen) {
+  if (slot <= 0 || screen == nullptr) return;
+  navigation_register_subpage(slot, display_order, "", screen);
+  auto &entry = navigation_subpages().back();
+  entry.standalone = true;
+  entry.label = label;
+}
+
 inline int navigation_slot_from_target(const std::string &target) {
   std::string value = navigation_lower(navigation_trim(target));
   const std::string prefix = "slot:";
@@ -256,9 +268,10 @@ inline int navigation_active_subpage_slot() {
 
 inline std::string navigation_active_subpage_label() {
   const int slot = navigation_active_subpage_slot();
+  NavigationSubpageEntry *subpage = navigation_find_slot(slot);
+  if (subpage != nullptr && subpage->standalone) return subpage->label;
   NavigationHomeTargetEntry *parent = navigation_find_slot_target(slot);
   if (parent == nullptr) return "";
-  NavigationSubpageEntry *subpage = navigation_find_slot(slot);
   if (subpage == nullptr) return parent->label;
   const char *english_default = saved_config_subpage_default_label(subpage->kind);
   return i18n_label_or_default(parent->label, english_default);

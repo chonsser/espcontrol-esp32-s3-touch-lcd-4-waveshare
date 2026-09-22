@@ -121,6 +121,8 @@ TASKS = (
              "components/espcontrol/button_grid_grid.h",
              "components/espcontrol/button_grid_subpages.h",
              "components/espcontrol/entity_screen_navigation.h",
+             "components/espcontrol/standalone_screen_config.h",
+             "components/espcontrol/button_grid_navigation.h",
              "components/espcontrol/button_grid_entity_screen_navigation.h",
              "common/addon/entity_screen_navigation.yaml",
              "components/espcontrol/button_grid_climate_subscriptions.h",

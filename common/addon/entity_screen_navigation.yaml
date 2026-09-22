@@ -74,8 +74,11 @@ interval:
           auto *main_screen = id(main_page) != nullptr ? id(main_page)->obj : nullptr;
           espcontrol::ScreenNavigationConditions conditions;
           conditions.ready = main_screen != nullptr &&
+              !id(refresh_button_grid).is_running() &&
+              !id(refresh_subpage_grid).is_running() &&
               !id(button_order).state.empty() &&
-              !navigation_home_targets().empty() && ha_api_state_connected();
+              (!navigation_home_targets().empty() || !navigation_subpages().empty()) &&
+              ha_api_state_connected();
           conditions.active = controller.current_mode_is(espcontrol::DisplayMode::ACTIVE) &&
               controller.target_mode_is(espcontrol::DisplayMode::ACTIVE);
           conditions.waking = id(screensaver_wake).is_running() ||
