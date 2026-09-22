@@ -1,0 +1,91 @@
+[
+  {
+    "name": "clock preserves appearance in canonical order with encoded numeric formats",
+    "input": ";;;;;;clock;;date_size=small,date_format=%25d.%25m.%25Y,time_format=%25H%3A%25M%3A%25S,clock_font=mono,text_size=large,large_numbers=off,ignored=1",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "large_numbers=off,text_size=large,clock_font=mono,time_format=%25H%3A%25M%3A%25S,date_format=%25d.%25m.%25Y,date_size=small"
+    }
+  },
+  {
+    "name": "clock format preserves percent tokens followed by hex digits",
+    "input": ";;;;;;clock;;time_format=%25d12,date_format=%25Y-%25m-%25d,clock_font=bold",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "clock_font=bold,time_format=%25d12,date_format=%25Y-%25m-%25d"
+    }
+  },
+  {
+    "name": "clock preserves literal ASCII padding spaces",
+    "input": ";;;;;;clock;;time_format=%20%25H%20,date_size=medium",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "time_format= %25H ,date_size=medium"
+    }
+  },
+  {
+    "name": "clock invalid appearance falls back without losing existing size",
+    "input": ";;;;;;clock;;clock_font=future,time_format=%25Q,date_format=%25S%0A,date_size=giant,text_size=small,large_numbers",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "large_numbers,text_size=small"
+    }
+  },
+  {
+    "name": "clock expanded format length must also be bounded",
+    "input": ";;;;;;clock;;time_format=%25Y%25Y%25Y%25Y%25Y%25Y%25Y%25Y%25Y,date_format=%25S,clock_font=thin",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "clock_font=thin,date_format=%25S"
+    }
+  },
+  {
+    "name": "clock exact expanded length limit remains valid",
+    "input": ";;;;;;clock;;time_format=%25Y%25Y%25Y%25Y%25Y%25Y%25Y%25Y,date_size=large",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "time_format=%25Y%25Y%25Y%25Y%25Y%25Y%25Y%25Y,date_size=large"
+    }
+  },
+  {
+    "name": "clock rejects unicode whitespace and literal percent formats",
+    "input": ";;;;;;clock;;time_format=%C2%A0%25H,date_format=%25%25,date_size=small",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "date_size=small"
+    }
+  },
+  {
+    "name": "clock empty appearance retains legacy defaults",
+    "input": ";;;;;;clock;;clock_font=,time_format=,date_format=,date_size=",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "", "options": ""
+    }
+  },
+  {
+    "name": "calendar strips clock specific options",
+    "input": "sensor.date;;;;;;calendar;datetime;clock_font=mono,time_format=%25H%3A%25M,date_format=%25d.%25m.%25Y,date_size=large,text_size=medium,large_numbers",
+    "expected": {
+      "entity": "sensor.date", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "calendar", "precision": "datetime",
+      "options": "large_numbers,text_size=medium"
+    }
+  },
+  {
+    "name": "world clock strips clock specific options",
+    "input": ";;;;;;timezone;;clock_font=bold,time_format=%25H%3A%25M%3A%25S,date_format=%25S,date_size=large,text_size=small",
+    "expected": {
+      "entity": "UTC (GMT+0)", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "timezone", "precision": "",
+      "options": "text_size=small"
+    }
+  }
+]

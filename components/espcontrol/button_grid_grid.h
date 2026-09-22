@@ -295,6 +295,10 @@ inline bool card_slot_static_child(const BtnSlot &s, lv_obj_t *child) {
 
 inline void reset_card_slot_dynamic_children(BtnSlot &s) {
   if (!s.btn) return;
+  // Slots are reused across card types: drop the previous card's colour
+  // transition and any provisional toggle flip before the slot is rebuilt.
+  clear_push_button_transition(s.btn);
+  optimistic_toggle_forget(s.btn);
   lv_obj_clear_flag(s.btn, LV_OBJ_FLAG_HIDDEN);
   lv_obj_clear_state(s.btn, LV_STATE_CHECKED);
   sync_card_checked_text_color(s.btn);
@@ -1064,6 +1068,7 @@ inline void grid_phase1(
   palette.sensor_val = sensor_val;
   set_current_button_primary_color(palette.on_val);
 
+  more_info_hide_modal();
   bump_ha_subscription_generation();
   reset_calendar_cards();
   reset_timezone_cards();
@@ -1843,6 +1848,7 @@ inline void grid_phase2(
   memset(has_sensor, 0, sizeof(has_sensor));
   memset(sensor_text_mode, 0, sizeof(sensor_text_mode));
   memset(has_icon_on, 0, sizeof(has_icon_on));
+  more_info_hide_modal();
   bump_ha_subscription_generation();
   weather_forecast_cancel_pending_requests();
   reset_climate_control_refs();
@@ -1893,6 +1899,7 @@ inline void grid_phase2(
     int col_span = order.col_span[idx - 1] > 0 ? order.col_span[idx - 1] : 1;
     if (cfg.info_only && info_only_hidden_card_type(context)) continue;
     navigation_register_home_target(idx, pos, p.label, scfg, s.btn);
+    enable_card_long_press(s.btn, p);
     if (espcontrol::cards::image_driver_bind_main(
           s, p, context, cfg)) continue;
     if (espcontrol::cards::wifi_qr_driver_bind_main(s, p, context)) continue;
@@ -2113,6 +2120,7 @@ inline void grid_phase2(
       // cards remove button padding so their fill can reach the edges, so run
       // the card-specific refresh after clamping to restore the captured inset.
       refresh_card_layout(sub_slot, sb_cfg, cfg, rs, cs);
+      attach_subpage_long_press(sb_btn, sb_cfg);
 
       if (espcontrol::cards::image_driver_bind_subpage(
             sub_slot, sb_cfg, context, cfg)) continue;

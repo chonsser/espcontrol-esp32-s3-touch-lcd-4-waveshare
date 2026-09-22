@@ -141,6 +141,8 @@ inline bool wifi_qr_driver_setup_visual(
   if (!wifi_qr_driver_matches(context)) return false;
   setup_toggle_visual(slot, config);
   if (slot.text_lbl) {
+    const std::string label = i18n_label_or_default(config.label, "Connect");
+    lv_label_set_display_text(slot.text_lbl, label.c_str());
     set_wifi_qr_label_font(lv_obj_get_style_text_font(slot.text_lbl, LV_PART_MAIN));
   }
   if (slot.icon_lbl) {

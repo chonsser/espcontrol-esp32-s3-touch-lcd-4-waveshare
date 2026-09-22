@@ -1,3 +1,5 @@
+import { longPressAction, longPressDefaultEntity, copyLongPressOptions, cardSupportsLongPress } from "./config_long_press_options";
+import { configOptionValue, setConfigOptionValue } from "../model/config_primitives";
 import { state } from "../state/app_instance";
 import * as EspControlModel from "../model";
 import { applySpans, CARD_SIZE_SINGLE, clearSpans } from "../model/grid";
@@ -21,6 +23,7 @@ import type { ButtonSettingsSelectionFeature } from "./button_settings_selection
 import type { PreviewRenderFeature } from "./preview_render";
 import type { PreviewInteractionsFeature } from "./preview_interactions";
 import type { ControlsFieldsFeature } from "./controls_fields";
+import { i18n } from "../i18n";
 
 export function entityMatchesDomains(entityId?: any, domains?: any): boolean {
     var value: any = String(entityId || "").trim();
@@ -104,14 +107,14 @@ export function createButtonSettingsFeature(
         var sp: any = getSubpage(state.editingSubpage);
         var title: any = document.createElement("div");
         title.className = "sp-section-title";
-        title.textContent = "Back Button";
+        title.textContent = i18n("Back Button");
         container.appendChild(title);
         var panel: any = document.createElement("div");
         panel.className = "sp-panel";
         var lf: any = document.createElement("div");
         lf.className = "sp-field";
-        lf.appendChild(fieldLabel("Label", "sp-sp-inp-back-label"));
-        var labelInp: any = textInput("sp-sp-inp-back-label", sp.backLabel || "Back", "Back");
+        lf.appendChild(fieldLabel(i18n("Label"), "sp-sp-inp-back-label"));
+        var labelInp: any = textInput("sp-sp-inp-back-label", sp.backLabel || "Back", i18n("Back"));
         lf.appendChild(labelInp);
         panel.appendChild(lf);
         function saveBackLabel(this: any) {
@@ -130,7 +133,7 @@ export function createButtonSettingsFeature(
         });
         var doneRow: any = document.createElement("div");
         doneRow.className = "sp-btn-row sp-btn-row--save";
-        var doneBtn: any = createActionButton("sp-action-btn sp-save-btn", "Done");
+        var doneBtn: any = createActionButton("sp-action-btn sp-save-btn", i18n("Done"));
         doneBtn.addEventListener("click", closeSettings);
         doneRow.appendChild(doneBtn);
         panel.appendChild(doneRow);
@@ -182,10 +185,11 @@ export function createButtonSettingsFeature(
         if (!pendingNewDraft)
             state.settingsDraft = cardEditorDraftController.ensureExistingDraft(state.settingsDraft, location, liveButton);
         var b: any = state.settingsDraft!.button;
+        let longPressOptions = b.options;
         var isNewDraft: any = !!state.settingsDraft!.isNew;
         var title: any = document.createElement("div");
         title.className = "sp-section-title";
-        title.textContent = "Settings";
+        title.textContent = i18n("Settings");
         container.appendChild(title);
         var panel: any = document.createElement("div");
         panel.className = "sp-panel";
@@ -195,6 +199,7 @@ export function createButtonSettingsFeature(
             cardEditorDraftController.markDirty(state.settingsDraft, draftKey);
         }
         function saveField(this: any, field?: any, val?: any) {
+            b.options = copyLongPressOptions(b.options, longPressOptions);
             markDraftDirty();
         }
         function fieldContainer(this: any, input?: any) {
@@ -229,7 +234,7 @@ export function createButtonSettingsFeature(
                 field.appendChild(existing);
             }
             if (existing) {
-                existing.textContent = message || "Add an entity before saving.";
+                existing.textContent = message || i18n("Add an entity before saving.");
                 input.setAttribute("aria-describedby", existing.id);
             }
         }
@@ -238,7 +243,7 @@ export function createButtonSettingsFeature(
                 return;
             requiredFields.push({
                 input: input,
-                message: message || "Add an entity before saving.",
+                message: message || i18n("Add an entity before saving."),
                 isActive: isActive || function (this: any) { return true; },
                 hasValue: hasValue,
             });
@@ -262,7 +267,7 @@ export function createButtonSettingsFeature(
                 return;
             requiredFields.push({
                 input: input,
-                message: message || "Choose a compatible entity before saving.",
+                message: message || i18n("Choose a compatible entity before saving."),
                 isActive: isActive || function (this: any) { return true; },
                 allowEmpty: true,
                 isValid: function (this: any, value?: any) {
@@ -366,7 +371,7 @@ export function createButtonSettingsFeature(
                 imageCardCount: 0, imageCardCapacity: imageSlotCapacity(),
             });
             if (validation.reason === "config-size") {
-                showBanner("Card settings are too large to save. Shorten confirmation text, labels, or entity IDs.", "error");
+                showBanner(i18n("Card settings are too large to save. Shorten confirmation text, labels, or entity IDs."), "error");
             }
             return validation;
         }
@@ -419,7 +424,7 @@ export function createButtonSettingsFeature(
             });
             if (!saved.accepted) {
                 if (draft.isNew)
-                    showBanner("That grid space is no longer available. Close this window and try again.", "error");
+                    showBanner(i18n("That grid space is no longer available. Close this window and try again."), "error");
                 return Promise.resolve(false);
             }
             var savedButton: any = saved.button;
@@ -450,7 +455,7 @@ export function createButtonSettingsFeature(
                 return true;
             }).catch(function () {
                 restoreDraftState();
-                showBanner("Could not save the configuration. Check the connection and try again.", "error");
+                showBanner(i18n("Could not save the configuration. Check the connection and try again."), "error");
                 return false;
             });
         }
@@ -478,9 +483,9 @@ export function createButtonSettingsFeature(
         function makeIconPicker(this: any, pickerId?: any, inputId?: any, currentVal?: any, onSelect?: any, labelText?: any) {
             var icf: any = document.createElement("div");
             icf.className = "sp-field";
-            if (labelText === "On Icon")
+            if (labelText === "On Icon" || labelText === i18n("On Icon"))
                 icf.classList.add("sp-icon-on-field");
-            icf.appendChild(fieldLabel(labelText || "Icon", inputId));
+            icf.appendChild(fieldLabel(labelText || i18n("Icon"), inputId));
             var picker: any = document.createElement("div");
             picker.className = "sp-icon-picker";
             if (pickerId)
@@ -491,7 +496,7 @@ export function createButtonSettingsFeature(
             if (inputId)
                 input.id = inputId;
             input.type = "text";
-            input.placeholder = "Search icons\u2026";
+            input.placeholder = i18n("Search icons\u2026");
             input.value = currentVal || "";
             input.autocomplete = "off";
             picker.appendChild(input);
@@ -531,7 +536,7 @@ export function createButtonSettingsFeature(
             };
         }
         function precisionField(this: any, inputId?: any, value?: any, onChange?: any) {
-            return selectField("Unit Precision", inputId, [
+            return selectField(i18n("Unit Precision"), inputId, [
                 ["0", "10"],
                 ["1", "10.2"],
                 ["2", "10.21"],
@@ -589,7 +594,7 @@ export function createButtonSettingsFeature(
         function renderCardTypeGrid(this: any, options?: any) {
             var field: any = document.createElement("div");
             field.className = "sp-field sp-card-type-picker-field";
-            field.appendChild(fieldLabel("Card", "sp-card-type-picker"));
+            field.appendChild(fieldLabel(i18n("Card"), "sp-card-type-picker"));
             var grid: any = document.createElement("div");
             grid.className = "sp-card-type-grid";
             grid.id = "sp-card-type-picker";
@@ -600,7 +605,7 @@ export function createButtonSettingsFeature(
                 item.className = "sp-card-type-option";
                 item.disabled = !!o.disabled;
                 item.setAttribute("data-card-type", o.key);
-                item.setAttribute("aria-label", o.label + " card type");
+                item.setAttribute("aria-label", i18n("{name} card type", { name: o.label }));
                 item.appendChild(mdiIcon(o.icon || "card-outline", "sp-card-type-icon mdi"));
                 var copy: any = document.createElement("span");
                 copy.className = "sp-card-type-copy";
@@ -622,14 +627,14 @@ export function createButtonSettingsFeature(
             var hasSensor: any = !!button.sensor;
             var activeEnabled: any = hasIconOn || hasSensor || !!button._whenOnActive;
             var activeMode: any = button._whenOnMode || (hasSensor ? "sensor" : "icon");
-            var activeToggle: any = toggleRow("Active Display", idPrefix + "whenon-toggle", activeEnabled);
+            var activeToggle: any = toggleRow(i18n("Active Display"), idPrefix + "whenon-toggle", activeEnabled);
             panel.appendChild(activeToggle.row);
             var activeFields: any = condField();
             if (activeEnabled)
                 activeFields.classList.add("sp-visible");
             var modeControl: any = segmentControl([
-                ["icon", "On Icon"],
-                ["sensor", "Numeric"],
+                ["icon", i18n("On Icon")],
+                ["sensor", i18n("Numeric")],
             ], activeMode, function (this: any, mode?: any) {
                 setActiveDisplayMode(mode);
             });
@@ -640,15 +645,15 @@ export function createButtonSettingsFeature(
             var iconOnPicker: any = makeIconPicker(idPrefix + "icon-on-picker", idPrefix + "icon-on", hasIconOn ? button.icon_on : "Auto", function (this: any, opt?: any) {
                 button.icon_on = opt;
                 saveField("icon_on", opt);
-            }, "On Icon");
+            }, i18n("On Icon"));
             iconSection.appendChild(iconOnPicker);
             activeFields.appendChild(iconSection);
             var sensorSection: any = condField();
             if (activeMode === "sensor")
                 sensorSection.classList.add("sp-visible");
-            var sensorField: any = entityField("Sensor Entity", idPrefix + "sensor", button.sensor, "e.g. sensor.printer_percent_complete", ["sensor", "binary_sensor", "text_sensor"], "sensor", true);
+            var sensorField: any = entityField(i18n("Sensor Entity"), idPrefix + "sensor", button.sensor, i18n("e.g. {example}", { example: "sensor.printer_percent_complete" }), ["sensor", "binary_sensor", "text_sensor"], "sensor", true);
             sensorSection.appendChild(sensorField.field);
-            var unitField: any = textField("Unit", idPrefix + "unit", button.unit, "e.g. %", "unit", false);
+            var unitField: any = textField(i18n("Unit"), idPrefix + "unit", button.unit, i18n("e.g. {example}", { example: "%" }), "unit", false);
             sensorSection.appendChild(unitField.field);
             var precision: any = precisionField(idPrefix + "precision", button.precision || "0", function (this: any) {
                 button.precision = this.value === "0" ? "" : this.value;
@@ -740,12 +745,12 @@ export function createButtonSettingsFeature(
             }
             if (!isNewDraft) {
                 var selectedTypeOption: any = typeOpts.find(function (o: any) { return o.key === selectedTypeKey; });
-                title.textContent = selectedTypeOption ? selectedTypeOption.label : buttonTypeRegistryValue(rawTypeDef, "label", "Card");
+                title.textContent = selectedTypeOption ? selectedTypeOption.label : buttonTypeRegistryValue(rawTypeDef, "label", i18n("Card"));
             }
             if (isNewDraft) {
                 var tf: any = document.createElement("div");
                 tf.className = "sp-field";
-                tf.appendChild(fieldLabel("Card", "sp-inp-type"));
+                tf.appendChild(fieldLabel(i18n("Card"), "sp-inp-type"));
                 var typeSelect: any = document.createElement("select");
                 typeSelect.className = "sp-select";
                 typeSelect.id = "sp-inp-type";
@@ -783,6 +788,7 @@ export function createButtonSettingsFeature(
             entityInput: entityInput,
             bindField: bindField,
             saveField: saveField,
+            refreshSettings: renderButtonSettings,
             applyCardMetadataFields: applyCardMetadataFields,
             renderCardModeSelector: renderCardModeSelector,
             renderCardLargeNumbersToggle: renderCardLargeNumbersToggle,
@@ -804,6 +810,7 @@ export function createButtonSettingsFeature(
             idPrefix: idPrefix,
             isSub: c.isSub,
         };
+        b.options = copyLongPressOptions(b.options, "");
         if (typeDef && typeDef.renderSettingsBeforeLabel &&
             (!c.isSub || buttonTypeRegistryValue(typeDef, "allowInSubpage", false))) {
             typeDef.renderSettingsBeforeLabel(panel, b, slot, typeHelpers);
@@ -811,8 +818,8 @@ export function createButtonSettingsFeature(
         if (!typeDef || !typeDef.hideLabel) {
             var lf: any = document.createElement("div");
             lf.className = "sp-field";
-            lf.appendChild(fieldLabel("Label", idPrefix + "label"));
-            var labelPlaceholder: any = (typeDef && typeDef.labelPlaceholder) || "e.g. Kitchen";
+            lf.appendChild(fieldLabel(i18n("Label"), idPrefix + "label"));
+            var labelPlaceholder: any = (typeDef && typeDef.labelPlaceholder) || i18n("e.g. Kitchen");
             var labelInp: any = textInput(idPrefix + "label", b.label, labelPlaceholder);
             lf.appendChild(labelInp);
             panel.appendChild(lf);
@@ -826,29 +833,67 @@ export function createButtonSettingsFeature(
             // Toggle fallback: entity, icons, sensor data
             var ef: any = document.createElement("div");
             ef.className = "sp-field";
-            ef.appendChild(fieldLabel("Entity", idPrefix + "entity"));
-            var entityInp: any = entityInput(idPrefix + "entity", b.entity, "e.g. light.kitchen", [
+            ef.appendChild(fieldLabel(i18n("Entity"), idPrefix + "entity"));
+            var entityInp: any = entityInput(idPrefix + "entity", b.entity, i18n("e.g. {example}", { example: "light.kitchen" }), [
                 "light", "switch", "input_boolean", "fan"
             ]);
             ef.appendChild(entityInp);
             panel.appendChild(ef);
             markCardPrimaryField(ef, "entity");
             bindField(entityInp, "entity", true);
-            requireField(entityInp, "Add an entity before saving.");
+            requireField(entityInp, i18n("Add an entity before saving."));
             panel.appendChild(makeIconPicker(idPrefix + "icon-picker", idPrefix + "icon", b.icon || "Auto", function (this: any, opt?: any) {
                 b.icon = opt;
                 saveField("icon", opt);
-            }, "Off Icon"));
+            }, i18n("Off Icon")));
             renderActiveDisplaySettings(panel, b, idPrefix);
-            var patternField: any = selectField("On State Pattern", idPrefix + "on-pattern", [
-                ["", "Solid"],
-                ["stripes", "Stripes"],
+            var patternField: any = selectField(i18n("On State Pattern"), idPrefix + "on-pattern", [
+                ["", i18n("Solid")],
+                ["stripes", i18n("Stripes")],
             ], cardOnPattern(b), function (this: any) {
                 setCardOnPattern(b, this.value);
                 saveField("options", b.options);
                 renderPreview();
             });
             panel.appendChild(patternField.field);
+        }
+        b.options = copyLongPressOptions(b.options, longPressOptions);
+        if (cardSupportsLongPress(b)) {
+            const holdAction = selectField(i18n("Long Press"), idPrefix + "long-press", [
+                ["", i18n("Same as tap")], ["more_info", i18n("Show more info")], ["none", i18n("No action")],
+            ], longPressAction(b.options), function (this: HTMLSelectElement) {
+                longPressOptions = setConfigOptionValue(b.options, "long_press", this.value);
+                b.options = copyLongPressOptions(b.options, longPressOptions);
+                saveField("options", b.options);
+                renderButtonSettings();
+            });
+            panel.appendChild(holdAction.field);
+            if (longPressAction(b.options) === "more_info") {
+                const infoEntity = entityField(i18n("Info Entity (optional)"), idPrefix + "long-press-entity",
+                    configOptionValue(b.options, "long_press_entity"),
+                    longPressDefaultEntity(b) || i18n("e.g. sensor.living_room_temperature"), []);
+                panel.appendChild(infoEntity.field);
+                requireField(infoEntity.input, i18n("Use an entity ID such as sensor.living_room_temperature."),
+                    undefined, (value: string) => !value.trim() || /^[a-z_]+\.[a-z0-9_]+$/.test(value.trim()));
+                const infoText = textField(i18n("Additional Information (optional)"), idPrefix + "long-press-text",
+                    configOptionValue(b.options, "long_press_text"), i18n("Text to show on the panel"));
+                infoText.input.maxLength = 160;
+                panel.appendChild(infoText.field);
+                for (const [control, name] of [[infoEntity.input, "long_press_entity"], [infoText.input, "long_press_text"]]) {
+                    const save = () => {
+                        longPressOptions = setConfigOptionValue(b.options, name, control.value);
+                        b.options = copyLongPressOptions(b.options, longPressOptions);
+                        saveField("options", b.options);
+                    };
+                    control.addEventListener("input", save);
+                    control.addEventListener("change", save);
+                    control.addEventListener("blur", save);
+                }
+                const hint = document.createElement("p");
+                hint.className = "sp-hint";
+                hint.textContent = i18n("Hold the card to show its name and current state. Leave Info Entity empty to use the card's entity. A long press does not run the tap action.");
+                panel.appendChild(hint);
+            }
         }
         groupCardSettingsFields(panel, idPrefix);
         var saveRow: any = document.createElement("div");
@@ -871,7 +916,7 @@ export function createButtonSettingsFeature(
         else if (editSubBtn) {
             rightGroup.appendChild(editSubBtn);
         }
-        var saveBtn: any = createActionButton("sp-action-btn sp-save-btn", "Save");
+        var saveBtn: any = createActionButton("sp-action-btn sp-save-btn", i18n("Save"));
         saveBtn.addEventListener("click", async function (this: any) {
             if (saveBtn.disabled)
                 return;

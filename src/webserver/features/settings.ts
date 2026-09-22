@@ -1,4 +1,5 @@
 import { normalizeScreensaverAction } from "../model/settings";
+import { i18n } from "../i18n";
 
 export interface ScreensaverControlState {
   readonly mode: string;
@@ -43,9 +44,9 @@ export function screensaverControlState(
 
 export function timedSettingLabel(value: unknown, formatDuration: (seconds: number) => string): string {
   const seconds = Number(value);
-  if (seconds < 0) return "Always";
+  if (seconds < 0) return i18n("Always");
   if (seconds > 0) return formatDuration(seconds);
-  return "Never";
+  return i18n("Never");
 }
 
 export function createSettingsUiFeature(dependencies: SettingsUiDependencies): SettingsUiFeature {
@@ -83,7 +84,7 @@ export function createSettingsUiFeature(dependencies: SettingsUiDependencies): S
       panel.appendChild(message);
       return panel;
     },
-    statusBadge(label, text = "ON") {
+    statusBadge(label, text = i18n("ON")) {
       const badge = document.createElement("span");
       badge.setAttribute("aria-label", label);
       badge.appendChild(textSpan("", "sp-card-badge-dot"));

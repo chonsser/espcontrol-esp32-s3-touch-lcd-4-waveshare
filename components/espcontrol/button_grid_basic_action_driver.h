@@ -142,8 +142,7 @@ inline AlarmActionCtx *basic_action_driver_bind_alarm_action(
   if (config.entity.empty()) return nullptr;
   AlarmCardCtx *card = new AlarmCardCtx();
   card->entity_id = config.entity;
-  card->label = config.label.empty()
-    ? alarm_action_label(config.sensor) : config.label;
+  card->label = alarm_action_card_label(config);
   card->options = config.options;
   card->btn = slot.btn;
   card->icon_lbl = slot.icon_lbl;
@@ -274,7 +273,7 @@ inline void basic_action_driver_attach_subpage_toggle(
         !is_button_entity(card->entity)) {
       switch_confirmation_open_modal(*card, target, !currently_on);
     } else {
-      send_toggle_action(card->entity);
+      send_card_toggle_action(card->entity, target, currently_on);
     }
   }, LV_EVENT_CLICKED, click);
 }
@@ -504,7 +503,7 @@ inline bool basic_action_driver_handle_main_click(
           switch_confirmation_open_modal(
             config, button, !currently_on);
         } else {
-          send_toggle_action(config.entity);
+          send_card_toggle_action(config.entity, button, currently_on);
         }
       }
       break;

@@ -3,6 +3,7 @@ import {
     cardContractOptionSpec,
     cardContractOptionSupportedFor,
 } from "./config_option_core";
+import { i18n, i18nDevice } from "../i18n";
 
 export function createConfigWeatherOptionsFeature(
     deviceProfile: Pick<DeviceConfig, "disabledCardTypes">,
@@ -14,9 +15,9 @@ export function createConfigWeatherOptionsFeature(
 
     function weatherModeOptions(this: any) {
         const options: any = [
-            ["", "Current Conditions"],
-            ["today", "Temperatures Today"],
-            ["tomorrow", "Temperatures Tomorrow"],
+            ["", i18n("Current Conditions")],
+            ["today", i18n("Temperatures Today")],
+            ["tomorrow", i18n("Temperatures Tomorrow")],
         ];
         return weatherForecastCardsSupported() ? options : [options[0]];
     }
@@ -41,7 +42,7 @@ export function createConfigWeatherOptionsFeature(
     }
 
     function weatherCardDefaultForecastLabel(this: any, button?: any) {
-        return button.precision === "today" ? "Today" : "Tomorrow";
+        return button.precision === "today" ? i18nDevice("Today") : i18nDevice("Tomorrow");
     }
 
     return {

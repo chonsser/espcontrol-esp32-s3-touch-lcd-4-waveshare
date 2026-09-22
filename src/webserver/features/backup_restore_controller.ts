@@ -1,3 +1,5 @@
+import { i18n } from "../i18n";
+
 export interface BackupRestoreControllerOptions<Plan, Target> {
   readonly plan: (data: unknown, target: Target) => Plan;
   readonly warnings: (plan: Plan) => readonly string[];
@@ -15,7 +17,7 @@ export interface BackupRestoreController<Plan, Target> {
 function restoreErrorMessage(error: unknown): string {
   return (error as Error & { backupMessage?: string })?.backupMessage
     || (error instanceof Error && error.message)
-    || "Configuration restore failed. Check the connection and try again.";
+    || i18n("Configuration restore failed. Check the connection and try again.");
 }
 
 /** Coordinates a restore so all entity posts use the same safe queue lifecycle. */
@@ -29,7 +31,7 @@ export function createBackupRestoreController<Plan, Target>(
         backupPlan = options.plan(data, target);
       } catch (error) {
         const message = (error as Error & { backupMessage?: string }).backupMessage
-          || "Invalid config file \u2014 missing required fields";
+          || i18n("Invalid config file \u2014 missing required fields");
         options.showBanner(message, "error");
         return false;
       }
@@ -67,7 +69,7 @@ export function createBackupRestoreController<Plan, Target>(
         : finishApply();
       queueCompletion.then(
         () => {
-          if (!options.postQueueHadError()) options.showBanner("Configuration imported successfully", "success");
+          if (!options.postQueueHadError()) options.showBanner(i18n("Configuration imported successfully"), "success");
         },
         (error) => options.showBanner(restoreErrorMessage(error), "error"),
       );

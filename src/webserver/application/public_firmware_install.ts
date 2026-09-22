@@ -1,4 +1,5 @@
 import { state } from "../state/app_instance";
+import { i18n, i18nMark } from "../i18n";
 import type { DeviceApi } from "../api/device_api";
 import {
     firmwareInfoFromPublicManifest,
@@ -8,6 +9,7 @@ import {
     publicFirmwareManifestUrl,
     publicFirmwareVersionsUrl,
 } from "./firmware_metadata";
+import { localizedFirmwareInstallReason } from "./firmware_update_state";
 import type { FirmwareUpdateFeature } from "./firmware_update_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { ApplicationApiFeature } from "./api";
@@ -94,7 +96,7 @@ export function createPublicFirmwareInstallFeature(
             var uploadResponseReceived: any = false;
             return ensurePublicFirmwareOtaUrl(info).then(function (this: any, otaUrl?: any) {
                 if (!otaUrl)
-                    throw new Error("Firmware file is not available yet.");
+                    throw new Error(i18nMark("Firmware file is not available yet."));
                 return deviceApi.request(otaUrl, { cache: "no-store" });
             }).then(function (this: any, result?: any) {
                 if (result.kind === "network-error")
@@ -121,7 +123,7 @@ export function createPublicFirmwareInstallFeature(
                         throw new Error("Device rejected firmware upload (" + response.status + ").");
                     }
                     if (/update failed/i.test(text)) {
-                        throw new Error("Device reported that the firmware upload failed.");
+                        throw new Error(i18nMark("Device reported that the firmware upload failed."));
                     }
                     waitForFirmwareRestart();
                     return true;
@@ -141,16 +143,17 @@ export function createPublicFirmwareInstallFeature(
         state.firmwareInstallStatus = "Waiting for device to restart\u2026";
         renderFirmwareUpdateStatus();
         setConfigLocked(true, "Waiting for device to restart\u2026");
-        showBanner("Firmware uploaded. Waiting for device to restart\u2026", "offline");
+        showBanner(i18n("Firmware uploaded. Waiting for device to restart\u2026"), "offline");
         setTimeout(appEvents.connect, 5000);
     }
     function failPublicFirmwareUpload(this: any, message?: any) {
-        var reason: any = message || "Could not upload firmware update.";
+        var reason: any = message || i18nMark("Could not upload firmware update.");
         stopFirmwareInstallRefresh();
         state.firmwareUpdateState = "";
         state.firmwareInstallError = "Firmware update failed: " + reason;
         renderFirmwareUpdateStatus();
-        showBanner(reason, "error");
+        // The stored reason stays English; the banner shows it translated (status-bearing reasons included).
+        showBanner(localizedFirmwareInstallReason(reason), "error");
     }
     return {
         ensurePublicFirmwareOtaUrl,

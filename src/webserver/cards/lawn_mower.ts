@@ -14,6 +14,7 @@ import {
 } from "./entity_mode_card";
 import type { ConfigRobotCardOptionsFeature } from "../application/config_robot_card_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 
 export function registerLawnMowerCardTypes(
     registry: CardRegistry,
@@ -34,7 +35,7 @@ export function registerLawnMowerCardTypes(
     // Lawn Mower card: touchscreen-friendly controls for Home Assistant mower entities.
     const LAWN_MOWER_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "lawn-mower-type",
             options: lawnMowerModes,
             value: function (this: any, b?: any) {
@@ -42,24 +43,24 @@ export function registerLawnMowerCardTypes(
             },
         },
         entity: {
-            label: "Lawn Mower Entity",
+            label: i18n("Lawn Mower Entity"),
             idSuffix: "lawn-mower-entity",
-            placeholder: "e.g. lawn_mower.backyard",
+            placeholder: i18n("e.g. {example}", { example: "lawn_mower.backyard" }),
             domains: function (this: any) { return cardContractDomains("lawn_mower"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add a lawn mower entity before saving.",
+            requiredMessage: i18n("Add a lawn mower entity before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "lawn-mower-label",
             field: "label",
-            placeholder: "e.g. Backyard Mower",
+            placeholder: i18n("e.g. Backyard Mower"),
             rerender: true,
         },
     };
     registry.register("lawn_mower", {
-        label: function (this: any) { return cardContractCardLabel("lawn_mower"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("lawn_mower")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("lawn_mower"); },
         pickerKey: function (this: any) { return cardContractPickerKey("lawn_mower"); },
         hidden: function (this: any) { return cardContractHidden("lawn_mower"); },
@@ -109,12 +110,12 @@ export function registerLawnMowerCardTypes(
                 idSuffix: "lawn-mower-icon",
                 field: "icon",
                 fallback: function (this: any) { return lawnMowerModeDefaultIcon(mode); },
-                label: "Icon",
+                label: i18n("Icon"),
             });
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var mode: any = normalizeLawnMowerMode(b.sensor);
-            var label: any = b.label || b.entity || "Lawn Mower";
+            var label: any = b.label || b.entity || i18nDevice("Lawn Mower");
             var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : iconSlug(lawnMowerModeDefaultIcon(mode));
             var stateBadge: any = mode === "status" ? '<span class="sp-sensor-badge mdi mdi-format-text"></span>' : "";
             return {

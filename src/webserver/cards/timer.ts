@@ -1,5 +1,6 @@
 import type { CardRegistry } from "../application/card_registry";
 import { cardContractDefaultConfig, cardContractCardLabel, cardContractAllowInSubpage } from "../generated/card_contract";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 
 // Timer card: counts down a Home Assistant timer.* entity.
 // Tap while idle = start, tap while running = cancel (optionally confirmed),
@@ -15,7 +16,7 @@ function timerParseConfirmTimeout(unit: string) {
 
 export function registerTimerCardTypes(registry: CardRegistry): void {
 registry.register("timer", {
-  label: () => cardContractCardLabel("timer"),
+  label: () => i18nDynamic(cardContractCardLabel("timer")),
   allowInSubpage: () => cardContractAllowInSubpage("timer"),
   hideLabel: true,
   cardMetadata: { preview: { badge: "timer-outline" } },
@@ -32,32 +33,32 @@ registry.register("timer", {
     // Entity ID
     var ef = document.createElement("div");
     ef.className = "sp-field";
-    ef.appendChild(helpers.fieldLabel("Timer Entity", helpers.idPrefix + "entity"));
-    var entityInp = helpers.entityInput(helpers.idPrefix + "entity", b.entity, "e.g. timer.kitchen", ["timer"]);
+    ef.appendChild(helpers.fieldLabel(i18n("Timer Entity"), helpers.idPrefix + "entity"));
+    var entityInp = helpers.entityInput(helpers.idPrefix + "entity", b.entity, i18n("e.g. {example}", { example: "timer.kitchen" }), ["timer"]);
     ef.appendChild(entityInp);
     panel.appendChild(ef);
     helpers.markCardPrimaryField(ef, "entity");
     helpers.bindField(entityInp, "entity", true);
-    helpers.requireField(entityInp, "Add a timer entity before saving.");
-    helpers.requireEntityDomain(entityInp, ["timer"], "Choose a timer entity (timer.*).");
+    helpers.requireField(entityInp, i18n("Add a timer entity before saving."));
+    helpers.requireEntityDomain(entityInp, ["timer"], i18n("Choose a timer entity (timer.*)."));
 
     // Label
     var lf = document.createElement("div");
     lf.className = "sp-field";
-    lf.appendChild(helpers.fieldLabel("Label", helpers.idPrefix + "label"));
-    var labelInp = helpers.textInput(helpers.idPrefix + "label", b.label, "e.g. Kitchen");
+    lf.appendChild(helpers.fieldLabel(i18n("Label"), helpers.idPrefix + "label"));
+    var labelInp = helpers.textInput(helpers.idPrefix + "label", b.label, i18n("e.g. Kitchen"));
     lf.appendChild(labelInp);
     panel.appendChild(lf);
     helpers.bindField(labelInp, "label", true);
 
     // Confirm before cancel
-    var confirmRow = helpers.toggleRow("Confirm before cancel",
+    var confirmRow = helpers.toggleRow(i18n("Confirm before cancel"),
       helpers.idPrefix + "confirm", b.sensor === "confirm");
 
     // Confirm timeout
     var tf = document.createElement("div");
     tf.className = "sp-field";
-    tf.appendChild(helpers.fieldLabel("Confirmation Time Out (Seconds)", helpers.idPrefix + "confirm-timeout"));
+    tf.appendChild(helpers.fieldLabel(i18n("Confirmation Time Out (Seconds)"), helpers.idPrefix + "confirm-timeout"));
     var timeoutInp = document.createElement("input");
     timeoutInp.type = "number";
     timeoutInp.className = "sp-input";
@@ -93,7 +94,7 @@ registry.register("timer", {
     timeoutInp.addEventListener("blur", saveTimeout);
   },
   renderPreview: function (b, helpers) {
-    var label = b.label || b.entity || "Timer";
+    var label = b.label || b.entity || i18nDevice("Timer");
     return {
       iconHtml:
         '<span class="sp-sensor-preview">' +

@@ -1,6 +1,7 @@
 import { state } from "../state/app_instance";
 import { firmwareVersionsSame, isSpecificFirmwareVersion } from "./firmware_metadata";
 import { escHtml } from "./ui_primitives";
+import { i18n, i18nDynamic } from "../i18n";
 import type { UiRuntimeState } from "./state";
 import type { FirmwareVersionFeature } from "./firmware_version_state";
 
@@ -33,6 +34,23 @@ export interface FirmwareUpdateFeature {
     scheduleWebOtaFallback(): void;
 }
 
+// Install-failure reasons stay English in thrown errors and in state.firmwareInstallError.
+// The two that carry an HTTP status (thrown by public_firmware_install.ts) can never match
+// a catalog entry as a whole string, so they are recognised here and translated as one
+// parameterised message; every other reason is a plain catalog lookup.
+const firmwareDownloadFailedReason = /^Could not download firmware file \((\d+)\)\.$/;
+const firmwareUploadRejectedReason = /^Device rejected firmware upload \((\d+)\)\.$/;
+export function localizedFirmwareInstallReason(reason?: any): string {
+    reason = String(reason || "");
+    var match: any = firmwareDownloadFailedReason.exec(reason);
+    if (match)
+        return i18n("Could not download firmware file ({status}).", { status: match[1] });
+    match = firmwareUploadRejectedReason.exec(reason);
+    if (match)
+        return i18n("Device rejected firmware upload ({status}).", { status: match[1] });
+    return i18nDynamic(reason);
+}
+
 export function createFirmwareUpdateFeature(
     runtime: UiRuntimeState,
     deviceId: string,
@@ -51,6 +69,15 @@ export function createFirmwareUpdateFeature(
     var firmwareInstallRefreshUntil: any = 0;
     var firmwareWebOtaFallbackTimer: any = null;
     const webOtaFallbackDelayMs = 12000;
+    // state.firmwareInstallError stays English (public_firmware_install.ts builds it as
+    // this prefix plus a reason); it is translated here, where it is displayed.
+    const installErrorPrefix = "Firmware update failed: ";
+    function localizedFirmwareInstallError(this: any, message?: any) {
+        message = String(message || "");
+        if (message.indexOf(installErrorPrefix) !== 0)
+            return localizedFirmwareInstallReason(message);
+        return i18n("Firmware update failed: {reason}", { reason: localizedFirmwareInstallReason(message.slice(installErrorPrefix.length)) });
+    }
     function firmwareUpdateAvailable(this: any) {
         return state.firmwareUpdateState === "UPDATE AVAILABLE" &&
             isSpecificFirmwareVersion(state.firmwareLatestVersion);
@@ -163,7 +190,7 @@ export function createFirmwareUpdateFeature(
         if (els.fwPreviousInstallBtn) {
             els.fwPreviousInstallBtn.disabled = busy || !show || !previousFirmwareInstallAvailable();
             els.fwPreviousInstallBtn.className = "sp-fw-btn" + (busy ? " sp-fw-btn-busy" : "");
-            els.fwPreviousInstallBtn.textContent = state.firmwareUpdateState === "INSTALLING" ? "Installing…" : "Install";
+            els.fwPreviousInstallBtn.textContent = state.firmwareUpdateState === "INSTALLING" ? i18n("Installing…") : i18n("Install");
         }
     }
     function setPublicFirmwareInfo(this: any, info?: any) {
@@ -249,14 +276,14 @@ export function createFirmwareUpdateFeature(
                 els.fwLatestVersion.textContent = state.firmwareLatestVersion;
             }
             else if (state.firmwareChecking) {
-                els.fwLatestVersion.textContent = "Checking\u2026";
+                els.fwLatestVersion.textContent = i18n("Checking\u2026");
             }
             else {
-                els.fwLatestVersion.textContent = "Not checked";
+                els.fwLatestVersion.textContent = i18n("Not checked");
             }
         }
         if (state.firmwareInstallError) {
-            status = escHtml(state.firmwareInstallError);
+            status = escHtml(localizedFirmwareInstallError(state.firmwareInstallError));
             cls += " sp-update-error";
         }
         els.fwStatus.className = cls;
@@ -266,15 +293,15 @@ export function createFirmwareUpdateFeature(
             els.fwCheckBtn.className = "sp-fw-btn" + (isBusy ? " sp-fw-btn-busy" : "");
             if (state.firmwareUpdateState === "INSTALLING") {
                 els.fwCheckBtn.disabled = true;
-                els.fwCheckBtn.textContent = "Installing\u2026";
+                els.fwCheckBtn.textContent = i18n("Installing\u2026");
             }
             else if (latestFirmwareInstallAvailable()) {
                 els.fwCheckBtn.disabled = false;
-                els.fwCheckBtn.textContent = "Install Update";
+                els.fwCheckBtn.textContent = i18n("Install Update");
             }
             else {
                 els.fwCheckBtn.disabled = state.firmwareChecking;
-                els.fwCheckBtn.textContent = state.firmwareChecking ? "Checking\u2026" : "Check for Update";
+                els.fwCheckBtn.textContent = state.firmwareChecking ? i18n("Checking\u2026") : i18n("Check for Update");
             }
         }
         syncFirmwareUpdateUi();

@@ -10,6 +10,7 @@ import {
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigModalTabOptionsFeature } from "../application/config_modal_tab_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export interface LightCardRegistration {
     readonly controlTypeMetadata: any;
     readonly renderControlTypeField: (panel?: any, button?: any, helpers?: any) => any;
@@ -108,14 +109,14 @@ export function registerLightTemperatureCardTypes(
         return n;
     }
     var LIGHT_CONTROL_TYPE_OPTIONS: any = [
-        ["light_control", "All Controls"],
-        ["light_switch", "Switch"],
-        ["light_brightness", "Brightness"],
-        ["light_temperature", "Colour Temperature"],
+        ["light_control", i18n("All Controls")],
+        ["light_switch", i18n("Switch")],
+        ["light_brightness", i18n("Brightness")],
+        ["light_temperature", i18n("Colour Temperature")],
     ];
     var LIGHT_CONTROL_TYPE_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "light-control-type",
             options: function (this: any, b?: any) {
                 return LIGHT_CONTROL_TYPE_OPTIONS;
@@ -129,13 +130,13 @@ export function registerLightTemperatureCardTypes(
     var LIGHT_TEMPERATURE_CARD_METADATA: any = {
         mode: LIGHT_CONTROL_TYPE_METADATA.mode,
         entity: {
-            label: "Entity",
-            placeholder: "e.g. light.living_room",
+            label: i18n("Entity"),
+            placeholder: i18n("e.g. {example}", { example: "light.living_room" }),
             domains: function (this: any) { return cardContractDomains("light_temperature"); },
         },
         labelField: {
-            label: "Label",
-            placeholder: "e.g. Living Room",
+            label: i18n("Label"),
+            placeholder: i18n("e.g. Living Room"),
         },
         icon: {
             field: "icon",
@@ -148,23 +149,23 @@ export function registerLightTemperatureCardTypes(
     var LIGHT_FULL_CONTROL_CARD_METADATA: any = {
         mode: LIGHT_CONTROL_TYPE_METADATA.mode,
         entity: {
-            label: "Entity",
-            placeholder: "e.g. light.living_room",
+            label: i18n("Entity"),
+            placeholder: i18n("e.g. {example}", { example: "light.living_room" }),
             domains: function (this: any) { return cardContractDomains("light_control"); },
         },
         labelField: {
-            label: "Label",
-            placeholder: "e.g. Living Room",
+            label: i18n("Label"),
+            placeholder: i18n("e.g. Living Room"),
         },
         iconOff: {
             field: "icon",
             fallback: "Lightbulb Outline",
-            label: "Off Icon",
+            label: i18n("Off Icon"),
         },
         iconOn: {
             field: "icon_on",
             fallback: "Lightbulb",
-            label: "On Icon",
+            label: i18n("On Icon"),
         },
         preview: {
             badge: "lightbulb-on",
@@ -198,7 +199,7 @@ export function registerLightTemperatureCardTypes(
         return helpers.renderCardModeSelector(panel, b, helpers, LIGHT_CONTROL_TYPE_METADATA);
     }
     function renderLightControlTabSettings(this: any, panel?: any, b?: any, helpers?: any) {
-        var modalSettingsDisclosure: any = helpers.disclosureSection("Modal Settings", helpers.idPrefix + "light-modal-settings", b._modalSettingsOpen === true);
+        var modalSettingsDisclosure: any = helpers.disclosureSection(i18n("Modal Settings"), helpers.idPrefix + "light-modal-settings", b._modalSettingsOpen === true);
         renderModalTabSettings(modalSettingsDisclosure.section, b, helpers, {
             definitions: lightControlTabDefinitions,
             tabs: lightControlTabs,
@@ -210,7 +211,7 @@ export function registerLightTemperatureCardTypes(
         panel.appendChild(modalSettingsDisclosure.panel);
     }
     registry.register("light_temperature", {
-        label: function (this: any) { return cardContractCardLabel("light_temperature"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("light_temperature")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("light_temperature"); },
         hideLabel: true,
         pickerKey: function (this: any) { return cardContractPickerKey("light_temperature"); },
@@ -219,7 +220,7 @@ export function registerLightTemperatureCardTypes(
         isAvailable: function (this: any) {
             return false;
         },
-        labelPlaceholder: "e.g. Living Room",
+        labelPlaceholder: i18n("e.g. Living Room"),
         cardMetadata: LIGHT_TEMPERATURE_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
             b.sensor = "";
@@ -246,7 +247,7 @@ export function registerLightTemperatureCardTypes(
             }
             var minF: any = document.createElement("div");
             minF.className = "sp-field";
-            minF.appendChild(helpers.fieldLabel("Min Color Temp (K)", helpers.idPrefix + "kmin"));
+            minF.appendChild(helpers.fieldLabel(i18n("Min Color Temp (K)"), helpers.idPrefix + "kmin"));
             var minInp: any = document.createElement("input");
             minInp.type = "number";
             minInp.className = "sp-input";
@@ -260,7 +261,7 @@ export function registerLightTemperatureCardTypes(
             panel.appendChild(minF);
             var maxF: any = document.createElement("div");
             maxF.className = "sp-field";
-            maxF.appendChild(helpers.fieldLabel("Max Color Temp (K)", helpers.idPrefix + "kmax"));
+            maxF.appendChild(helpers.fieldLabel(i18n("Max Color Temp (K)"), helpers.idPrefix + "kmax"));
             var maxInp: any = document.createElement("input");
             maxInp.type = "number";
             maxInp.className = "sp-input";
@@ -298,7 +299,7 @@ export function registerLightTemperatureCardTypes(
         },
     });
     registry.register("light_control", {
-        label: function (this: any) { return cardContractCardLabel("light_control"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("light_control")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("light_control"); },
         hideLabel: true,
         pickerKey: function (this: any) { return cardContractPickerKey("light_control"); },
@@ -307,7 +308,7 @@ export function registerLightTemperatureCardTypes(
         isAvailable: function (this: any) {
             return false;
         },
-        labelPlaceholder: "e.g. Living Room",
+        labelPlaceholder: i18n("e.g. Living Room"),
         cardMetadata: LIGHT_FULL_CONTROL_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
             b.sensor = "";
@@ -321,7 +322,7 @@ export function registerLightTemperatureCardTypes(
             renderLightControlTypeField(panel, b, helpers);
             b.options = normalizeLightControlOptions(b.options);
             helpers.renderCardEntityField(panel, b, helpers, LIGHT_FULL_CONTROL_CARD_METADATA);
-            var cardSettingsDisclosure: any = helpers.disclosureSection("Card Settings", helpers.idPrefix + "light-card-settings", false);
+            var cardSettingsDisclosure: any = helpers.disclosureSection(i18n("Card Settings"), helpers.idPrefix + "light-card-settings", false);
             var cardSettings: any = cardSettingsDisclosure.section;
             helpers.renderCardTextField(cardSettings, b, helpers, LIGHT_FULL_CONTROL_CARD_METADATA.labelField);
             helpers.renderCardIconPair(cardSettings, b, helpers, LIGHT_FULL_CONTROL_CARD_METADATA.iconOff, LIGHT_FULL_CONTROL_CARD_METADATA.iconOn);
@@ -329,7 +330,7 @@ export function registerLightTemperatureCardTypes(
             renderLightControlTabSettings(panel, b, helpers);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || b.entity || "Light";
+            var label: any = b.label || b.entity || i18nDevice("Light");
             return cardBadgePreview(b, helpers, {
                 label: label,
                 iconFallback: "Lightbulb Outline",

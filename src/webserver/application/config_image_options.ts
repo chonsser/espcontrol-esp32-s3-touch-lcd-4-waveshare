@@ -14,6 +14,7 @@ import {
     cardContractOptionDefaultValue,
     cardContractOptionSpec,
 } from "./config_option_core";
+import { i18n, i18nPlural } from "../i18n";
 export interface ConfigImageOptionsDependencies {
     readonly layout: ApplicationLayoutState;
     readonly mediaOptions: Pick<ConfigMediaOptionsFeature, "mediaEditorMode">;
@@ -48,21 +49,17 @@ export function createConfigImageOptionsFeature(dependencies: ConfigImageOptions
     }
     function imageSlotCapacityMessage(this: any) {
         if (IMAGE_SLOT_CAPACITY <= 0)
-            return "Image cards are not available on this display.";
+            return i18n("Image cards are not available on this display.");
         var disabled: readonly string[] = layout.config.disabledCardTypes || [];
         var cameraAvailable: boolean = disabled.indexOf("image") < 0;
         var mediaCoverArtAvailable: boolean = disabled.indexOf("media_cover_art") < 0;
         if (cameraAvailable && !mediaCoverArtAvailable) {
-            return "This display supports up to " + IMAGE_SLOT_CAPACITY +
-                (IMAGE_SLOT_CAPACITY === 1 ? " Camera Card" : " Camera Cards") +
-                " across the main page and subpages.";
+            return i18nPlural("image_slots_camera_cards", IMAGE_SLOT_CAPACITY, { one: "This display supports up to {count} Camera Card across the main page and subpages.", other: "This display supports up to {count} Camera Cards across the main page and subpages." });
         }
         if (!cameraAvailable && mediaCoverArtAvailable) {
-            return "This display supports up to " + IMAGE_SLOT_CAPACITY +
-                " Media Cover Art card" + (IMAGE_SLOT_CAPACITY === 1 ? "." : "s.");
+            return i18nPlural("image_slots_media_cover_art_cards", IMAGE_SLOT_CAPACITY, { one: "This display supports up to {count} Media Cover Art card.", other: "This display supports up to {count} Media Cover Art cards." });
         }
-        return "Image and Media Cover Art cards use shared image slots. You can save up to " +
-            IMAGE_SLOT_CAPACITY + " of these cards across the main page and subpages.";
+        return i18n("Image and Media Cover Art cards use shared image slots. You can save up to {count} of these cards across the main page and subpages.", { count: IMAGE_SLOT_CAPACITY });
     }
     function isImageCard(this: any, button?: any) {
         return !!button && (button.type === "image" ||

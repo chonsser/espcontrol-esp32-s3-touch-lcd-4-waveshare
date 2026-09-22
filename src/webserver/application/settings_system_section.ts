@@ -1,5 +1,6 @@
 import { buildResetSettings } from "./settings_reset_section";
 import { state } from "../state/app_instance";
+import { i18n, i18nDynamic, i18nMark } from "../i18n";
 import { normalizeHomeAssistantArtworkEndpointMode, normalizeHomeAssistantArtworkPort, normalizeHomeAssistantArtworkProtocol } from "../model/settings";
 import type { UiRuntimeState } from "./state";
 import {
@@ -19,6 +20,10 @@ import type { ArtworkPostApiFeature } from "./artwork_post_api";
 import type { PublicFirmwareInstallFeature } from "./public_firmware_install";
 import type { ControlsFieldsFeature } from "./controls_fields";
 import { formatHomeAssistantArtworkEndpointStatus, type SettingsPageHelpersFeature } from "./settings_page_helpers";
+
+// Update Frequency options are ESPHome select values: the value stays as the device sent it,
+// only the visible label of a known option is translated.
+const UPDATE_FREQUENCY_LABELS: readonly string[] = [i18nMark("Hourly"), i18nMark("Daily"), i18nMark("Weekly"), i18nMark("Monthly")];
 
 export interface SettingsSystemSectionActions {
     buildIdentityCard?(): HTMLElement;
@@ -79,14 +84,14 @@ export function createSettingsSystemSectionFeature(
         var backupBody: any = document.createElement("div");
         var backupRow: any = document.createElement("div");
         backupRow.className = "sp-backup-btns";
-        var exportBtn: any = createActionButton("sp-backup-btn", "Export", "download");
+        var exportBtn: any = createActionButton("sp-backup-btn", i18n("Export"), "download");
         exportBtn.addEventListener("click", actions.exportBackup);
         backupRow.appendChild(exportBtn);
-        var importBtn: any = createActionButton("sp-backup-btn", "Import", "upload");
+        var importBtn: any = createActionButton("sp-backup-btn", i18n("Import"), "upload");
         importBtn.addEventListener("click", actions.importBackup);
         backupRow.appendChild(importBtn);
         backupBody.appendChild(backupRow);
-        var backupCard: any = makeCollapsibleCard("Backup", backupBody, true);
+        var backupCard: any = makeCollapsibleCard(i18n("Backup"), backupBody, true);
         var fwBody: any = document.createElement("div");
         var fwOverview: any = document.createElement("div");
         fwOverview.className = "sp-fw-overview";
@@ -94,7 +99,7 @@ export function createSettingsSystemSectionFeature(
         fwCurrentRow.className = "sp-fw-row sp-fw-info-row";
         var fwCurrentLabel: any = document.createElement("span");
         fwCurrentLabel.className = "sp-fw-label";
-        fwCurrentLabel.textContent = "Current version";
+        fwCurrentLabel.textContent = i18n("Current version");
         var fwVersionLabel: any = document.createElement("span");
         fwVersionLabel.className = "sp-fw-version";
         fwCurrentRow.appendChild(fwCurrentLabel);
@@ -105,7 +110,7 @@ export function createSettingsSystemSectionFeature(
         fwLatestRow.className = "sp-fw-row sp-fw-info-row";
         var fwLatestLabel: any = document.createElement("span");
         fwLatestLabel.className = "sp-fw-label";
-        fwLatestLabel.textContent = "Available version";
+        fwLatestLabel.textContent = i18n("Available version");
         var fwLatestValue: any = document.createElement("span");
         fwLatestValue.className = "sp-fw-version";
         fwLatestRow.appendChild(fwLatestLabel);
@@ -116,7 +121,7 @@ export function createSettingsSystemSectionFeature(
         var fwActions: any = document.createElement("div");
         fwActions.className = "sp-fw-actions sp-fw-actions-full";
         els.fwActions = fwActions;
-        var fwCheckBtn: any = createActionButton("sp-fw-btn", "Check for Update");
+        var fwCheckBtn: any = createActionButton("sp-fw-btn", i18n("Check for Update"));
         fwCheckBtn.addEventListener("click", function (this: any) {
             if (!firmwareUpdateControlsVisible())
                 return;
@@ -171,13 +176,13 @@ export function createSettingsSystemSectionFeature(
         renderFirmwareUpdateStatus();
         var firmwareSubpanels: any = document.createElement("div");
         firmwareSubpanels.className = "sp-fw-subpanels";
-        var firmwareUpdatesBadge: any = disclosureBadge("Update available", "Firmware update available");
-        var firmwareUpdatesPanel: any = inlineDisclosure("Firmware updates", fwOverview, false, firmwareUpdatesBadge);
+        var firmwareUpdatesBadge: any = disclosureBadge(i18n("Update available"), i18n("Firmware update available"));
+        var firmwareUpdatesPanel: any = inlineDisclosure(i18n("Firmware updates"), fwOverview, false, firmwareUpdatesBadge);
         firmwareUpdatesPanel.id = "sp-fw-updates-panel";
         els.firmwareUpdatesBadge = firmwareUpdatesBadge;
         firmwareSubpanels.appendChild(firmwareUpdatesPanel);
         var autoUpdateBody: any = document.createElement("div");
-        var autoUpdateToggle: any = toggleRow("Auto Update", "sp-set-auto-update", state.autoUpdate);
+        var autoUpdateToggle: any = toggleRow(i18n("Auto Update"), "sp-set-auto-update", state.autoUpdate);
         autoUpdateBody.appendChild(autoUpdateToggle.row);
         autoUpdateToggle.input.addEventListener("change", function (this: any) {
             if (!firmwareUpdateControlsVisible()) {
@@ -193,14 +198,14 @@ export function createSettingsSystemSectionFeature(
         var freqWrap: any = document.createElement("div");
         freqWrap.className = "sp-field";
         freqWrap.style.display = state.autoUpdate ? "" : "none";
-        freqWrap.appendChild(fieldLabel("Update Frequency", "sp-set-update-freq"));
+        freqWrap.appendChild(fieldLabel(i18n("Update Frequency"), "sp-set-update-freq"));
         var freqSelect: any = document.createElement("select");
         freqSelect.className = "sp-select";
         freqSelect.id = "sp-set-update-freq";
         state.updateFreqOptions.forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
             o.value = opt;
-            o.textContent = opt;
+            o.textContent = UPDATE_FREQUENCY_LABELS.indexOf(opt) === -1 ? opt : i18nDynamic(opt);
             freqSelect.appendChild(o);
         });
         freqSelect.value = state.updateFrequency;
@@ -214,8 +219,8 @@ export function createSettingsSystemSectionFeature(
         autoUpdateBody.appendChild(freqWrap);
         els.updateFreqWrap = freqWrap;
         els.setUpdateFreq = freqSelect;
-        var autoUpdateBadge: any = disclosureBadge("On", "Automatic firmware updates on");
-        var autoUpdatePanel: any = inlineDisclosure("Auto updates", autoUpdateBody, false, autoUpdateBadge);
+        var autoUpdateBadge: any = disclosureBadge(i18n("On"), i18n("Automatic firmware updates on"));
+        var autoUpdatePanel: any = inlineDisclosure(i18n("Auto updates"), autoUpdateBody, false, autoUpdateBadge);
         autoUpdatePanel.id = "sp-fw-auto-panel";
         els.autoUpdateBadge = autoUpdateBadge;
         els.autoUpdatePanel = autoUpdatePanel;
@@ -225,7 +230,7 @@ export function createSettingsSystemSectionFeature(
         c6CurrentRow.className = "sp-fw-row sp-fw-info-row";
         var c6CurrentLabel: any = document.createElement("span");
         c6CurrentLabel.className = "sp-fw-label";
-        c6CurrentLabel.textContent = "Current";
+        c6CurrentLabel.textContent = i18n("Current");
         var c6CurrentValue: any = document.createElement("span");
         c6CurrentValue.className = "sp-fw-version";
         c6CurrentRow.appendChild(c6CurrentLabel);
@@ -236,14 +241,14 @@ export function createSettingsSystemSectionFeature(
         c6LatestRow.className = "sp-fw-row sp-fw-info-row";
         var c6LatestLabel: any = document.createElement("span");
         c6LatestLabel.className = "sp-fw-label";
-        c6LatestLabel.textContent = "Available";
+        c6LatestLabel.textContent = i18n("Available");
         var c6LatestValue: any = document.createElement("span");
         c6LatestValue.className = "sp-fw-version";
         c6LatestRow.appendChild(c6LatestLabel);
         c6LatestRow.appendChild(c6LatestValue);
         wifiFirmwareBody.appendChild(c6LatestRow);
         els.c6FirmwareLatest = c6LatestValue;
-        var c6AutoUpdateToggle: any = toggleRow("Auto Update", "sp-set-c6-auto-update", state.c6FirmwareAutoUpdate);
+        var c6AutoUpdateToggle: any = toggleRow(i18n("Auto Update"), "sp-set-c6-auto-update", state.c6FirmwareAutoUpdate);
         c6AutoUpdateToggle.input.addEventListener("change", function (this: any) {
             if (!state.c6FirmwareAutoUpdateSupported) {
                 syncC6FirmwareUi();
@@ -258,7 +263,7 @@ export function createSettingsSystemSectionFeature(
         els.c6FirmwareAutoUpdate = c6AutoUpdateToggle.input;
         var c6Actions: any = document.createElement("div");
         c6Actions.className = "sp-fw-actions sp-fw-actions-full";
-        var c6UpdateBtn: any = createActionButton("sp-fw-btn", "Check for Update");
+        var c6UpdateBtn: any = createActionButton("sp-fw-btn", i18n("Check for Update"));
         c6UpdateBtn.addEventListener("click", function (this: any) {
             if (!state.c6FirmwareUpdateControlsSupported)
                 return;
@@ -288,8 +293,8 @@ export function createSettingsSystemSectionFeature(
         c6Status.className = "sp-fw-status";
         wifiFirmwareBody.appendChild(c6Status);
         els.c6FirmwareStatus = c6Status;
-        var c6Badge: any = disclosureBadge("Update available", "WiFi firmware update available");
-        var wifiFirmwarePanel: any = inlineDisclosure("WiFi firmware", wifiFirmwareBody, false, c6Badge);
+        var c6Badge: any = disclosureBadge(i18n("Update available"), i18n("WiFi firmware update available"));
+        var wifiFirmwarePanel: any = inlineDisclosure(i18n("WiFi firmware"), wifiFirmwareBody, false, c6Badge);
         wifiFirmwarePanel.id = "sp-fw-wifi-panel";
         els.c6FirmwareBadge = c6Badge;
         els.c6FirmwareCard = wifiFirmwarePanel;
@@ -297,7 +302,7 @@ export function createSettingsSystemSectionFeature(
         var previousFirmwareBody: any = document.createElement("div");
         var fwVersionField: any = document.createElement("div");
         fwVersionField.className = "sp-field sp-fw-version-field";
-        fwVersionField.appendChild(fieldLabel("Version", "sp-set-firmware-version"));
+        fwVersionField.appendChild(fieldLabel(i18n("Version"), "sp-set-firmware-version"));
         var fwVersionSelect: any = document.createElement("select");
         fwVersionSelect.className = "sp-select";
         fwVersionSelect.id = "sp-set-firmware-version";
@@ -311,12 +316,12 @@ export function createSettingsSystemSectionFeature(
         els.fwVersionSelect = fwVersionSelect;
         var previousFirmwareActions: any = document.createElement("div");
         previousFirmwareActions.className = "sp-fw-previous-actions";
-        var previousFirmwareInstallBtn: any = createActionButton("sp-fw-btn", "Install");
+        var previousFirmwareInstallBtn: any = createActionButton("sp-fw-btn", i18n("Install"));
         previousFirmwareInstallBtn.addEventListener("click", function (this: any) {
             var info: any = selectedPreviousFirmwareInfo();
             if (!info || !firmwareUpdateControlsVisible())
                 return;
-            if (!window.confirm("Install older firmware " + info.latest_version + "? The display will restart during installation.")) {
+            if (!window.confirm(i18n("Install older firmware {version}? The display will restart during installation.", { version: info.latest_version }))) {
                 return;
             }
             installPublicFirmwareViaWebOta(info);
@@ -324,15 +329,15 @@ export function createSettingsSystemSectionFeature(
         previousFirmwareActions.appendChild(previousFirmwareInstallBtn);
         previousFirmwareBody.appendChild(previousFirmwareActions);
         els.fwPreviousInstallBtn = previousFirmwareInstallBtn;
-        var previousFirmwarePanel: any = inlineDisclosure("Previous firmware", previousFirmwareBody, false);
+        var previousFirmwarePanel: any = inlineDisclosure(i18n("Previous firmware"), previousFirmwareBody, false);
         previousFirmwarePanel.id = "sp-fw-previous-panel";
         els.fwPreviousPanel = previousFirmwarePanel;
         firmwareSubpanels.appendChild(previousFirmwarePanel);
         fwBody.appendChild(firmwareSubpanels);
-        var firmwareCardBadge: any = statusBadge("Firmware update available", "Update available");
+        var firmwareCardBadge: any = statusBadge(i18n("Firmware update available"), i18n("Update available"));
         firmwareCardBadge.className = "sp-card-badge sp-hidden";
         els.firmwareCardBadge = firmwareCardBadge;
-        var firmwareCard: any = makeCollapsibleCard("Firmware", fwBody, true, firmwareCardBadge);
+        var firmwareCard: any = makeCollapsibleCard(i18n("Firmware"), fwBody, true, firmwareCardBadge);
         syncFirmwareVersionSelect();
         syncFirmwareUpdateUi();
         syncC6FirmwareUi();
@@ -340,14 +345,14 @@ export function createSettingsSystemSectionFeature(
         var homeAssistantSettingsBody: any = document.createElement("div");
         var haModeField: any = document.createElement("div");
         haModeField.className = "sp-field";
-        haModeField.appendChild(fieldLabel("Connection", "sp-set-ha-artwork-endpoint-mode"));
+        haModeField.appendChild(fieldLabel(i18n("Connection"), "sp-set-ha-artwork-endpoint-mode"));
         var haModeSelect: any = document.createElement("select");
         haModeSelect.className = "sp-select";
         haModeSelect.id = "sp-set-ha-artwork-endpoint-mode";
         ["Automatic", "Manual"].forEach(function (option: any) {
             var item: any = document.createElement("option");
             item.value = option;
-            item.textContent = option;
+            item.textContent = option === "Manual" ? i18n("Manual") : i18n("Automatic");
             haModeSelect.appendChild(item);
         });
         haModeSelect.value = normalizeHomeAssistantArtworkEndpointMode(
@@ -366,18 +371,19 @@ export function createSettingsSystemSectionFeature(
         els.setHomeAssistantArtworkEndpointMode = haModeSelect;
         var haStatus: any = infoPanel("sp-ha-artwork-endpoint-status", "");
         var haStatusText: any = haStatus.lastElementChild;
-        haStatusText.textContent = "The current Home Assistant artwork endpoint is";
-        haStatusText.appendChild(document.createTextNode(" "));
         var haStatusOutput: any = document.createElement("code");
         haStatusOutput.textContent = formatHomeAssistantArtworkEndpointStatus(state.homeAssistantArtworkEndpointStatus);
+        // One message; the <code> element takes the place of {endpoint}.
+        var haStatusParts: any = i18n("The current Home Assistant artwork endpoint is {endpoint}.").split("{endpoint}");
+        haStatusText.textContent = haStatusParts[0] || "";
         haStatusText.appendChild(haStatusOutput);
-        haStatusText.appendChild(document.createTextNode("."));
+        haStatusText.appendChild(document.createTextNode(haStatusParts.slice(1).join("{endpoint}")));
         homeAssistantSettingsBody.appendChild(haStatus);
         els.homeAssistantArtworkEndpointStatus = haStatus;
         els.homeAssistantArtworkEndpointStatusOutput = haStatusOutput;
         var haProtocolField: any = document.createElement("div");
         haProtocolField.className = "sp-field";
-        haProtocolField.appendChild(fieldLabel("Home Assistant Protocol", "sp-set-ha-artwork-protocol"));
+        haProtocolField.appendChild(fieldLabel(i18n("Home Assistant Protocol"), "sp-set-ha-artwork-protocol"));
         var haProtocolSelect: any = document.createElement("select");
         haProtocolSelect.className = "sp-select";
         haProtocolSelect.id = "sp-set-ha-artwork-protocol";
@@ -399,7 +405,7 @@ export function createSettingsSystemSectionFeature(
         els.setHomeAssistantArtworkProtocolField = haProtocolField;
         var haPortField: any = document.createElement("div");
         haPortField.className = "sp-field";
-        haPortField.appendChild(fieldLabel("Home Assistant Port", "sp-set-ha-artwork-port"));
+        haPortField.appendChild(fieldLabel(i18n("Home Assistant Port"), "sp-set-ha-artwork-port"));
         var haPortInput: any = document.createElement("input");
         haPortInput.className = "sp-input sp-input--no-stepper";
         haPortInput.id = "sp-set-ha-artwork-port";
@@ -426,7 +432,7 @@ export function createSettingsSystemSectionFeature(
             haPortInput.disabled = !manualEndpoint;
         }
         syncHomeAssistantEndpointFields();
-        var homeAssistantSettingsCard: any = makeCollapsibleCard("Home Assistant Settings", homeAssistantSettingsBody, true);
+        var homeAssistantSettingsCard: any = makeCollapsibleCard(i18n("Home Assistant Settings"), homeAssistantSettingsBody, true);
         return {
             identityCard: actions.buildIdentityCard?.(),
             backupCard: backupCard,

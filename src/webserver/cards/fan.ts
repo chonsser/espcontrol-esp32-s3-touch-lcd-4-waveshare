@@ -2,6 +2,7 @@ import { iconSlug } from "../application/ui_primitives";
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigModalTabOptionsFeature } from "../application/config_modal_tab_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice } from "../i18n";
 export function registerFanCardTypes(
     registry: CardRegistry,
     modalTabs: ConfigModalTabOptionsFeature,
@@ -21,12 +22,12 @@ export function registerFanCardTypes(
     } = modalTabs;
     // Fan cards: grouped controls for Home Assistant fan entities.
     var FAN_CONTROL_TYPE_OPTIONS: any = [
-        ["fan_control", "All Controls"],
-        ["fan_switch", "Switch"],
-        ["fan_speed", "Speed"],
-        ["fan_oscillate", "Oscillation"],
-        ["fan_direction", "Direction"],
-        ["fan_preset", "Preset"],
+        ["fan_control", i18n("All Controls")],
+        ["fan_switch", i18n("Switch")],
+        ["fan_speed", i18n("Speed")],
+        ["fan_oscillate", i18n("Oscillation")],
+        ["fan_direction", i18n("Direction")],
+        ["fan_preset", i18n("Preset")],
     ];
     function normalizeFanControlType(this: any, type?: any) {
         if (type === "fan_control")
@@ -66,7 +67,7 @@ export function registerFanCardTypes(
     }
     var FAN_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "fan-control-type",
             options: FAN_CONTROL_TYPE_OPTIONS,
             value: function (this: any, b?: any) {
@@ -74,19 +75,19 @@ export function registerFanCardTypes(
             },
         },
         entity: {
-            label: "Fan Entity",
+            label: i18n("Fan Entity"),
             idSuffix: "fan-entity",
-            placeholder: "e.g. fan.bedroom",
+            placeholder: i18n("e.g. {example}", { example: "fan.bedroom" }),
             domains: ["fan"],
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add a fan entity before saving.",
+            requiredMessage: i18n("Add a fan entity before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "fan-label",
             field: "label",
-            placeholder: "e.g. Bedroom Fan",
+            placeholder: i18n("e.g. Bedroom Fan"),
             rerender: true,
         },
     };
@@ -117,7 +118,7 @@ export function registerFanCardTypes(
         }));
     }
     function renderFanControlTabSettings(this: any, panel?: any, b?: any, helpers?: any) {
-        var modalSettingsDisclosure: any = helpers.disclosureSection("Modal Settings", helpers.idPrefix + "fan-modal-settings", b._modalSettingsOpen === true);
+        var modalSettingsDisclosure: any = helpers.disclosureSection(i18n("Modal Settings"), helpers.idPrefix + "fan-modal-settings", b._modalSettingsOpen === true);
         renderModalTabSettings(modalSettingsDisclosure.section, b, helpers, {
             definitions: fanControlTabDefinitions,
             tabs: fanControlTabs,
@@ -130,14 +131,14 @@ export function registerFanCardTypes(
             },
         });
         var lightDisclosure: any = helpers.disclosureSection(
-            "Optional Light", helpers.idPrefix + "fan-optional-light",
+            i18n("Optional Light"), helpers.idPrefix + "fan-optional-light",
             b._fanOptionalLightOpen === true);
         var lightEntityField: any = helpers.renderCardEntityField(lightDisclosure.section, b, helpers, {
             entity: {
-                label: "Light Entity",
+                label: i18n("Light Entity"),
                 idSuffix: "fan-light-entity",
                 value: function (this: any) { return fanLightEntity(b); },
-                placeholder: "e.g. light.bedroom_fan",
+                placeholder: i18n("e.g. {example}", { example: "light.bedroom_fan" }),
                 domains: ["light"],
                 bindName: null,
                 rerender: false,
@@ -167,12 +168,12 @@ export function registerFanCardTypes(
     }
     function fanTypeFactory(this: any, opts?: any) {
         return {
-            label: "Fans",
+            label: i18n("Fans"),
             allowInSubpage: true,
             hideLabel: true,
             pickerKey: opts.pickerKey,
             isAvailable: opts.hidden ? function (this: any) { return false; } : null,
-            labelPlaceholder: "e.g. Bedroom Fan",
+            labelPlaceholder: i18n("e.g. Bedroom Fan"),
             cardMetadata: FAN_CARD_METADATA,
             onSelect: function (this: any, b?: any) {
                 b.sensor = "";
@@ -209,14 +210,14 @@ export function registerFanCardTypes(
                         idSuffix: "fan-icon",
                         field: "icon",
                         fallback: "Fan Off",
-                        label: "Off Icon",
+                        label: i18n("Off Icon"),
                     });
                     helpers.renderCardIconPicker(panel, b, helpers, {
                         pickerIdSuffix: "fan-icon-on-picker",
                         idSuffix: "fan-icon-on",
                         field: "icon_on",
                         fallback: "Fan",
-                        label: "On Icon",
+                        label: i18n("On Icon"),
                     });
                 }
                 else {
@@ -225,13 +226,13 @@ export function registerFanCardTypes(
                         idSuffix: "fan-icon",
                         field: "icon",
                         fallback: function (this: any) { return fanControlDefaultIcon(b.type); },
-                        label: "Icon",
+                        label: i18n("Icon"),
                     });
                 }
             },
             renderPreview: function (this: any, b?: any, helpers?: any) {
                 var type: any = normalizeFanControlType(b.type);
-                var label: any = b.label || b.entity || "Fan";
+                var label: any = b.label || b.entity || i18nDevice("Fan");
                 var iconName: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : iconSlug(fanControlDefaultIcon(type));
                 var iconHtml: any = '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>';
                 if (type === "fan_speed") {

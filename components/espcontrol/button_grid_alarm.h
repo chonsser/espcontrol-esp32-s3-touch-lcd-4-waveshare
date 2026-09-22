@@ -414,6 +414,20 @@ inline const char *alarm_action_label(const std::string &mode) {
   return espcontrol_i18n("Alarm");
 }
 
+// English source text for alarm_action_label(); saved configs can carry it as the label.
+inline const char *alarm_action_label_english(const std::string &mode) {
+  if (mode == "away") return "Arm Away";
+  if (mode == "home") return "Arm Home";
+  if (mode == "night") return "Arm Night";
+  if (mode == "vacation") return "Arm Vacation";
+  if (mode == "disarm") return "Disarm";
+  return "Alarm";
+}
+
+inline std::string alarm_action_card_label(const ParsedCfg &p) {
+  return i18n_label_or_default(p.label, alarm_action_label_english(p.sensor));
+}
+
 inline const char *alarm_action_icon(const std::string &mode) {
   return find_icon(alarm_action_icon_name(mode));
 }
@@ -423,8 +437,8 @@ inline void setup_alarm_action_card(BtnSlot &s, const ParsedCfg &p) {
   if (!p.icon.empty() && p.icon != "Auto") {
     lv_label_set_display_text(s.icon_lbl, find_icon(p.icon.c_str()));
   }
-  lv_label_set_display_text(s.text_lbl,
-    p.label.empty() ? alarm_action_label(p.sensor) : p.label.c_str());
+  std::string label = alarm_action_card_label(p);
+  lv_label_set_display_text(s.text_lbl, label.c_str());
 }
 
 inline const char *alarm_action_service(const std::string &mode) {
@@ -544,7 +558,7 @@ inline std::string alarm_control_button_label_for_state(const std::string &mode,
                                                         const std::string &arm_mode) {
   std::string effective_state = alarm_effective_state(state, arm_mode);
   if (alarm_state_control_mode(effective_state) == mode) {
-    return sentence_cap_text(effective_state);
+    return alarm_state_label(effective_state);
   }
   return alarm_control_button_label(mode);
 }

@@ -10,6 +10,7 @@ import {
 import type { CardRegistry } from "../application/card_registry";
 import type { ConfigSensorOptionsFeature } from "../application/config_sensor_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerPresenceCardTypes(
     registry: CardRegistry,
     sensorOptions: ConfigSensorOptionsFeature,
@@ -24,43 +25,43 @@ export function registerPresenceCardTypes(
     // Read-only presence card: shows a sensor where Detected is active and Clear is inactive.
     const PRESENCE_CARD_METADATA: any = {
         entity: {
-            label: "Sensor Entity",
+            label: i18n("Sensor Entity"),
             idSuffix: "sensor",
-            placeholder: "e.g. binary_sensor.living_room_presence",
+            placeholder: i18n("e.g. {example}", { example: "binary_sensor.living_room_presence" }),
             domains: function (this: any) { return cardContractDomains("presence"); },
             bindName: "sensor",
             rerender: true,
-            requiredMessage: "Add a presence sensor before saving.",
+            requiredMessage: i18n("Add a presence sensor before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "label",
             field: "label",
-            placeholder: "e.g. Living Room",
+            placeholder: i18n("e.g. Living Room"),
             rerender: true,
         },
         iconOff: {
             pickerIdSuffix: "clear-icon-picker",
             idSuffix: "icon",
             field: "icon",
-            label: "Clear Icon",
+            label: i18n("Clear Icon"),
             fallback: "Motion Sensor Off",
         },
         iconOn: {
             pickerIdSuffix: "detected-icon-picker",
             idSuffix: "icon-on",
             field: "icon_on",
-            label: "Detected Icon",
+            label: i18n("Detected Icon"),
             fallback: "Motion Sensor",
         },
         activeColor: {
-            label: "Lit When Detected",
+            label: i18n("Lit When Detected"),
             idSuffix: "presence-active-color",
             checked: presenceActiveColorEnabled,
         },
     };
     registry.register("presence", {
-        label: function (this: any) { return cardContractCardLabel("presence"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("presence")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("presence"); },
         pickerKey: function (this: any) { return cardContractPickerKey("presence"); },
         hidden: function (this: any) { return cardContractHidden("presence"); },
@@ -84,7 +85,7 @@ export function registerPresenceCardTypes(
             helpers.renderCardActiveColorToggle(panel, b, helpers, PRESENCE_CARD_METADATA.activeColor, setPresenceActiveColorEnabled);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || b.sensor || "Presence";
+            var label: any = b.label || b.sensor || i18nDevice("Presence");
             return cardBadgePreview(b, helpers, {
                 label: label,
                 iconFallback: "Motion Sensor Off",

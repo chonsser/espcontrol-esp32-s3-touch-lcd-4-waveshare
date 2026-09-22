@@ -50,6 +50,17 @@ inline bool date_time_driver_setup_visual(
     register_timezone_card(
       slot.sensor_lbl, slot.unit_lbl, slot.text_lbl,
       config.entity, "", false);
+    for (int i = 0; i < timezone_card_count(); ++i) {
+      auto &ref = timezone_card_refs()[i];
+      if (ref.value_lbl != slot.sensor_lbl) continue;
+      ref.clock.legacy_label = lv_obj_get_style_text_font(slot.text_lbl, LV_PART_MAIN);
+      ref.clock.legacy_value = lv_obj_get_style_text_font(slot.sensor_lbl, LV_PART_MAIN);
+      ref.clock.value_pad_left = lv_obj_get_style_pad_left(slot.sensor_lbl, LV_PART_MAIN);
+      ref.clock.value_pad_right = lv_obj_get_style_pad_right(slot.sensor_lbl, LV_PART_MAIN);
+      ref.clock.label_pad_left = lv_obj_get_style_pad_left(slot.text_lbl, LV_PART_MAIN);
+      ref.clock.label_pad_right = lv_obj_get_style_pad_right(slot.text_lbl, LV_PART_MAIN);
+      configure_clock_card_appearance(ref.clock, config);
+    }
   }
   return true;
 }
@@ -81,10 +92,62 @@ inline bool date_time_driver_large_layout(
   return large_number_square_card_layout(row_span, col_span);
 }
 
+inline bool date_time_driver_text_size_layout(
+    BtnSlot &slot, const ParsedCfg &config, const DisplayProfile &display) {
+  const std::string value = cfg_option_value(config.options, "text_size");
+  DateTimeCardTextSize size;
+  size.requested = value == "small" ? 1 : value == "medium" ? 2 : value == "large" ? 3 : 0;
+  if (size.requested) {
+    size.fonts[0] = lv_obj_get_style_text_font(slot.text_lbl, LV_PART_MAIN);
+    size.fonts[1] = display_sensor_font(display);
+    size.fonts[2] = display_large_sensor_font(display);
+    lv_obj_clear_flag(slot.text_lbl, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(slot.sensor_container, LV_ALIGN_TOP_LEFT, 0, 0);
+    if (slot.unit_lbl) lv_obj_set_style_translate_y(slot.unit_lbl, 0, LV_PART_MAIN);
+  }
+  for (int i = 0; i < calendar_card_count(); ++i) {
+    auto &ref = calendar_card_refs()[i];
+    if (ref.value_lbl == slot.sensor_lbl) ref.text_size = size;
+  }
+  for (int i = 0; i < timezone_card_count(); ++i) {
+    auto &ref = timezone_card_refs()[i];
+    if (ref.value_lbl == slot.sensor_lbl) ref.text_size = size;
+  }
+  if (!size.requested) lv_obj_clear_flag(slot.sensor_container, LV_OBJ_FLAG_HIDDEN);
+  fit_date_time_card_text(slot.sensor_lbl, slot.text_lbl, size);
+  return size.requested != 0;
+}
+
 inline bool date_time_driver_refresh_layout(
     BtnSlot &slot, const ParsedCfg &config, const Context &context,
     const DisplayProfile &display, int row_span, int col_span) {
   if (!date_time_driver_matches(context)) return false;
+  if (context.runtime.type == card_runtime::CardTypeId::CLOCK) {
+    for (int i = 0; i < timezone_card_count(); ++i) {
+      auto &ref = timezone_card_refs()[i];
+      if (ref.value_lbl != slot.sensor_lbl) continue;
+      const bool was_custom = ref.clock.enabled;
+      const auto previous = ref.clock;
+      configure_clock_card_appearance(ref.clock, config);
+      if (!ref.clock.enabled && was_custom) {
+        auto reset = previous;
+        reset_clock_card_appearance(slot.sensor_lbl, slot.text_lbl, reset, slot.unit_lbl);
+        lv_label_set_display_text(slot.text_lbl, "");
+      }
+      if (!ref.clock.enabled) break;
+      ref.clock.legacy_fonts[0] = ref.clock.legacy_label;
+      ref.clock.legacy_fonts[1] = display_sensor_font(display);
+      ref.clock.legacy_fonts[2] = display_large_sensor_font(display);
+      ref.clock.large = date_time_driver_large_layout(context, row_span, col_span) &&
+        !card_large_numbers_disabled(config);
+      lv_obj_align(slot.sensor_container, LV_ALIGN_TOP_LEFT, 0, 0);
+      if (slot.unit_lbl) lv_obj_set_style_translate_y(slot.unit_lbl, 0, LV_PART_MAIN);
+      clock_card_set_hidden(slot.unit_lbl, true);
+      fit_clock_card_text(slot.sensor_lbl, slot.text_lbl, ref.clock);
+      return true;
+    }
+  }
+  if (date_time_driver_text_size_layout(slot, config, display)) return true;
   if (context.runtime.type == card_runtime::CardTypeId::CALENDAR) {
     if (large_number_square_card_layout(row_span, col_span) &&
         card_large_numbers_active_for_layout(config, row_span, col_span) &&
@@ -124,9 +187,17 @@ inline bool date_time_driver_refresh_layout(
 }
 
 inline bool date_time_driver_cleanup(
-    BtnSlot &, const ParsedCfg &, const Context &context) {
-  // The central calendar/timezone registries are reset before each grid
-  // rebuild. These cards own no dynamic allocations.
+    BtnSlot &slot, const ParsedCfg &, const Context &context) {
+  // Setup invokes cleanup with the incoming card type, not the outgoing one.
+  // Remove by widget identity so reused cards cannot retain a ticking ref/style.
+  auto *refs = timezone_card_refs();
+  int &count = timezone_card_count();
+  for (int i = 0; i < count;) {
+    if (refs[i].value_lbl != slot.sensor_lbl) { ++i; continue; }
+    reset_clock_card_appearance(slot.sensor_lbl, slot.text_lbl, refs[i].clock, slot.unit_lbl);
+    for (int j = i + 1; j < count; ++j) refs[j - 1] = std::move(refs[j]);
+    refs[--count] = {};
+  }
   return date_time_driver_matches(context);
 }
 

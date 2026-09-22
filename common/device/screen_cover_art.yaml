@@ -1786,8 +1786,15 @@ script:
       - lvgl.widget.hide: cover_art_track_panel
       - lvgl.widget.hide: cover_art_progress_bar
       - if:
+          # Low-heap panels (the ESP32-S3 profiles) release the decoded artwork
+          # as soon as cover art hides so the grid gets that PSRAM back.
           condition:
-            lambda: 'return std::string("${device_slug}") == "guition-esp32-s3-4848s040";'
+            lambda: |-
+              #ifdef ESPCONTROL_LOW_HEAP_COVER_ART
+              return true;
+              #else
+              return false;
+              #endif
           then:
             - script.execute: cover_art_clear_image_source
             - script.wait: cover_art_clear_image_source

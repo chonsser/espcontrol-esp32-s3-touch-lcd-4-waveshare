@@ -3392,12 +3392,29 @@ inline std::string media_default_label(const std::string &mode) {
   return espcontrol_i18n(std::string("Media"));
 }
 
+// English source text for media_default_label(); saved configs can carry it as the label.
+inline const char *media_default_label_english(const std::string &mode) {
+  if (mode == "previous") return "Previous";
+  if (mode == "next") return "Next";
+  if (mode == "volume") return "Volume";
+  if (mode == "position") return "Position";
+  if (mode == "play_pause") return "Play/Pause";
+  if (mode == "control_modal") return "All Controls";
+  if (mode == "speaker_group") return "Speaker Group";
+  if (mode == "cover_art") return "Cover Art";
+  if (mode == "playlist") return "Playlist";
+  return "Media";
+}
+
 inline std::string media_label(const ParsedCfg &p) {
-  return p.label.empty() ? espcontrol_i18n(std::string("Volume")) : p.label;
+  return i18n_label_or_default(p.label, "Volume");
 }
 
 inline std::string media_action_label(const ParsedCfg &p, const std::string &mode) {
-  return p.label.empty() ? media_default_label(mode) : p.label;
+  if (p.label.empty() || p.label == media_default_label_english(mode)) {
+    return media_default_label(mode);
+  }
+  return p.label;
 }
 
 inline bool media_play_pause_show_state(const ParsedCfg &p) {

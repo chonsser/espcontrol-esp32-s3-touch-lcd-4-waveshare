@@ -102,6 +102,27 @@ export function createWebStyles(dragAnimation: boolean): string {
         ".sp-forecast-preview{white-space:nowrap;gap:0}" +
         ".sp-sensor-value{font-size:var(--btn-icon);line-height:1;font-weight:300}" +
         ".sp-sensor-unit{font-size:var(--btn-label);line-height:1;color:#fff}" +
+        ".sp-date-time-text-small{--date-time-font:var(--btn-label)}" +
+        ".sp-date-time-text-medium{--date-time-font:var(--btn-icon)}" +
+        ".sp-date-time-text-large{--date-time-font:calc(var(--btn-icon)*2.5)}" +
+        ".sp-date-time-text .sp-sensor-preview{container-type:size;flex:1;min-height:0;min-width:0;width:100%;align-items:flex-start}" +
+        ".sp-btn.sp-date-time-text .sp-sensor-preview .sp-sensor-value{font-size:min(var(--date-time-font),31.25cqw,100cqh);font-weight:300;white-space:nowrap}" +
+        ".sp-clock-font-thin{--clock-font-family:Roboto,Arial,sans-serif;--clock-font-weight:100}" +
+        ".sp-clock-font-bold{--clock-font-family:Roboto,Arial,sans-serif;--clock-font-weight:700}" +
+        ".sp-clock-font-mono{--clock-font-family:ui-monospace,'Roboto Mono',monospace;--clock-font-weight:400}" +
+        ".sp-btn[class*='sp-clock-font-'] .sp-sensor-preview .sp-sensor-value,.sp-btn[class*='sp-clock-font-'] .sp-clock-date{font-family:var(--clock-font-family);font-weight:var(--clock-font-weight)}" +
+        ".sp-clock-with-date{justify-content:center;gap:.25em}" +
+        ".sp-clock-date{display:block;white-space:pre;font-size:var(--btn-label);font-weight:300;line-height:1.1;color:#fff;max-width:100%}" +
+        ".sp-clock-date-small{--clock-date-font:calc(var(--btn-label)*.75)}" +
+        ".sp-clock-date-medium{--clock-date-font:var(--btn-label)}" +
+        ".sp-clock-date-large{--clock-date-font:calc(var(--btn-label)*1.4)}" +
+        ".sp-clock-custom-lines{container-type:size;flex:1;min-height:0;min-width:0;width:100%;display:flex;flex-direction:column;justify-content:center;gap:.25em}" +
+        ".sp-btn .sp-clock-custom-lines .sp-sensor-preview{container-type:normal;flex:0;min-height:0;width:100%}" +
+        ".sp-clock-custom-lines:has(.sp-sensor-preview-large){--clock-auto-font:calc(var(--btn-icon)*2.5)}" +
+        ".sp-btn .sp-clock-custom-lines .sp-sensor-preview .sp-sensor-value{font-size:min(var(--date-time-font,var(--clock-auto-font,var(--btn-icon))),calc(100cqw / var(--clock-time-chars)),60cqh);white-space:pre}" +
+        ".sp-clock-custom-lines .sp-clock-date{font-size:min(var(--clock-date-font,var(--btn-label)),calc(100cqw / var(--clock-date-chars)),30cqh)}" +
+        ".sp-clock-format-help{font-size:.85em;line-height:1.5;opacity:.75;margin:.5em 0}" +
+        ".sp-clock-format-error{color:var(--danger,#c0392b);font-size:.85em}" +
         ".sp-slider-preview{position:absolute;inset:0;border-radius:var(--r);overflow:hidden;pointer-events:none}" +
         ".sp-slider-track{width:100%;height:100%;position:relative}" +
         ".sp-slider-fill{position:absolute;left:0;bottom:0;width:100%;height:80%;background:var(--accent);" +

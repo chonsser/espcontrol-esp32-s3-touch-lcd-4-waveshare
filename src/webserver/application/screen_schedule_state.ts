@@ -8,6 +8,7 @@ import {
     scheduleSensorActivationOption,
 } from "../model/settings";
 import { setSelectValue } from "./ui_primitives";
+import { i18nPlural, webLocale } from "../i18n";
 import type { ScreenScheduleController } from "../features/screen_schedule_controller";
 import type { UiRuntimeState } from "./state";
 
@@ -18,6 +19,19 @@ export interface ScreenScheduleStateFeature {
     formatDuration(seconds?: any): string;
     formatHour(hour?: any): string;
     syncUi(): void;
+}
+
+// Duration labels. Each unit has exactly one plural family, used both by the fixed
+// option tables and by the formatDuration() fallback, so a translation cannot drift
+// between "30 seconds" as an option and "30 seconds" as a formatted value.
+export function durationSecondsLabel(count: number): string {
+    return i18nPlural("duration_seconds", count, { one: "{count} second", other: "{count} seconds" });
+}
+export function durationMinutesLabel(count: number): string {
+    return i18nPlural("duration_minutes", count, { one: "{count} minute", other: "{count} minutes" });
+}
+export function durationHoursLabel(count: number): string {
+    return i18nPlural("duration_hours", count, { one: "{count} hour", other: "{count} hours" });
 }
 
 export function createScreenScheduleStateFeature(
@@ -57,15 +71,24 @@ export function createScreenScheduleStateFeature(
     function formatDuration(seconds?: any) {
         seconds = normalizeScheduleWakeTimeout(seconds);
         if (seconds < 60)
-            return seconds + " second" + (seconds === 1 ? "" : "s");
+            return durationSecondsLabel(seconds);
         if (seconds % 60 === 0) {
             var minutes: any = seconds / 60;
-            return minutes + " minute" + (minutes === 1 ? "" : "s");
+            return durationMinutesLabel(minutes);
         }
-        return seconds + " seconds";
+        return durationSecondsLabel(seconds);
     }
     function formatHour(hour?: any) {
         hour = normalizeHour(hour, 0);
+        // English keeps its hand-built format (Intl would change the space before AM/PM);
+        // other locales use their own hour format.
+        if (webLocale() !== "en") {
+            try {
+                return new Intl.DateTimeFormat(webLocale(), { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })
+                    .format(new Date(Date.UTC(2000, 0, 1, hour, 0)));
+            }
+            catch (_) { /* fall through to the English format */ }
+        }
         var suffix: any = hour < 12 ? "AM" : "PM";
         var h: any = hour % 12;
         if (h === 0)

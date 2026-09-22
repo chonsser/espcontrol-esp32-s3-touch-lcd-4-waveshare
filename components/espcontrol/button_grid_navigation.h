@@ -255,9 +255,13 @@ inline int navigation_active_subpage_slot() {
 }
 
 inline std::string navigation_active_subpage_label() {
-  NavigationHomeTargetEntry *parent =
-      navigation_find_slot_target(navigation_active_subpage_slot());
-  return parent == nullptr ? "" : parent->label;
+  const int slot = navigation_active_subpage_slot();
+  NavigationHomeTargetEntry *parent = navigation_find_slot_target(slot);
+  if (parent == nullptr) return "";
+  NavigationSubpageEntry *subpage = navigation_find_slot(slot);
+  if (subpage == nullptr) return parent->label;
+  const char *english_default = saved_config_subpage_default_label(subpage->kind);
+  return i18n_label_or_default(parent->label, english_default);
 }
 
 inline void navigation_refresh_subpage_label() {

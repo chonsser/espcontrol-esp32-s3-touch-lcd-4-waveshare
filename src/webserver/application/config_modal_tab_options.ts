@@ -1,3 +1,4 @@
+import { copyLongPressOptions } from "./config_long_press_options";
 import { configOptionValue, setConfigOptionValue } from "../model/config_primitives";
 import {
     CLIMATE_CONTROL_TABS_OPTION,
@@ -10,6 +11,7 @@ import {
     cardContractOptionSpec,
 } from "./config_option_core";
 import { normalizeCoverMode } from "./config_cover_contract";
+import { i18n } from "../i18n";
 export interface ConfigModalTabOptionsDependencies {
     readonly document: Document;
     readonly renderButtonSettings: () => void;
@@ -28,10 +30,10 @@ export function createConfigModalTabOptionsFeature(
     // ── Modal Tab Options ──────────────────────────────────────────────
     function lightControlTabDefinitions(this: any) {
         var labels: any = {
-            power: "Power",
-            brightness: "Brightness",
-            temperature: "Colour Temperature",
-            color: "Colour Presets",
+            power: i18n("Power"),
+            brightness: i18n("Brightness"),
+            temperature: i18n("Colour Temperature"),
+            color: i18n("Colour Presets"),
         };
         var spec: any = cardContractOptionSpec("light_control", LIGHT_CONTROL_TABS_OPTION);
         var values: any = spec && spec.values ? spec.values : [];
@@ -88,10 +90,10 @@ export function createConfigModalTabOptionsFeature(
     }
     function coverControlTabDefinitions(this: any) {
         var labels: any = {
-            position: "Position",
-            controls: "Controls",
-            tilt: "Tilt",
-            presets: "Presets",
+            position: i18n("Position"),
+            controls: i18n("Controls"),
+            tilt: i18n("Tilt"),
+            presets: i18n("Presets"),
         };
         var spec: any = cardContractOptionSpec("cover", COVER_CONTROL_TABS_OPTION);
         var values: any = spec && spec.values ? spec.values : [];
@@ -155,11 +157,11 @@ export function createConfigModalTabOptionsFeature(
     }
     function climateControlTabDefinitions(this: any) {
         return [
-            { value: "temperature", label: "Temperature" },
-            { value: "mode", label: "Mode" },
-            { value: "preset", label: "Preset" },
-            { value: "fan", label: "Fan" },
-            { value: "swing", label: "Swing" },
+            { value: "temperature", label: i18n("Temperature") },
+            { value: "mode", label: i18n("Mode") },
+            { value: "preset", label: i18n("Preset") },
+            { value: "fan", label: i18n("Fan") },
+            { value: "swing", label: i18n("Swing") },
         ];
     }
     function climateControlDefaultTabs(this: any) {
@@ -186,12 +188,12 @@ export function createConfigModalTabOptionsFeature(
     }
     function fanControlTabDefinitions(this: any) {
         return [
-            { value: "power", label: "Power" },
-            { value: "speed", label: "Speed" },
-            { value: "preset", label: "Preset" },
-            { value: "oscillation", label: "Oscillation" },
-            { value: "direction", label: "Direction" },
-            { value: "light", label: "Light" },
+            { value: "power", label: i18n("Power") },
+            { value: "speed", label: i18n("Speed") },
+            { value: "preset", label: i18n("Preset") },
+            { value: "oscillation", label: i18n("Oscillation") },
+            { value: "direction", label: i18n("Direction") },
+            { value: "light", label: i18n("Light") },
         ];
     }
     function fanControlDefaultTabs(this: any) {
@@ -257,9 +259,9 @@ export function createConfigModalTabOptionsFeature(
     }
     function wifiQrTabDefinitions(this: any) {
         return [
-            { value: "qr", label: "QR Code" },
-            { value: "credentials", label: "Connection Details" },
-            { value: "guest", label: "Guest Wi-Fi" },
+            { value: "qr", label: i18n("QR Code") },
+            { value: "credentials", label: i18n("Connection Details") },
+            { value: "guest", label: i18n("Guest Wi-Fi") },
         ];
     }
     function wifiQrDefaultTabs(this: any) {
@@ -292,7 +294,7 @@ export function createConfigModalTabOptionsFeature(
     function renderModalTabSettings(this: any, panel?: any, b?: any, helpers?: any, config?: any) {
         var section: any = dependencies.document.createElement("div");
         panel.appendChild(section);
-        b.options = config.normalizeOptions(b.options);
+        b.options = copyLongPressOptions(config.normalizeOptions(b.options), b.options);
         var tabs: any = config.tabs(b);
         var definitions: any = config.definitions();
         var definitionByValue: any = {};
@@ -311,7 +313,7 @@ export function createConfigModalTabOptionsFeature(
         if (!config.hideHeading) {
             var heading: any = dependencies.document.createElement("div");
             heading.className = "sp-field";
-            heading.appendChild(helpers.fieldLabel("Modal Tabs"));
+            heading.appendChild(helpers.fieldLabel(i18n("Modal Tabs")));
             section.appendChild(heading);
         }
         var list: any = dependencies.document.createElement("div");
@@ -364,16 +366,16 @@ export function createConfigModalTabOptionsFeature(
             var drag: any = dependencies.document.createElement("button");
             drag.type = "button";
             drag.className = "sp-light-tab-drag mdi mdi-drag";
-            drag.setAttribute("aria-label", "Drag " + definition.label);
+            drag.setAttribute("aria-label", i18n("Drag {name}", { name: definition.label }));
             drag.tabIndex = -1;
             var moveUp: any = dependencies.document.createElement("button");
             moveUp.type = "button";
             moveUp.className = "sp-light-tab-move mdi mdi-chevron-up";
-            moveUp.setAttribute("aria-label", "Move " + definition.label + " up");
+            moveUp.setAttribute("aria-label", i18n("Move {name} up", { name: definition.label }));
             var moveDown: any = dependencies.document.createElement("button");
             moveDown.type = "button";
             moveDown.className = "sp-light-tab-move mdi mdi-chevron-down";
-            moveDown.setAttribute("aria-label", "Move " + definition.label + " down");
+            moveDown.setAttribute("aria-label", i18n("Move {name} down", { name: definition.label }));
             moveUp.disabled = !available;
             moveDown.disabled = !available;
             controls.appendChild(drag);

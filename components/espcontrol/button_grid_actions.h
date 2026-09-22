@@ -13,9 +13,37 @@ inline bool is_button_entity(const std::string &entity_id) {
 }
 
 // Press HA button entities; toggle other bound entities.
-inline void send_toggle_action(const std::string &entity_id) {
-  ha_send_entity_action(entity_id,
+inline bool send_toggle_action(const std::string &entity_id) {
+  return ha_send_entity_action(entity_id,
     is_button_entity(entity_id) ? "button.press" : "homeassistant.toggle");
+}
+
+// Only domains whose next reported state is the plain opposite of the current
+// one may flip early. A cover reports "closing" and a media player "idle" or
+// "playing" first, so an early flip would bounce straight back.
+inline bool optimistic_toggle_supported(const std::string &entity_id) {
+  static const char *const domains[] = {
+    "light.", "switch.", "input_boolean.", "fan.", "siren.", "humidifier.", "automation."};
+  for (const char *domain : domains) {
+    if (entity_id.compare(0, std::strlen(domain), domain) == 0) return true;
+  }
+  return false;
+}
+
+// Toggle from a card tap. Profiles with optimistic toggles flip the card as
+// soon as the action has been sent instead of waiting for the state report.
+inline void send_card_toggle_action(const std::string &entity_id, lv_obj_t *card,
+                                    bool currently_on) {
+  const bool sent = send_toggle_action(entity_id);
+#ifdef ESPCONTROL_OPTIMISTIC_TOGGLE
+  if (sent && card && optimistic_toggle_supported(entity_id)) {
+    optimistic_toggle_apply(card, !currently_on);
+  }
+#else
+  (void) sent;
+  (void) card;
+  (void) currently_on;
+#endif
 }
 
 inline void send_turn_off_action(const std::string &entity_id) {
@@ -862,7 +890,7 @@ inline void handle_button_press(const std::string &cfg, int slot_num,
     // press event avoids scheduling a pointless pressed-card repaint first.
     lv_obj_clear_state(btn_obj, LV_STATE_PRESSED);
   }
-  if (p.type != "media") return;
+  if (p.type != "media" || !card_long_press_action(p).empty()) return;
   std::string mode = media_card_mode(p.sensor);
   if (!media_fast_press_mode(mode) || p.entity.empty()) return;
   media_fast_press_slots()[slot_num] = true;

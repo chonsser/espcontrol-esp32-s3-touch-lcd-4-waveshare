@@ -44,6 +44,28 @@
         "type": "alarm",
         "precision": "",
         "options": "pin_arm=0,actions=away%7Cdisarm"
+      },
+      "long_press_info": {
+        "entity": "light.kitchen",
+        "label": "Kitchen",
+        "icon": "Auto",
+        "icon_on": "Auto",
+        "sensor": "",
+        "unit": "",
+        "type": "",
+        "precision": "",
+        "options": "long_press=more_info,long_press_entity=sensor.kitchen_power,long_press_text=Power%2C today%3B details"
+      },
+      "long_press_none": {
+        "entity": "script.goodnight",
+        "label": "Goodnight",
+        "icon": "Auto",
+        "icon_on": "Auto",
+        "sensor": "script.turn_on",
+        "unit": "",
+        "type": "action",
+        "precision": "",
+        "options": "long_press=none"
       }
     },
     "subpage": {
@@ -184,7 +206,8 @@
         "guition-esp32-p4-jc8012p4a1-v2",
         "guition-esp32-p4-jc8012p4a1-v3",
         "esp32-p4-86",
-        "guition-esp32-s3-4848s040"
+        "guition-esp32-s3-4848s040",
+        "waveshare-esp32-s3-touch-lcd-4"
       ]
     }
   },

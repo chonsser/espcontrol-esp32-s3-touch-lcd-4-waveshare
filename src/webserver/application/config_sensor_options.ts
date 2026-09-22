@@ -6,6 +6,7 @@ import {
     setConfigOptionValue,
 } from "../model/config_primitives";
 import { cardContractLargeNumbersSupported } from "../generated/card_contract";
+import { normalizeScreensaverClockFormat } from "../model/settings";
 import { createSensorCardModeController, LOCAL_SENSOR_SOURCE } from "../features/sensor_card_mode_controller";
 import {
     SENSOR_ACTIVE_COLOR_OPTION,
@@ -168,15 +169,30 @@ export function createConfigSensorOptionsFeature(cardRegistry: CardRegistry) {
         return out;
     }
     function normalizeDateTimeOptions(this: any, type?: any, options?: any, precision?: any) {
-        if (configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION) &&
+        let out = "";
+        if ((configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION) || largeNumbersExplicitlyDisabled(options)) &&
             cardContractOptionSupportedFor(type, SENSOR_LARGE_NUMBERS_OPTION, { precision: precision })) {
-            return copyLargeNumbersOption("", options);
+            out = copyLargeNumbersOption(out, options);
         }
-        if (largeNumbersExplicitlyDisabled(options) &&
-            cardContractOptionSupportedFor(type, SENSOR_LARGE_NUMBERS_OPTION, { precision: precision })) {
-            return copyLargeNumbersOption("", options);
+        const size = configOptionValue(options, "text_size");
+        if ((type === "calendar" || type === "clock" || type === "timezone") &&
+            (size === "small" || size === "medium" || size === "large")) {
+            out = setConfigOptionValue(out, "text_size", size);
         }
-        return "";
+        if (type === "clock") {
+            const font = configOptionValue(options, "clock_font");
+            if (font === "thin" || font === "bold" || font === "mono") {
+                out = setConfigOptionValue(out, "clock_font", font);
+            }
+            for (const key of ["time_format", "date_format"]) {
+                out = setConfigOptionValue(out, key, normalizeScreensaverClockFormat(configOptionValue(options, key)), true);
+            }
+            const dateSize = configOptionValue(options, "date_size");
+            if (dateSize === "small" || dateSize === "medium" || dateSize === "large") {
+                out = setConfigOptionValue(out, "date_size", dateSize);
+            }
+        }
+        return out;
     }
     function normalizeDoorWindowSubtype(this: any, value?: any) {
         value = String(value || "").trim();

@@ -20,6 +20,7 @@ import {
     cardContractOptionSpec,
     copyLargeNumbersOption,
 } from "./config_option_core";
+import { i18n } from "../i18n";
 export function createConfigMediaOptionsFeature(
     deviceProfile: Pick<DeviceConfig, "disabledCardTypes">,
 ) {
@@ -70,9 +71,9 @@ export function createConfigMediaOptionsFeature(
         { value: "youtube_music", label: "YouTube Music", prefix: "youtube_music" },
         { value: "plex", label: "Plex", prefix: "plex" },
         { value: "jellyfin", label: "Jellyfin", prefix: "jellyfin" },
-        { value: "media_source", label: "Home Assistant Media Source", prefix: "media-source" },
-        { value: "url", label: "Web URL", prefix: "" },
-        { value: "__custom", label: "Custom / full URI", prefix: "" },
+        { value: "media_source", label: i18n("Home Assistant Media Source"), prefix: "media-source" },
+        { value: "url", label: i18n("Web URL"), prefix: "" },
+        { value: "__custom", label: i18n("Custom / full URI"), prefix: "" },
     ];
     function mediaPlaylistSourceOptions(this: any) {
         return mediaPlaylistSourceDefinitions.map(function (source?: any) { return [source.value, source.label]; });
@@ -88,11 +89,11 @@ export function createConfigMediaOptionsFeature(
     function mediaPlaylistContentIdPlaceholder(this: any, source?: any, contentType?: any) {
         source = String(source || "spotify");
         contentType = String(contentType || "playlist");
-        if (source === "spotify") return "e.g. 1LG2Lnt9EDQS1DqoE8E2uO";
-        if (source === "media_source") return "e.g. music/morning-mix";
-        if (source === "url") return "e.g. https://example.com/music/stream.mp3";
-        if (source === "__custom") return "e.g. spotify:" + contentType + ":1LG2Lnt9EDQS1DqoE8E2uO";
-        return "Enter the " + contentType + " ID";
+        if (source === "spotify") return i18n("e.g. {example}", { example: "1LG2Lnt9EDQS1DqoE8E2uO" });
+        if (source === "media_source") return i18n("e.g. {example}", { example: "music/morning-mix" });
+        if (source === "url") return i18n("e.g. {example}", { example: "https://example.com/music/stream.mp3" });
+        if (source === "__custom") return i18n("e.g. {example}", { example: "spotify:" + contentType + ":1LG2Lnt9EDQS1DqoE8E2uO" });
+        return i18n("Enter the {type} ID", { type: contentType });
     }
     function parseMediaPlaylistContentId(this: any, value?: any, contentType?: any) {
         value = String(value || "").trim();
@@ -125,11 +126,11 @@ export function createConfigMediaOptionsFeature(
         return definition.prefix + ":" + contentType + ":" + id;
     }
     function mediaPlaylistContentTypeOptions(this: any) {
-        return [["playlist", "Playlist"], ["music", "Music"], ["album", "Album"],
-            ["artist", "Artist"], ["track", "Track"], ["channel", "Channel"],
-            ["episode", "Episode"], ["podcast", "Podcast"], ["tvshow", "TV Show"],
-            ["video", "Video"], ["movie", "Movie"], ["app", "App"], ["url", "URL"],
-            ["__custom", "Custom"]];
+        return [["playlist", i18n("Playlist")], ["music", i18n("Music")], ["album", i18n("Album")],
+            ["artist", i18n("Artist")], ["track", i18n("Track")], ["channel", i18n("Channel")],
+            ["episode", i18n("Episode")], ["podcast", i18n("Podcast")], ["tvshow", i18n("TV Show")],
+            ["video", i18n("Video")], ["movie", i18n("Movie")], ["app", i18n("App")], ["url", "URL"],
+            ["__custom", i18n("Custom")]];
     }
     function mediaPlaylistContentTypeKnown(this: any, value?: any) {
         return mediaPlaylistContentTypeOptions().some(function (option?: any) { return option[0] === value; });

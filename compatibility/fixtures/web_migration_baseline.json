@@ -7,7 +7,8 @@
     "guition-esp32-p4-jc8012p4a1-v2",
     "guition-esp32-p4-jc8012p4a1-v3",
     "esp32-p4-86",
-    "guition-esp32-s3-4848s040"
+    "guition-esp32-s3-4848s040",
+    "waveshare-esp32-s3-touch-lcd-4"
   ],
   "button": {
     "input": "~media_player.kitchen,Morning%2C Mix,Music,Auto,playlist,,media,,playlist_content_id=media-source%253A//music/morning%252Cmix=50%2525%2Cplaylist_player_source=Kitchen%252C Main=Zone 50%2525",
@@ -56,6 +57,8 @@
       "coverArtAttributeConditions": "", "coverArtDelay": 10, "coverArtTrackOverlayDuration": 5,
       "coverArtHideExternalInput": true, "coverArtHomeAssistantEndpointMode": "Manual", "coverArtHomeAssistantProtocol": "https", "coverArtHomeAssistantPort": 8123,
       "autoUpdate": true, "updateFrequency": "Weekly", "screensaverAction": "off", "clockScreensaver": false,
+      "screensaverClockFont": "Roboto Thin", "screensaverClockTimeFormat": "", "screensaverClockDateFormat": "",
+      "screensaverClockTimeSize": "Auto", "screensaverClockDateSize": "Auto",
       "clockBrightnessDay": 35, "clockBrightnessNight": 35, "screensaverDimmedBrightness": 10,
       "screensaverDimmedBrightnessDay": 10, "screensaverDimmedBrightnessNight": 10,
       "screensaverTimeout": 300, "homeScreenTimeout": 60, "screenRotation": "90"
@@ -109,5 +112,5 @@
       "/number/Screen%20Saver%3A%20Cover%20Art%20Delay/set?value=30"
     ]
   },
-  "bundleSize": { "minified": 2612151, "gzip": 1092265, "gzipTolerance": 9216 }
+  "bundleSize": { "minified": 2717930, "gzip": 1128874, "gzipTolerance": 9216 }
 }

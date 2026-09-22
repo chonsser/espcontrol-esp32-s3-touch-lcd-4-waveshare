@@ -1,4 +1,5 @@
 import { state } from "../state/app_instance";
+import { i18n } from "../i18n";
 import type { UiRuntimeState } from "./state";
 import type { FirmwareUpdateFeature } from "./firmware_update_state";
 
@@ -16,7 +17,7 @@ export function createC6FirmwareFeature(runtime: UiRuntimeState, firmwareUpdate:
     // WiFi co-processor firmware update UI helpers.
     function displayC6FirmwareVersion(this: any, version?: any) {
         version = String(version == null ? "" : version).trim();
-        return version || "Unknown";
+        return version || i18n("Unknown");
     }
     function c6FirmwareVersionLooksKnown(this: any, version?: any) {
         version = String(version == null ? "" : version).trim();
@@ -65,16 +66,16 @@ export function createC6FirmwareFeature(runtime: UiRuntimeState, firmwareUpdate:
             els.c6FirmwareUpdateBtn.disabled = busy || !show ||
                 (c6FirmwareUpdateKnownAvailable() && !state.c6FirmwareInstallControlsSupported);
             if (state.c6FirmwareInstalling) {
-                els.c6FirmwareUpdateBtn.textContent = "Installing\u2026";
+                els.c6FirmwareUpdateBtn.textContent = i18n("Installing\u2026");
             }
             else if (state.c6FirmwareChecking) {
-                els.c6FirmwareUpdateBtn.textContent = "Checking\u2026";
+                els.c6FirmwareUpdateBtn.textContent = i18n("Checking\u2026");
             }
             else if (c6FirmwareUpdateKnownAvailable()) {
-                els.c6FirmwareUpdateBtn.textContent = "Update WiFi Firmware";
+                els.c6FirmwareUpdateBtn.textContent = i18n("Update WiFi Firmware");
             }
             else {
-                els.c6FirmwareUpdateBtn.textContent = "Check for Update";
+                els.c6FirmwareUpdateBtn.textContent = i18n("Check for Update");
             }
         }
     }

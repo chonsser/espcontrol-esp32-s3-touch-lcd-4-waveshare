@@ -1,0 +1,1 @@
+(()=>{const c=document.currentScript,u=new URL("../www.js",c.src),s=document.createElement("script");u.search=c.src.includes("?")?c.src.slice(c.src.indexOf("?")):"";u.searchParams.set("device","waveshare-esp32-s3-touch-lcd-4");s.src=u.href;document.head.appendChild(s)})();

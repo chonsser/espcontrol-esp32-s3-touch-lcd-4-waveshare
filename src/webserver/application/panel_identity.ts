@@ -1,4 +1,5 @@
 import { normalizePanelName, panelHostname, readIdentityBackup, type PanelIdentityInfo, type PanelIdentityBackup } from "../model/panel_identity";
+import { i18n, i18nDynamic, i18nMark } from "../i18n";
 
 export interface PanelIdentityFeature {
   load(): Promise<PanelIdentityInfo | null>;
@@ -31,14 +32,14 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
     });
     if (name === undefined && response.status === 404) return null;
     if (!response.ok) throw new Error(name === undefined
-      ? "Could not read the panel name. Check the connection and try again."
-      : "Could not save the panel name. Check the connection and try again.");
+      ? i18nMark("Could not read the panel name. Check the connection and try again.")
+      : i18nMark("Could not save the panel name. Check the connection and try again."));
     const value = await response.json() as PanelIdentityInfo;
     if (!value || typeof value.name !== "string" || typeof value.friendly_name !== "string"
         || typeof value.hostname !== "string" || !/^[a-z0-9_-]{1,31}$/.test(value.hostname)
         || typeof value.mac_suffix !== "string" || !/^(?:[a-f0-9]{4}|[a-f0-9]{6})$/.test(value.mac_suffix)
         || typeof value.ip_address !== "string" || typeof value.restart_required !== "boolean") {
-      throw new Error("Invalid panel identity response.");
+      throw new Error(i18nMark("Invalid panel identity response."));
     }
     info = value;
     deps.changed();
@@ -54,7 +55,7 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
           await new Promise(resolve => setTimeout(resolve, 2000));
           continue;
         }
-        if (!response.ok) throw new Error("Could not read panel naming support. Try again.");
+        if (!response.ok) throw new Error(i18nMark("Could not read panel naming support. Try again."));
         const capabilities = await response.json();
         return capabilities?.identity?.version === 1 ? request() : null;
       }
@@ -69,10 +70,10 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
     const dialog = document.createElement("dialog");
     dialog.className = "sp-identity-dialog";
     const title = document.createElement("h3");
-    title.textContent = "Panel name saved";
+    title.textContent = i18n("Panel name saved");
     dialog.append(title);
     const note = document.createElement("p");
-    note.textContent = "The panel is restarting. Reopen it at the new address. Home Assistant action names may need updating.";
+    note.textContent = i18n("The panel is restarting. Reopen it at the new address. Home Assistant action names may need updating.");
     dialog.append(note);
     const address = document.createElement("a");
     address.href = `http://${value.hostname}.local${location.port ? ":" + location.port : ""}/`;
@@ -87,7 +88,7 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
     }
     const close = document.createElement("button");
     close.className = "sp-fw-btn";
-    close.textContent = "Close";
+    close.textContent = i18n("Close");
     close.onclick = () => dialog.close();
     dialog.append(document.createElement("br"), close);
     dialog.addEventListener("close", () => dialog.remove());
@@ -96,19 +97,19 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
     return note;
   }
   async function saveAndRestart(value: string): Promise<void> {
-    if (saving) throw new Error("A panel name change is already in progress.");
+    if (saving) throw new Error(i18nMark("A panel name change is already in progress."));
     const name = normalizePanelName(value);
     saving = true;
     try {
       await deps.beforeSave();
       const saved = await request(name);
-      if (!saved) throw new Error("Panel naming is unavailable.");
+      if (!saved) throw new Error(i18nMark("Panel naming is unavailable."));
       loading = Promise.resolve(saved);
       if (saved.restart_required) {
         const message = reconnectDialog(saved);
         try { await deps.restart(); }
         catch (error) {
-          message.textContent = "Name saved, but the restart failed. Reopen Settings and choose Save & Restart to retry.";
+          message.textContent = i18n("Name saved, but the restart failed. Reopen Settings and choose Save & Restart to retry.");
           throw error;
         }
       }
@@ -116,23 +117,23 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
   }
   function buildCard(): HTMLElement {
     const body = document.createElement("div");
-    const card = deps.makeCard("Device Name", body);
+    const card = deps.makeCard(i18n("Device Name"), body);
     card.hidden = true;
     const input = document.createElement("input");
     input.className = "sp-input";
     input.id = "sp-panel-name";
-    input.placeholder = "e.g. Kitchen";
+    input.placeholder = i18n("e.g. Kitchen");
     const label = document.createElement("label");
     label.className = "sp-field-label";
     label.htmlFor = input.id;
-    label.textContent = "Device Name";
+    label.textContent = i18n("Device Name");
     const preview = deps.infoPanel("sp-panel-name-info", "");
     const previewText = preview.lastElementChild!;
     const error = document.createElement("p");
     error.setAttribute("role", "status");
     const button = document.createElement("button");
     button.className = "sp-fw-btn";
-    button.textContent = "Save & Restart";
+    button.textContent = i18n("Save & Restart");
     const formRow = document.createElement("div");
     formRow.className = "sp-panel-name-row";
     formRow.append(input, button);
@@ -145,19 +146,21 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
         if (hostname) {
           const address = document.createElement("code");
           address.textContent = `${hostname}.local`;
-          previewText.replaceChildren("Your device will show as ", address, " on your network");
+          // One message; the address element takes the place of {address}.
+          const parts = i18n("Your device will show as {address} on your network").split("{address}");
+          previewText.replaceChildren(parts[0] || "", address, parts.slice(1).join("{address}"));
         } else {
-          previewText.textContent = "Your device will use its original firmware name and address on your network";
+          previewText.textContent = i18n("Your device will use its original firmware name and address on your network");
         }
         button.disabled = saving || !info || (name === info.name && !info.restart_required);
-      } catch (e) { error.textContent = (e as Error).message; button.disabled = true; }
+      } catch (e) { error.textContent = i18nDynamic((e as Error).message); button.disabled = true; }
     }
     input.oninput = sync;
     button.onclick = async () => {
       button.disabled = true;
       input.disabled = true;
       try { await saveAndRestart(input.value); sync(); }
-      catch (e) { sync(); error.textContent = (e as Error).message; }
+      catch (e) { sync(); error.textContent = i18nDynamic((e as Error).message); }
       finally { input.disabled = false; }
     };
     body.append(label, formRow, error, preview);
@@ -172,10 +175,10 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
       }).catch(() => {
         card.hidden = false;
         const message = document.createElement("p");
-        message.textContent = "Could not read the panel name. Check the connection and try again.";
+        message.textContent = i18n("Could not read the panel name. Check the connection and try again.");
         const retry = document.createElement("button");
         retry.className = "sp-fw-btn";
-        retry.textContent = "Try again";
+        retry.textContent = i18n("Try again");
         retry.onclick = () => { retry.disabled = true; loadCard(); };
         body.replaceChildren(message, retry);
       });
@@ -194,23 +197,24 @@ export function createPanelIdentityFeature(deps: PanelIdentityDependencies): Pan
       const dialog = document.createElement("dialog");
       dialog.className = "sp-identity-dialog";
       const title = document.createElement("h3");
-      title.textContent = "Restore backup";
+      title.textContent = i18n("Restore backup");
       const label = document.createElement("label");
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = false;
-      label.append(checkbox, document.createTextNode(" Also restore panel name"));
+      label.append(checkbox, document.createTextNode(" " + i18n("Also restore panel name")));
       const note = document.createElement("p");
       note.textContent = identity.name
-        ? `Restore the name “${identity.name}” with this panel's address ${panelHostname(identity.name, target.mac_suffix)}.local. This restarts the panel and changes ESPHome action names.`
-        : "Restore this panel's original firmware name and address. This may require a restart.";
+        ? i18n("Restore the name “{name}” with this panel's address {hostname}.local. This restarts the panel and changes ESPHome action names.",
+          { name: identity.name, hostname: panelHostname(identity.name, target.mac_suffix) })
+        : i18n("Restore this panel's original firmware name and address. This may require a restart.");
       const apply = document.createElement("button");
       apply.className = "sp-fw-btn";
-      apply.textContent = "Restore";
+      apply.textContent = i18n("Restore");
       apply.onclick = () => { resolve(checkbox.checked ? identity.name : undefined); dialog.close(); };
       const cancel = document.createElement("button");
       cancel.className = "sp-fw-btn";
-      cancel.textContent = "Cancel";
+      cancel.textContent = i18n("Cancel");
       cancel.onclick = () => dialog.close();
       dialog.addEventListener("close", () => { resolve(null); dialog.remove(); });
       dialog.append(title, label, note, apply, cancel);

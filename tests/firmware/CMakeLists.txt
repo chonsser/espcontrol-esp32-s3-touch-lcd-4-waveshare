@@ -51,6 +51,12 @@ target_compile_options(control_modal_service_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(control_modal_service_test PRIVATE ../../components/espcontrol)
 add_test(NAME control_modal_service_test COMMAND control_modal_service_test)
 
+add_executable(switch_confirmation_test switch_confirmation_test.cpp)
+target_compile_features(switch_confirmation_test PRIVATE cxx_std_17)
+target_compile_options(switch_confirmation_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+target_include_directories(switch_confirmation_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME switch_confirmation_test COMMAND switch_confirmation_test)
+
 add_executable(guest_wifi_state_test guest_wifi_state_test.cpp)
 target_compile_features(guest_wifi_state_test PRIVATE cxx_std_17)
 target_compile_options(guest_wifi_state_test PRIVATE -Wall -Wextra -Werror)
@@ -70,6 +76,22 @@ target_compile_features(icons_legacy_alias_test PRIVATE cxx_std_17)
 target_compile_options(icons_legacy_alias_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(icons_legacy_alias_test PRIVATE ../../components/espcontrol)
 add_test(NAME icons_legacy_alias_test COMMAND icons_legacy_alias_test)
+
+# Includes the real generated i18n tables (every other harness stubs
+# espcontrol_i18n to identity). -UNDEBUG keeps the asserts in any build type.
+add_executable(i18n_polish_test i18n_polish_test.cpp)
+target_compile_features(i18n_polish_test PRIVATE cxx_std_17)
+target_compile_options(i18n_polish_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+target_include_directories(i18n_polish_test PRIVATE ../../components/espcontrol)
+add_test(NAME i18n_polish_test COMMAND i18n_polish_test)
+add_test(NAME i18n_display_titles_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/i18n_display_titles_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME presentation_writes_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/presentation_writes_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME screensaver_appearance_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/screensaver_appearance_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME screensaver_appearance_wiring_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/screensaver_appearance_wiring_test.py ${CMAKE_CXX_COMPILER})
 
 add_executable(external_memory_allocator_test external_memory_allocator_test.cpp)
 target_compile_features(external_memory_allocator_test PRIVATE cxx_std_17)
@@ -406,6 +428,14 @@ target_include_directories(saved_config_parser_test PRIVATE
 )
 add_test(NAME saved_config_parser_test COMMAND saved_config_parser_test)
 
+add_executable(date_time_text_size_test date_time_text_size_test.cpp)
+target_compile_features(date_time_text_size_test PRIVATE cxx_std_17)
+target_compile_options(date_time_text_size_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+target_include_directories(date_time_text_size_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME date_time_text_size_test COMMAND date_time_text_size_test)
+add_test(NAME clock_card_wiring_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/clock_card_wiring_test.py ${CMAKE_CXX_COMPILER})
+
 set(CLIMATE_UPDATE_TEST_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/climate_update_test.cpp)
 add_custom_command(
   OUTPUT ${CLIMATE_UPDATE_TEST_SOURCE}
@@ -476,3 +506,21 @@ add_test(NAME timer_subpage_cleanup_test
 
 add_test(NAME camera_feedback_test COMMAND
   ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/camera_feedback_test.py ${CMAKE_CXX_COMPILER})
+
+add_executable(long_press_config_test long_press_config_test.cpp)
+target_compile_features(long_press_config_test PRIVATE cxx_std_17)
+target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(long_press_config_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME long_press_config_test COMMAND long_press_config_test)
+
+add_executable(long_press_runtime_test long_press_runtime_test.cpp)
+target_compile_features(long_press_runtime_test PRIVATE cxx_std_17)
+target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(long_press_runtime_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME long_press_runtime_test COMMAND long_press_runtime_test)
+
+add_executable(more_info_modal_test more_info_modal_test.cpp)
+target_compile_features(more_info_modal_test PRIVATE cxx_std_17)
+target_compile_options(more_info_modal_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(more_info_modal_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME more_info_modal_test COMMAND more_info_modal_test)

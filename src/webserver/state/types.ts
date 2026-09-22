@@ -158,6 +158,13 @@ export interface AppState {
   screensaverMode: string;
   _screensaverModeReceived: boolean;
   screensaverAction: string;
+  screensaverClockFont: string;
+  screensaverClockTimeFormat: string;
+  screensaverClockDateFormat: string;
+  screensaverClockTimeSize: string;
+  screensaverClockDateSize: string;
+  screensaverClockFontOptions: string[];
+  screensaverClockFontLoaded: boolean;
   _screensaverActionReceived: boolean;
   clockScreensaverOn: boolean;
   clockBrightnessDay: number;

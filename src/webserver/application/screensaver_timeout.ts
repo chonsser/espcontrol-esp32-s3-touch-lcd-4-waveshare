@@ -1,6 +1,7 @@
 import { state } from "../state/app_instance";
 import { setSelectValue } from "./ui_primitives";
 import type { UiRuntimeState } from "./state";
+import { durationHoursLabel, durationMinutesLabel, durationSecondsLabel } from "./screen_schedule_state";
 import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 
 export interface ScreensaverTimeoutFeature {
@@ -17,16 +18,16 @@ export function createScreensaverTimeoutFeature(runtime: UiRuntimeState, schedul
     const { formatDuration } = schedule;
     // Screensaver timeout options and UI syncing.
     const options = [
-        { label: "10 seconds", value: 10 },
-        { label: "30 seconds", value: 30 },
-        { label: "1 minute", value: 60 },
-        { label: "5 minutes", value: 300 },
-        { label: "10 minutes", value: 600 },
-        { label: "15 minutes", value: 900 },
-        { label: "20 minutes", value: 1200 },
-        { label: "30 minutes", value: 1800 },
-        { label: "45 minutes", value: 2700 },
-        { label: "1 hour", value: 3600 },
+        { label: durationSecondsLabel(10), value: 10 },
+        { label: durationSecondsLabel(30), value: 30 },
+        { label: durationMinutesLabel(1), value: 60 },
+        { label: durationMinutesLabel(5), value: 300 },
+        { label: durationMinutesLabel(10), value: 600 },
+        { label: durationMinutesLabel(15), value: 900 },
+        { label: durationMinutesLabel(20), value: 1200 },
+        { label: durationMinutesLabel(30), value: 1800 },
+        { label: durationMinutesLabel(45), value: 2700 },
+        { label: durationHoursLabel(1), value: 3600 },
     ];
     function readNumberMeta(d?: any, keys?: any, fallback?: any) {
         for (var i: any = 0; i < keys.length; i++) {

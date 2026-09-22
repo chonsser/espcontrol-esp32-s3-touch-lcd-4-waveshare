@@ -9,12 +9,14 @@ Usage:
     python scripts/build.py devices       # sync public device capabilities only
     python scripts/build.py icons         # sync icons only
     python scripts/build.py i18n          # sync firmware translations only
+    python scripts/build.py web-i18n      # sync web configurator translations only
+    python scripts/build.py web-i18n --extract  # rewrite web.*.txt from the call sites
     python scripts/build.py www           # build www.js only
     python scripts/build.py www --retain-current-bundle  # retain a release bundle
     python scripts/build.py www --legacy-web-manifest PATH  # use the published bundle as the legacy bundle
     python scripts/build.py www --temporary-output DIR  # isolated fresh bundles
     python scripts/build.py icons --check # check icons only
-    python scripts/build.py --self-test    # verify transactional publishing
+    python scripts/build.py --self-test    # verify transactional publishing and web i18n
 """
 import base64
 import hashlib
@@ -35,6 +37,7 @@ from product_schema import (
     assert_entity_names_valid as assert_product_entity_names_valid,
 )
 from product_model_v2 import load_product_model_v2, source_directory, source_path
+import web_i18n
 
 ROOT = Path(__file__).resolve().parent.parent
 MDI_VERSION = "7.4.47"
@@ -72,7 +75,7 @@ WEB_ASSET_LEGACY_BUNDLE_PATH = f"bundles/{WEB_ASSET_LEGACY_BUNDLE_ID}/www.js"
 # possible without reaching the MDI CDN. Product Model icon codepoints are
 # read directly from product/v2/icons.json below.
 WEB_FIXED_MDI_ICON_CODEPOINTS = {
-    "alarm": "F0020", "album": "F0025", "api": "F109B", "arrow-expand-all": "F004C",
+    "alarm": "F0020", "album": "F0025", "alert": "F0026", "api": "F109B", "arrow-expand-all": "F004C",
     "arrow-top-right": "F005C", "blur": "F00B5", "calendar": "F00ED", "calendar-clock": "F00F0",
     "calendar-month": "F0E17", "cancel": "F073A", "card": "F0B6F", "card-outline": "F0B76",
     "chip": "F061A", "clipboard-outline": "F014C", "clock": "F0954", "code-json": "F0626",
@@ -103,6 +106,7 @@ ENTITY_NAMES_TS = ROOT / "src" / "webserver" / "generated" / "entity_catalog.ts"
 WEB_ICONS_TS = ROOT / "src" / "webserver" / "generated" / "icons.ts"
 STRINGS_DIR = source_directory("translations")
 I18N_GENERATED_H = ROOT / "components" / "espcontrol" / "i18n_generated.h"
+WEB_I18N_TS = ROOT / "src" / "webserver" / "generated" / "i18n.ts"
 CARD_CONTRACT_JSON = source_path("cardContract")
 CARD_CONTRACT_TS = ROOT / "src" / "webserver" / "generated" / "card_contract.ts"
 CARD_CONTRACT_H = ROOT / "components" / "espcontrol" / "button_grid_contract_generated.h"
@@ -699,6 +703,64 @@ def sync_i18n(check_only=False):
 
     if dirty:
         write_generated_text(I18N_GENERATED_H, generated)
+    return dirty
+
+
+# ===========================================================================
+# Web configurator i18n generation
+# ===========================================================================
+
+def sync_web_i18n(check_only=False, extract=False):
+    """Generate src/webserver/generated/i18n.ts from product/v2/translations/web.*.txt.
+
+    Catalog structure and call-site syntax errors always fail. Literals that are
+    not in web.en.txt yet, and entries nothing uses any more, only warn while
+    generating so the bundle can be built mid-change; --check fails on them and
+    --extract rewrites the catalogs to match the call sites.
+    """
+    try:
+        result = web_i18n.build(
+            root=ROOT,
+            strings_dir=STRINGS_DIR,
+            source_dir=WEB_SOURCE_DIR,
+            contract_path=CARD_CONTRACT_JSON,
+            output_path=WEB_I18N_TS,
+            load_strings=load_compact_strings,
+            extract=extract,
+        )
+    except web_i18n.WebI18nError as exc:
+        raise BuildError(str(exc)) from exc
+
+    stale = [
+        (path, content) for path, content in result.outputs
+        if not path.exists() or path.read_text(encoding="utf-8") != content
+    ]
+    dirty = [path.relative_to(ROOT) for path, _content in stale]
+
+    if check_only:
+        if dirty:
+            fix = "web-i18n --extract" if extract else "web-i18n"
+            print(f"Web i18n output is out of sync. Run 'python scripts/build.py {fix}' to fix:")
+            for rel in dirty:
+                print(f"  {rel}")
+        if result.problems:
+            print(
+                f"Web i18n catalogs do not match the call sites ({len(result.problems)}). "
+                "Run 'python scripts/build.py web-i18n --extract', then translate the new entries:"
+            )
+            for problem in result.problems:
+                print(f"  {problem}")
+        return dirty + result.problems
+
+    if result.problems:
+        print(
+            f"Web i18n warning: {len(result.problems)} catalog mismatch(es) fall back to English "
+            "until 'python scripts/build.py web-i18n --extract' is run:"
+        )
+        for problem in result.problems:
+            print(f"  {problem}")
+    for path, content in stale:
+        write_generated_text(path, content)
     return dirty
 
 
@@ -4217,7 +4279,9 @@ def main():
     if args == ["--self-test"]:
         try:
             run_generated_transaction_self_test()
-        except BuildError as exc:
+            web_i18n.run_self_test()
+            print("Web i18n extractor and catalog self-test passed.")
+        except (BuildError, web_i18n.WebI18nError) as exc:
             print(exc)
             return 1
         return 0
@@ -4233,6 +4297,8 @@ def main():
             raise BuildError("--legacy-web-manifest requires a manifest path")
         legacy_web_manifest = args[index + 1]
         del args[index:index + 2]
+    extract = "--extract" in args
+    args = [arg for arg in args if arg != "--extract"]
     temporary_output = None
     if "--temporary-output" in args:
         index = args.index("--temporary-output")
@@ -4244,6 +4310,9 @@ def main():
 
     if not commands:
         commands = ["all"]
+    if extract and commands != ["web-i18n"]:
+        print("--extract is only supported by 'python scripts/build.py web-i18n --extract'")
+        return 1
 
     exit_code = 0
     transaction = None
@@ -4259,19 +4328,20 @@ def main():
                 contract_dirty = sync_card_contract(check_only=check_only)
                 device_dirty = sync_device_capabilities(check_only=check_only)
                 icon_dirty = sync_icons(check_only=check_only)
+                web_i18n_dirty = sync_web_i18n(check_only=check_only)
                 www_dirty = build_www(
                     check_only=check_only,
                     retain_current_bundle=retain_current_bundle,
                     legacy_web_manifest=legacy_web_manifest,
                 )
-                if check_only and (entity_dirty or i18n_dirty or contract_dirty or device_dirty or icon_dirty or www_dirty):
+                if check_only and (entity_dirty or i18n_dirty or contract_dirty or device_dirty or icon_dirty or web_i18n_dirty or www_dirty):
                     exit_code = 1
-                elif not entity_dirty and not i18n_dirty and not contract_dirty and not device_dirty and not icon_dirty and not www_dirty:
+                elif not entity_dirty and not i18n_dirty and not contract_dirty and not device_dirty and not icon_dirty and not web_i18n_dirty and not www_dirty:
                     print("All outputs are up to date.")
                 else:
                     total = (
                         len(entity_dirty) + len(i18n_dirty) + len(contract_dirty) + len(device_dirty) +
-                        len(icon_dirty) + len(www_dirty)
+                        len(icon_dirty) + len(web_i18n_dirty) + len(www_dirty)
                     )
                     print(f"Updated {total} target(s).")
             elif cmd == "entities":
@@ -4298,6 +4368,14 @@ def main():
                     print("Firmware i18n output is in sync.")
                 else:
                     print(f"Synced {len(dirty)} firmware i18n output(s).")
+            elif cmd == "web-i18n":
+                dirty = sync_web_i18n(check_only=check_only, extract=extract)
+                if check_only and dirty:
+                    exit_code = 1
+                elif not dirty:
+                    print("Web i18n output is in sync.")
+                else:
+                    print(f"Synced {len(dirty)} web i18n output(s).")
             elif cmd == "contract":
                 dirty = sync_card_contract(check_only=check_only)
                 if check_only and dirty:
@@ -4332,8 +4410,8 @@ def main():
                 print(f"Unknown command: {cmd}")
                 print(
                     "Usage: python scripts/build.py "
-                    "[all|entities|contract|devices|icons|i18n|www] [--check] "
-                    "[--retain-current-bundle] [--legacy-web-manifest PATH]"
+                    "[all|entities|contract|devices|icons|i18n|web-i18n|www] [--check] "
+                    "[--retain-current-bundle] [--legacy-web-manifest PATH] [web-i18n --extract]"
                 )
                 exit_code = 1
         if exit_code == 0 and transaction is not None:

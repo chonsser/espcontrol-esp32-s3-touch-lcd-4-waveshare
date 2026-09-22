@@ -396,10 +396,11 @@ describe("browserless application contracts", () => {
     assert.equal(definitions.wifi_qr.isAvailable(), false);
     nativeSupported = true;
     assert.equal(definitions.wifi_qr.isAvailable(), true);
-    assert.match(source, /labelField:\s*\{\s*label:\s*"Name"/);
+    assert.equal(definitions.wifi_qr.cardMetadata.labelField.label, "Name");
+    assert.equal(definitions.wifi_qr.cardMetadata.labelField.bindName, "label");
     assert.match(source, /renderBasicCardFields\([^\n]+label:\s*false/);
-    assert.match(source, /disclosureSection\("Wifi Network"/);
-    assert.match(source, /disclosureSection\("Modal Settings"/);
+    assert.match(source, /disclosureSection\(i18n\("Wifi Network"\)/);
+    assert.match(source, /disclosureSection\(i18n\("Modal Settings"\)/);
     assert.match(source, /wifiQrTabDefinitions/);
     assert.doesNotMatch(source, /Show password|wifi-reveal|input\.type\s*=\s*"password"/);
     assert.match(source, /hasCredentialBytes/);
@@ -442,7 +443,10 @@ describe("browserless application contracts", () => {
     assert.equal(qrCard.label, "Visitors");
     assert.equal(qrCard.icon, "Wifi");
     assert.equal(rerenders, 1);
-    assert.match(source, /\[\["wifi_qr", "Connect Card"\], \["wifi_qr_card", "QR Card"\]\]/);
+    assert.deepEqual(
+      definitions.wifi_qr.cardMetadata.mode.options.map((option) => Array.from(option)),
+      [["wifi_qr", "Connect Card"], ["wifi_qr_card", "QR Card"]],
+    );
     assert.match(source, /renderCardModeSelector\(panel, b, helpers, WIFI_QR_CARD_TYPE_METADATA\)/);
   });
 

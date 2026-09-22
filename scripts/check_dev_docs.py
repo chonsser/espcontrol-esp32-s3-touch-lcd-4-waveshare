@@ -108,13 +108,25 @@ SOURCE_TRUTH_ROWS: tuple[SourceTruthRow, ...] = (
         "common/assets/*glyphs.yaml, except generated sections in `icon_glyphs.yaml`",
         ("no generated output; firmware font inputs consume these glyph lists directly",),
         "none",
-        "compile the affected firmware before publishing",
+        "`npm run check:translations` for text glyph coverage; compile the affected firmware before publishing",
     ),
     SourceTruthRow(
         "product/v2/translations/strings.*.txt",
         ("components/espcontrol/i18n_generated.h",),
         "python3 scripts/build.py i18n",
-        "`python3 scripts/build.py i18n --check` and `npm run check:product`",
+        "`python3 scripts/build.py i18n --check`, `npm run check:translations`, and `npm run check:product`",
+    ),
+    SourceTruthRow(
+        "`product/v2/translations/web.*.txt`, `label` values in `product/v2/card_contract.json`, and the `product/v2/translations/strings.*.txt` values named by `i18nDevice(...)` calls",
+        ("src/webserver/generated/i18n.ts",),
+        "python3 scripts/build.py web-i18n",
+        "`python3 scripts/build.py web-i18n --check`, `npm run check:translations`, and `npm run check:web-smoke`",
+    ),
+    SourceTruthRow(
+        "product/v2/translations/identical.*.txt",
+        ("no generated output; lists the translated values that deliberately equal English",),
+        "none",
+        "`npm run check:translations`",
     ),
     SourceTruthRow(
         "src/webserver/model/index.ts",
@@ -254,8 +266,14 @@ CHECK_MATRIX_ROWS: tuple[CheckMatrixRow, ...] = (
     CheckMatrixRow(
         "`product/v2/translations/strings.*.txt`",
         "Firmware translations and generated i18n header",
-        "`python3 scripts/build.py i18n --check`",
+        "`python3 scripts/build.py i18n --check` and `npm run check:translations`",
         "`npm run check:product` when translated UI strings affect release output",
+    ),
+    CheckMatrixRow(
+        "`product/v2/translations/web.*.txt`, `product/v2/translations/identical.*.txt`, `src/webserver/i18n/`, `i18n(...)` call sites in `src/webserver/`",
+        "Web configurator translations, generated web i18n tables, and translation quality rules",
+        "`python3 scripts/build.py web-i18n --check` and `npm run check:translations`",
+        "`npm run check:web-smoke` when translated configurator text changes; `npm run check:product` before release-facing commits",
     ),
     CheckMatrixRow(
         "`src/webserver/model/*.ts`, `src/webserver/contracts/*.ts`",

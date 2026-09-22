@@ -10,23 +10,24 @@ import {
     normalizeEntityMode,
     normalizeEntityModeCardConfig,
 } from "../cards/entity_mode_card";
+import { i18n } from "../i18n";
 
 export const LAWN_MOWER_CARD_MODES = [
-    ["status", "Status"],
-    ["start_mowing", "Start Mowing"],
-    ["dock", "Dock"],
-    ["pause_resume", "Pause / Resume"],
+    ["status", i18n("Status")],
+    ["start_mowing", i18n("Start Mowing")],
+    ["dock", i18n("Dock")],
+    ["pause_resume", i18n("Pause / Resume")],
 ] as const;
 
 export const VACUUM_CARD_MODES = [
-    ["status", "Status"],
-    ["start_stop", "Start / Stop"],
-    ["start_dock", "Start / Dock"],
-    ["dock", "Dock"],
-    ["pause_resume", "Pause / Resume"],
-    ["clean_spot", "Spot Clean"],
-    ["locate", "Locate"],
-    ["clean_area", "Clean Area"],
+    ["status", i18n("Status")],
+    ["start_stop", i18n("Start / Stop")],
+    ["start_dock", i18n("Start / Dock")],
+    ["dock", i18n("Dock")],
+    ["pause_resume", i18n("Pause / Resume")],
+    ["clean_spot", i18n("Spot Clean")],
+    ["locate", i18n("Locate")],
+    ["clean_area", i18n("Clean Area")],
 ] as const;
 
 export function createConfigRobotCardOptionsFeature() {

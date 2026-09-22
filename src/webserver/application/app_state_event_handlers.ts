@@ -31,13 +31,15 @@ import {
 } from "../model/settings";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
-import { languageOptionsWithFallback, syncLanguageSelect } from "./language_state";
+import { languageOptionsWithFallback, syncLanguageSelect, webLocaleReloadAllowed } from "./language_state";
 import { hasCustomNtpServers, syncNtpServerUi } from "./ntp_state";
 import { syncIdleUi } from "./idle_state";
 import { getActiveScreensaverMode } from "./screensaver_state";
 import type { EnvironmentStateFeature } from "./environment_state";
 import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
+import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
+import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
 import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { AppearanceFeature } from "./appearance_state";
 import type { FirmwareVersionFeature } from "./firmware_version_state";
@@ -48,6 +50,7 @@ import type { AppStatusPreviewFeature } from "./app_status_preview";
 import type { GridFeature } from "./grid";
 import type { SettingsPageHelpersFeature } from "./settings_page_helpers";
 import type { PreviewRenderFeature } from "./preview_render";
+import { i18n, requestWebLocale } from "../i18n";
 
 export type SseStateHandler = (value?: any, data?: any, key?: any) => void;
 export type SseHandlerFactory = () => Record<string, SseStateHandler>;
@@ -72,6 +75,8 @@ export function createAppStateEventHandlersFeature(
     grid: Pick<GridFeature, "applyButtonOrderValue">,
     settingsHelpers: Pick<SettingsPageHelpersFeature, "syncAlarmDelayAudioUi" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">,
     preview: Pick<PreviewRenderFeature, "render">,
+    screensaverClockFont: ScreensaverClockFontFeature,
+    screensaverClockFormat: ScreensaverClockFormatFeature,
 ): AppStateEventHandlersFeature {
     const { syncAlarmDelayAudioUi, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = settingsHelpers;
     const { render: renderPreview } = preview;
@@ -276,6 +281,13 @@ export function createAppStateEventHandlersFeature(
                 state.clockBrightnessNight = normalizeClockBrightness(val, state.clockBrightnessDay);
                 syncClockScreensaverControls();
             },
+            "text-screen_saver_clock_time_format": (_value, data) => screensaverClockFormat.applyState("timeFormat", data),
+            "text-screen_saver_clock_date_format": (_value, data) => screensaverClockFormat.applyState("dateFormat", data),
+            "select-screen_saver_clock_time_size": (_value, data) => screensaverClockFormat.applyState("timeSize", data),
+            "select-screen_saver_clock_date_size": (_value, data) => screensaverClockFormat.applyState("dateSize", data),
+            "select-screen_saver_clock_font": function (this: any, val?: any, d?: any) {
+                screensaverClockFont.applyState({ ...d, value: d?.value ?? val });
+            },
             "select-screen_saver__action": function (this: any, val?: any, d?: any) {
                 state._screensaverActionReceived = true;
                 state.screensaverAction = normalizeScreensaverAction(d.value || val);
@@ -478,6 +490,7 @@ export function createAppStateEventHandlersFeature(
                 }
                 syncLanguageSelect(runtime);
                 renderPreview();
+                requestWebLocale(state.language, webLocaleReloadAllowed);
             },
             "select-screen__clock_format": function (this: any, val?: any, d?: any) {
                 state.clockFormat = d.value || val || state.clockFormat;
@@ -488,7 +501,7 @@ export function createAppStateEventHandlersFeature(
                         d.option.forEach(function (this: any, opt?: any) {
                             var o: any = document.createElement("option");
                             o.value = opt;
-                            o.textContent = opt === "12h" ? "12-hour" : "24-hour";
+                            o.textContent = opt === "12h" ? i18n("12-hour") : i18n("24-hour");
                             els.setClockFormat.appendChild(o);
                         });
                     }

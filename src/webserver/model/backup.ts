@@ -1,3 +1,4 @@
+import { i18nMark } from "../i18n";
 import { readIdentityBackup, type PanelIdentityBackup } from "./panel_identity";
 import type { CardConfig } from "../contracts/types";
 import { cloneCardConfig, emptyCardConfig } from "./card";
@@ -110,27 +111,27 @@ function skippedNativeDeviceProfile(value: unknown): string | undefined {
 
 export function validateBackupEnvelope(data: unknown): Record<string, unknown> {
   if (!isRecord(data)) {
-    throw backupConfigError("Invalid config file - backup must be a JSON object");
+    throw backupConfigError(i18nMark("Invalid config file - backup must be a JSON object"));
   }
 
   const version = parseInt(String(data.version), 10);
   if (!version || version < 1) {
-    throw backupConfigError("Invalid config file - missing required fields");
+    throw backupConfigError(i18nMark("Invalid config file - missing required fields"));
   }
   if (version > BACKUP_CONFIG_VERSION) {
-    throw backupConfigError("Backup was created by a newer version of EspControl");
+    throw backupConfigError(i18nMark("Backup was created by a newer version of EspControl"));
   }
   if (version >= 2 && data.format !== BACKUP_FORMAT) {
-    throw backupConfigError("Invalid config file - unsupported backup format");
+    throw backupConfigError(i18nMark("Invalid config file - unsupported backup format"));
   }
   if (!Array.isArray(data.buttons)) {
-    throw backupConfigError("Invalid config file - missing required fields");
+    throw backupConfigError(i18nMark("Invalid config file - missing required fields"));
   }
   if (data.native_config !== undefined && data.native_config !== null) {
     try {
       normalizeNativeBackup(data.native_config);
     } catch (error) {
-      throw backupConfigError((error as Error).message || "Invalid native configuration backup");
+      throw backupConfigError((error as Error).message || i18nMark("Invalid native configuration backup"));
     }
   }
 

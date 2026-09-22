@@ -229,6 +229,46 @@ export const ENTITY_CATALOG = {
         "screensaver_action"
       ]
     },
+    "screen_saver_clock_font": {
+      "domain": "select",
+      "name": "Screen Saver Clock Font",
+      "objectIds": [
+        "screen_saver_clock_font",
+        "screensaver_clock_font"
+      ]
+    },
+    "screen_saver_clock_time_format": {
+      "domain": "text",
+      "name": "Screen Saver Clock Time Format",
+      "objectIds": [
+        "screen_saver_clock_time_format",
+        "screensaver_clock_time_format"
+      ]
+    },
+    "screen_saver_clock_date_format": {
+      "domain": "text",
+      "name": "Screen Saver Clock Date Format",
+      "objectIds": [
+        "screen_saver_clock_date_format",
+        "screensaver_clock_date_format"
+      ]
+    },
+    "screen_saver_clock_time_size": {
+      "domain": "select",
+      "name": "Screen Saver Clock Time Size",
+      "objectIds": [
+        "screen_saver_clock_time_size",
+        "screensaver_clock_time_size"
+      ]
+    },
+    "screen_saver_clock_date_size": {
+      "domain": "select",
+      "name": "Screen Saver Clock Date Size",
+      "objectIds": [
+        "screen_saver_clock_date_size",
+        "screensaver_clock_date_size"
+      ]
+    },
     "presence_sensor_entity": {
       "domain": "text",
       "name": "Presence Sensor Entity",
@@ -742,6 +782,11 @@ export const ENTITY_CATALOG = {
       "outdoor_temp_entity",
       "screensaver_mode",
       "screen_saver_action",
+      "screen_saver_clock_font",
+      "screen_saver_clock_time_format",
+      "screen_saver_clock_date_format",
+      "screen_saver_clock_time_size",
+      "screen_saver_clock_date_size",
       "presence_sensor_entity",
       "screen_schedule_sensor_entity",
       "screen_saver_media_player_sleep_prevention",
