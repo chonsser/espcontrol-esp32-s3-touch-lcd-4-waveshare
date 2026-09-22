@@ -2819,18 +2819,20 @@ async function assertAllCardSettingsGrouped(page, posts, label) {
         0,
         `${label}: Screen Lock should not show an unused Entity field`,
       );
-      assert.strictEqual(
-        await page.locator(".sp-settings-modal .sp-panel > .sp-disclosure").count(),
-        0,
-        `${label}: Screen Lock should not show unused generic Card Settings`,
+      assert.deepStrictEqual(
+        await page.locator(".sp-settings-modal .sp-panel > .sp-disclosure input, .sp-settings-modal .sp-panel > .sp-disclosure select, .sp-settings-modal .sp-panel > .sp-disclosure textarea")
+          .evaluateAll(controls => controls.map(control => control.id)),
+        ["sp-inp-long-press"],
+        `${label}: Screen Lock should show only its supported Long Press setting`,
       );
     }
 
     if (cardOption.value === "weather") {
-      assert.strictEqual(
-        await page.locator(".sp-settings-modal .sp-panel > .sp-disclosure").count(),
-        0,
-        `${label}: Weather current conditions should not show empty Card Settings`,
+      assert.deepStrictEqual(
+        await page.locator(".sp-settings-modal .sp-panel > .sp-disclosure input, .sp-settings-modal .sp-panel > .sp-disclosure select, .sp-settings-modal .sp-panel > .sp-disclosure textarea")
+          .evaluateAll(controls => controls.map(control => control.id)),
+        ["sp-inp-long-press"],
+        `${label}: Weather current conditions should show only its supported Long Press setting`,
       );
     }
 
@@ -5888,6 +5890,15 @@ async function runCase(browser, testCase) {
 
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
+    // These three 404s are the explicit legacy-firmware capability probe above.
+    // Keep reporting every other HTTP failure, application error and warning.
+    if (message.type() === "error" && message.text().includes("status of 404")) {
+      const url = message.location().url;
+      const missingNavigation = /^http:\/\/espcontrol\.test\/(text|switch)\/([^/?]+)/.exec(url);
+      if (missingNavigation && /^screen_navigation_(entity|rules|wake)$/.test(
+        decodeURIComponent(missingNavigation[2]).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),
+      )) return;
+    }
     if (message.type() === "error" || message.type() === "warning")
       errors.push(`[${message.type()}] ${message.text()}`);
   });
@@ -6190,7 +6201,7 @@ async function assertPanelNaming(browser) {
     if (process.env.ESPCONTROL_NAMING_SCREENSHOT) await page.screenshot({ path: process.env.ESPCONTROL_NAMING_SCREENSHOT, fullPage: true });
     identityState.failSave = true;
     await save.click();
-    await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes("Could not save"));
+    await card.getByRole("status").filter({ hasText: "Could not save the panel name." }).waitFor();
     assert.strictEqual(restartRequests.length, 0, "failed save must not restart");
     assert.strictEqual(await page.title(), "EspControl — Kitchen");
     identityState.failSave = false;
