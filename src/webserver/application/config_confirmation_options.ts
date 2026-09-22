@@ -28,20 +28,21 @@ import {
     ACTION_CARD_STATE_UNIT_OPTION,
 } from "./config_action_contract";
 import type { ConfigAccessClimateAlarmOptionsFeature } from "./config_access_climate_alarm_options";
+import { i18n } from "../i18n";
 export function createConfigConfirmationOptionsFeature(
     accessOptions: ConfigAccessClimateAlarmOptionsFeature,
 ) {
     const actionCardActions: any = [
-        { value: "scene.turn_on", label: "Run Scene", placeholder: "e.g. scene.movie_mode", icon: "movie-open", domains: ["scene"] },
-        { value: "script.turn_on", label: "Run Script", placeholder: "e.g. script.goodnight", icon: "script-text-play", domains: ["script"] },
-        { value: "automation.trigger", label: "Trigger Automation", placeholder: "e.g. automation.goodnight", icon: "home-automation", domains: ["automation"] },
-        { value: "button.press", label: "Press Button", placeholder: "e.g. button.restart_router", icon: "gesture-tap-button", domains: ["button"] },
-        { value: "input_button.press", label: "Press Input Button", placeholder: "e.g. input_button.doorbell", icon: "gesture-tap-button", domains: ["input_button"] },
-        { value: "input_boolean.toggle", label: "Toggle Helper", placeholder: "e.g. input_boolean.guest_mode", icon: "toggle-switch-variant", domains: ["input_boolean"] },
-        { value: "number.set_value", label: "Set Number", placeholder: "e.g. number.target_level", icon: "counter", domains: ["number"] },
-        { value: "input_number.set_value", label: "Set Number Helper", placeholder: "e.g. input_number.target_level", icon: "counter", domains: ["input_number"] },
-        { value: ACTION_CARD_OPTION_SELECT_ACTION, label: "Option Select", placeholder: "e.g. select.wled_preset", icon: "form-dropdown", domains: ["select", "input_select"] },
-        { value: ACTION_CARD_LOCAL_ACTION, label: "Local Action", placeholder: "e.g. zoom_mute", icon: "gesture-tap", domains: [] },
+        { value: "scene.turn_on", label: i18n("Run Scene"), placeholder: i18n("e.g. {example}", { example: "scene.movie_mode" }), icon: "movie-open", domains: ["scene"] },
+        { value: "script.turn_on", label: i18n("Run Script"), placeholder: i18n("e.g. {example}", { example: "script.goodnight" }), icon: "script-text-play", domains: ["script"] },
+        { value: "automation.trigger", label: i18n("Trigger Automation"), placeholder: i18n("e.g. {example}", { example: "automation.goodnight" }), icon: "home-automation", domains: ["automation"] },
+        { value: "button.press", label: i18n("Press Button"), placeholder: i18n("e.g. {example}", { example: "button.restart_router" }), icon: "gesture-tap-button", domains: ["button"] },
+        { value: "input_button.press", label: i18n("Press Input Button"), placeholder: i18n("e.g. {example}", { example: "input_button.doorbell" }), icon: "gesture-tap-button", domains: ["input_button"] },
+        { value: "input_boolean.toggle", label: i18n("Toggle Helper"), placeholder: i18n("e.g. {example}", { example: "input_boolean.guest_mode" }), icon: "toggle-switch-variant", domains: ["input_boolean"] },
+        { value: "number.set_value", label: i18n("Set Number"), placeholder: i18n("e.g. {example}", { example: "number.target_level" }), icon: "counter", domains: ["number"] },
+        { value: "input_number.set_value", label: i18n("Set Number Helper"), placeholder: i18n("e.g. {example}", { example: "input_number.target_level" }), icon: "counter", domains: ["input_number"] },
+        { value: ACTION_CARD_OPTION_SELECT_ACTION, label: i18n("Option Select"), placeholder: i18n("e.g. {example}", { example: "select.wled_preset" }), icon: "form-dropdown", domains: ["select", "input_select"] },
+        { value: ACTION_CARD_LOCAL_ACTION, label: i18n("Local Action"), placeholder: i18n("e.g. {example}", { example: "zoom_mute" }), icon: "gesture-tap", domains: [] },
     ];
     function actionCardInfo(this: any, value?: any) {
         for (var i: any = 0; i < actionCardActions.length; i++)

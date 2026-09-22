@@ -6,6 +6,7 @@
 
 inline void apply_push_button_transition(lv_obj_t *btn);
 inline void clear_push_button_transition(lv_obj_t *btn);
+inline void apply_toggle_card_transition(lv_obj_t *btn);
 
 inline void setup_garage_card(BtnSlot &s, const ParsedCfg &p) {
   if (garage_command_mode(p.sensor)) {
@@ -95,6 +96,29 @@ inline void clear_push_button_transition(lv_obj_t *btn) {
     static_cast<lv_style_selector_t>(LV_PART_MAIN) | LV_STATE_DEFAULT);
 }
 
+// Toggle cards otherwise inherit the LVGL theme transition: a 70 ms hold and an
+// 80 ms linear fade, which is only about three frames on the slower RGB panels
+// and reads as a stutter. Profiles that set ESPCONTROL_TOGGLE_TRANSITION_MS get
+// one eased fade with no hold for the on/off colour change instead.
+#ifndef ESPCONTROL_TOGGLE_TRANSITION_MS
+#define ESPCONTROL_TOGGLE_TRANSITION_MS 0
+#endif
+
+inline void apply_toggle_card_transition(lv_obj_t *btn) {
+  if (!btn || ESPCONTROL_TOGGLE_TRANSITION_MS <= 0) return;
+  static const lv_style_prop_t toggle_props[] = {
+    LV_STYLE_BG_COLOR, LV_STYLE_RECOLOR_OPA, LV_STYLE_PROP_INV};
+  static lv_style_transition_dsc_t toggle_trans;
+  static bool toggle_trans_inited = false;
+  if (!toggle_trans_inited) {
+    lv_style_transition_dsc_init(&toggle_trans, toggle_props, lv_anim_path_ease_out,
+      ESPCONTROL_TOGGLE_TRANSITION_MS, 0, NULL);
+    toggle_trans_inited = true;
+  }
+  lv_obj_set_style_transition(btn, &toggle_trans,
+    static_cast<lv_style_selector_t>(LV_PART_MAIN) | LV_STATE_DEFAULT);
+}
+
 inline void setup_internal_relay_card(BtnSlot &s, const ParsedCfg &p) {
   bool push_mode = internal_relay_push_mode(p);
   std::string label = internal_relay_label(p);
@@ -111,11 +135,21 @@ inline void setup_internal_relay_card(BtnSlot &s, const ParsedCfg &p) {
     has_icon_on, icon_off, icon_on);
 }
 
+// Subpage presets save their English kind label (for example "Lighting").
+inline std::string subpage_card_display_label(const ParsedCfg &p) {
+  const std::string kind = normalize_subpage_kind(cfg_option_value(p.options, "subpage_kind"));
+  const char *english_default = saved_config_subpage_default_label(kind);
+  if (!english_default[0]) return p.label;
+  return i18n_label_or_default(p.label, english_default);
+}
+
 // Set icon and label on a toggle/push button based on its config
 inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
+  const std::string label = p.type == "subpage" ? subpage_card_display_label(p) : p.label;
   if (!p.entity.empty()) {
-    if (!p.label.empty()) {
-      lv_label_set_display_text(s.text_lbl, p.label.c_str());
+    apply_toggle_card_transition(s.btn);
+    if (!label.empty()) {
+      lv_label_set_display_text(s.text_lbl, label.c_str());
     }
     const char* icon_cp = "\U000F0493";
     if (p.icon.empty() || p.icon == "Auto") {
@@ -133,15 +167,16 @@ inline void setup_toggle_visual(BtnSlot &s, const ParsedCfg &p) {
       }
     }
   } else {
-    if (!p.label.empty()) {
-      lv_label_set_display_text(s.text_lbl, p.label.c_str());
+    if (!label.empty()) {
+      lv_label_set_display_text(s.text_lbl, label.c_str());
     }
     if (!p.icon.empty() && p.icon != "Auto") {
       lv_label_set_display_text(s.icon_lbl, find_icon(p.icon.c_str()));
     } else if (p.type == "push") {
       lv_label_set_display_text(s.icon_lbl, "\U000F0741");
-      apply_push_button_transition(s.btn);
     }
+    // A push card keeps its colour fade whether or not it has a custom icon.
+    if (p.type == "push") apply_push_button_transition(s.btn);
     if (p.type == "push" && p.label.empty()) {
       lv_label_set_display_text(s.text_lbl, espcontrol_i18n("Push"));
     }
@@ -175,7 +210,9 @@ inline void setup_action_card(BtnSlot &s, const ParsedCfg &p) {
 }
 
 inline void setup_local_action_card(BtnSlot &s, const ParsedCfg &p) {
-  std::string label = p.label.empty() ? (p.entity.empty() ? "Local Action" : sentence_cap_text(p.entity)) : p.label;
+  std::string label = (p.label.empty() && !p.entity.empty())
+    ? sentence_cap_text(p.entity)
+    : i18n_label_or_default(p.label, "Local Action");
   lv_label_set_display_text(s.text_lbl, label.c_str());
   const char *icon_cp = (p.icon.empty() || p.icon == "Auto") ? find_icon("Gesture Tap") : find_icon(p.icon.c_str());
   lv_label_set_display_text(s.icon_lbl, icon_cp);
@@ -237,7 +274,7 @@ inline void setup_subpage_parent_state_card(BtnSlot &s, const ParsedCfg &p,
   lv_label_set_display_text(s.sensor_lbl, "--");
   std::string unit = trim_display_unit(p.unit);
   lv_label_set_display_text(s.unit_lbl, unit.c_str());
-  std::string subpage_label = p.label.empty() ? espcontrol_i18n(std::string("Subpage")) : p.label;
+  std::string subpage_label = p.label.empty() ? espcontrol_i18n(std::string("Subpage")) : subpage_card_display_label(p);
   lv_label_set_display_text(s.text_lbl, subpage_label.c_str());
   set_subpage_chevron_visible(
     s, subpage_chevron_enabled, subpage_chevron_x, subpage_chevron_y,

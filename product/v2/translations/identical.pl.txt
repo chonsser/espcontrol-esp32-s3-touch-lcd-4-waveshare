@@ -1,0 +1,37 @@
+# Polish values that deliberately stay identical to English.
+#
+# `npm run check:translations` reads this file. In every catalog family named on
+# the @complete line, a Polish value that equals its English source fails the
+# check unless its key is listed below, so an untranslated leftover such as
+# `arm_night=Arm Night` cannot come back unnoticed. A listed key whose value is
+# no longer identical also fails, which keeps this list honest.
+#
+# Families:  firmware = strings.pl.txt (panel text)   web = web.pl.txt (configurator)
+# Entries:   firmware:<key> or web:<key>, one per line; `# reason` may follow.
+#
+# Both Polish catalogs are complete. Only the reviewed shared words,
+# product/protocol names and technical terms below may remain identical.
+@complete firmware web
+
+firmware:alarm  # same word in Polish
+firmware:auto  # same abbreviation in Polish
+firmware:dev  # firmware channel name
+firmware:media  # same word in Polish
+firmware:preset  # loanword, matches no_presets=Brak presetów
+firmware:start  # same word in Polish
+firmware:tornado  # same word in Polish
+firmware:home_assistant  # product name
+
+web:alarm  # same word in Polish
+web:album  # same word in Polish
+web:auto_home_assistant  # shared abbreviation and unchanged product name
+web:firmware  # established technical term, used consistently throughout the UI
+web:media  # same word in Polish
+web:podcast  # established loanword in Polish
+web:preset  # same loanword as the firmware; plural is Presety
+web:start_stop  # Start and Stop are established Polish control labels
+web:status  # same word in Polish
+web:system  # same word in Polish
+web:url  # protocol-independent address abbreviation
+web:webhook  # technical term
+web:wpa_wpa2_personal  # standard Wi-Fi security mode name

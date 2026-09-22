@@ -1,5 +1,6 @@
 import { state } from "../state/app_instance";
 import { isSpecificFirmwareVersion } from "./firmware_metadata";
+import { i18nDynamic, i18nMark } from "../i18n";
 import type { UiRuntimeState } from "./state";
 
 export interface FirmwareVersionFeature {
@@ -19,13 +20,15 @@ export function createFirmwareVersionFeature(
 ): FirmwareVersionFeature {
     const els = runtime.els;
     // ── Firmware Version State ─────────────────────────────────────────────
-    const checkingLabel = "Checking version...";
-    const devLabel = "Dev build";
-    const unknownLabel = "Version unknown";
+    // These labels are stored in state.firmwareVersion and compared, so they stay English;
+    // render() translates them.
+    const checkingLabel = i18nMark("Checking version...");
+    const devLabel = i18nMark("Dev build");
+    const unknownLabel = i18nMark("Version unknown");
     function render() {
         if (!els.fwVersionLabel)
             return;
-        els.fwVersionLabel.textContent = label();
+        els.fwVersionLabel.textContent = i18nDynamic(label());
     }
     function set(version?: any) {
         version = String(version == null ? "" : version).trim();

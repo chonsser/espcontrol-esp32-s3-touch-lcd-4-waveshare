@@ -1,3 +1,5 @@
+import { i18nMark } from "../i18n";
+
 export interface PanelIdentityInfo {
   name: string;
   friendly_name: string;
@@ -15,11 +17,11 @@ export interface PanelIdentityBackup {
 }
 
 export function normalizePanelName(value: unknown): string {
-  if (typeof value !== "string") throw new Error("Panel name must be text.");
+  if (typeof value !== "string") throw new Error(i18nMark("Panel name must be text."));
   const name = value.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, "");
   if (new TextEncoder().encode(name).length > 120 || /[\u0000-\u001f\u007f-\u009f]/.test(name)
       || /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(name)) {
-    throw new Error("Use up to 120 UTF-8 bytes with no control characters.");
+    throw new Error(i18nMark("Use up to 120 UTF-8 bytes with no control characters."));
   }
   return name;
 }
@@ -36,7 +38,7 @@ export function readIdentityBackup(value: unknown): PanelIdentityBackup | undefi
   const name = normalizePanelName(data.name);
   if (typeof data.mac_suffix !== "string" || !/^(?:[a-f0-9]{4}|[a-f0-9]{6})$/.test(data.mac_suffix)
       || typeof data.hostname !== "string" || !/^[a-z0-9_-]{1,31}$/.test(data.hostname)) {
-    throw new Error("Invalid panel identity in backup.");
+    throw new Error(i18nMark("Invalid panel identity in backup."));
   }
   return { version: 1, name, hostname: data.hostname, mac_suffix: data.mac_suffix };
 }

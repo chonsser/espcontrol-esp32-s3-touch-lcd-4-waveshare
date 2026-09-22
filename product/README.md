@@ -23,6 +23,13 @@ Edit these files when changing product behavior or supported hardware:
   firmware YAML and the web setup page.
 - `product/v2/icons.json` - icon names, Material Design Icon codepoints, and
   domain defaults.
+- `product/v2/translations/strings.*.txt` - text shown on the panel, one file per
+  language with `strings.en.txt` as the key master.
+- `product/v2/translations/web.*.txt` - text shown by the web setup page, with
+  `web.en.txt` as the key master. Only languages that have a `web.<lang>.txt`
+  file are translated in the browser; the others stay English.
+- `product/v2/translations/identical.*.txt` - the translated values that
+  deliberately equal English, and which catalogs of that language are complete.
 - `product/v2/product_compatibility.json` - saved config, backup,
   layout, and migration fixtures that protect upgrades.
 
@@ -69,6 +76,8 @@ generated output.
   entry, including its local-voice and relay capabilities.
 - `v2/devices/guition-esp32-s3-4848s040.json` is the authoritative compact
   S3 device entry.
+- `v2/devices/waveshare-esp32-s3-touch-lcd-4.json` is the authoritative
+  Waveshare 4-inch S3 device entry.
 
 `python3 scripts/check_product_model_v2.py` proves that the composed model is
 byte-for-byte equivalent to the generated card contract and device catalogue,
@@ -84,7 +93,9 @@ Do not hand-edit generated sections or files. Rebuild them with
 - `devices/manifest.json`
 - `src/webserver/generated/entity_catalog.ts`
 - `src/webserver/generated/card_contract.ts`
+- `src/webserver/generated/i18n.ts`
 - `components/espcontrol/button_grid_contract_generated.h`
+- `components/espcontrol/i18n_generated.h`
 - `docs/generated/cards/capabilities.md`
 - `docs/generated/screens/*.md`
 - `docs/public/device-profiles.json`
@@ -98,4 +109,5 @@ Do not hand-edit generated sections or files. Rebuild them with
 Run `npm run check:product` after changing authored product sources. Run
 `npm run check:product-model-v2` when changing the ownership adapter, and
 `npm run check:product-snapshot` when the combined product snapshot changes.
+Run `npm run check:translations` after changing any translation file.
 Run `npm run check:fast` before committing broader changes.

@@ -1,6 +1,7 @@
 import { state } from "../state/app_instance";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
 import { escHtml } from "./ui_primitives";
+import { configOptionValue } from "../model/config_primitives";
 import {
     buttonConfigDisabledForDevice as isButtonConfigDisabledForDevice,
     cardTypePickerDetails,
@@ -19,6 +20,7 @@ import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { GridFeature } from "./grid";
 import type { ButtonSettingsSelectionFeature } from "./button_settings_selection";
+import { i18nDevice } from "../i18n";
 export interface PreviewRenderDependencies {
     readonly updateClockBarItemUi: () => void;
     readonly document: Document;
@@ -89,7 +91,18 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
     function buttonTypeVisibleInPicker(this: any, key?: any, isSub?: any) {
         return buttonTypePickerKeys(!!isSub, null).indexOf(key) >= 0;
     }
+    let clockRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+    document.addEventListener("visibilitychange", () => {
+        if (clockRefreshTimer !== undefined) clearTimeout(clockRefreshTimer);
+        clockRefreshTimer = undefined;
+        if (!document.hidden && els.previewMain?.isConnected) renderPreview();
+    });
     function renderPreview(this: any) {
+        // One scoped clock refresh per rendered grid, replaced on every redraw.
+        if (clockRefreshTimer !== undefined) clearTimeout(clockRefreshTimer);
+        clockRefreshTimer = undefined;
+        const clockUpdates: (() => void)[] = [];
+        let clockRefreshDelay = 60000;
         dependencies.updateClockBarItemUi();
         var main: any = els.previewMain;
         main.innerHTML = "";
@@ -110,6 +123,8 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 var backBtn: any = document.createElement("div");
                 var bkSz: any = c.sizes[-2];
                 var backLabel: any = c.isSub ? (getSubpage(state.editingSubpage).backLabel || "Back") : "Back";
+                if (backLabel === "Back")
+                    backLabel = i18nDevice("Back");
                 backBtn.className = "sp-btn sp-back-btn" + sizeClass(bkSz) +
                     (c.selected.indexOf(-2) !== -1 ? " sp-selected" : "");
                 backBtn.innerHTML =
@@ -140,7 +155,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                     continue;
                 }
                 var iconName: any = resolveIcon(b);
-                var label: any = b.label || b.entity || "Configure";
+                var label: any = b.label || b.entity || i18nDevice("Configure");
                 var color: any = (b.type === "sensor" || b.type === "local_sensor" || b.type === "door_window" || b.type === "presence" || b.type === "weather" || b.type === "weather_forecast" || b.type === "calendar" || b.type === "clock" || b.type === "timezone")
                     ? WEB_UI_COLORS.tertiary : WEB_UI_COLORS.secondary;
                 var previewTypeDef: any = dependencies.cards.definitions[b.type || ""] || null;
@@ -178,6 +193,15 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                         iconHtml +
                         labelHtml;
                 main.appendChild(btn);
+                if (b.type === "clock" && previewTypeDef?.renderPreview) {
+                    // Capture this card, not the function-scoped loop variables.
+                    const clockButton = b, clockElement = btn, clockDefinition = previewTypeDef, clockSize = slotSz || 1;
+                    clockUpdates.push(() => {
+                        const next = clockDefinition.renderPreview(clockButton, { escHtml, cardSize: clockSize });
+                        clockElement.innerHTML = next.iconHtml + next.labelHtml;
+                    });
+                    if (["time_format", "date_format"].some(key => configOptionValue(b.options, key).includes("%S"))) clockRefreshDelay = 1000;
+                }
             }
             else {
                 var empty: any = document.createElement("div");
@@ -188,6 +212,15 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
             }
         }
         renderSelectionBar(c);
+        if (clockUpdates.length && !document.hidden) {
+            const refreshClocks = () => {
+                clockRefreshTimer = undefined;
+                if (!main.isConnected || document.hidden || !main.getClientRects().length) return;
+                for (const update of clockUpdates) update();
+                clockRefreshTimer = setTimeout(refreshClocks, clockRefreshDelay);
+            };
+            clockRefreshTimer = setTimeout(refreshClocks, clockRefreshDelay - Date.now() % clockRefreshDelay + 20);
+        }
     }
     return {
         render: renderPreview,

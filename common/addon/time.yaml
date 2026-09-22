@@ -399,6 +399,19 @@ time:
         then:
           - script.execute: time_update
 
+# Only customized local clock cards with a validated %S directive need this
+# cadence. Keep source reads and all other time consumers off the idle path.
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (!clock_cards_need_seconds()) return;
+          const auto now = panel_time_or_fallback(id(panel_time).now(),
+                                                  id(homeassistant_time).now());
+          update_clock_cards_seconds(now.is_valid(),
+              {now.hour, now.minute, now.second, now.day_of_month, now.month, now.year},
+              id(clock_format_12h));
+
 script:
   - id: ntp_servers_apply_after_network
     mode: restart

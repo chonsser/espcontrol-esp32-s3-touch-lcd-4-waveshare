@@ -1454,6 +1454,39 @@ script:
                 brightness: !lambda 'return id(screensaver_clock_target_level);'
                 transition_length: 0s
 
+  # One appearance path for entry, live edits, 30s and conditional seconds ticks.
+  # No mode guard here: entry runs before CLOCK is marked complete. Live callers
+  # guard current_mode themselves; restored settings can precede widget setup.
+  - id: clock_screensaver_refresh_appearance
+    mode: restart
+    then:
+      - lambda: |-
+          if (!id(clock_label) || !id(clock_date_label)) return;
+          auto time = panel_time_or_fallback(id(panel_time).now(), id(homeassistant_time).now());
+          const auto option = id(screensaver_clock_font).current_option();
+          const ClockScreensaverFont fonts[] = {
+            {24, clock_screensaver_font(option, id(font_number_clock_24)->get_lv_font(),
+                id(font_number_clock_bold_24)->get_lv_font(), id(font_number_clock_mono_24)->get_lv_font())},
+            {40, clock_screensaver_font(option, id(font_number_clock_40)->get_lv_font(),
+                id(font_number_clock_bold_40)->get_lv_font(), id(font_number_clock_mono_40)->get_lv_font())},
+            {64, clock_screensaver_font(option, id(font_number_clock_64)->get_lv_font(),
+                id(font_number_clock_bold_64)->get_lv_font(), id(font_number_clock_mono_64)->get_lv_font())},
+            {96, clock_screensaver_font(option, id(font_number_clock_96)->get_lv_font(),
+                id(font_number_clock_bold_96)->get_lv_font(), id(font_number_clock_mono_96)->get_lv_font())},
+            {128, clock_screensaver_font(option, id(font_number_clock_128)->get_lv_font(),
+                id(font_number_clock_bold_128)->get_lv_font(), id(font_number_clock_mono_128)->get_lv_font())},
+            {${clock_font_size}, clock_screensaver_font(option, id(font_number_clock)->get_lv_font(),
+                id(font_number_clock_bold)->get_lv_font(), id(font_number_clock_mono)->get_lv_font())}
+          };
+          const ClockScreensaverSettings settings{
+              id(screensaver_clock_time_format).state, id(screensaver_clock_date_format).state,
+              id(screensaver_clock_time_size).current_option(), id(screensaver_clock_date_size).current_option(),
+              id(schedule_clock_text_color).state};
+          const ClockScreensaverTime now{time.hour, time.minute, time.second,
+                                        time.day_of_month, time.month, time.year};
+          update_clock_screensaver_labels(id(clock_screensaver), id(clock_label), id(clock_date_label),
+              fonts, sizeof(fonts) / sizeof(fonts[0]), settings, now, time.is_valid(), id(clock_format_12h));
+
   # Show the clock screensaver overlay
   - id: show_clock_view
     mode: restart
@@ -1470,17 +1503,7 @@ script:
           then:
             - lambda: 'navigation_return_home(id(main_page)->obj);'
             - lvgl.widget.hide: dim_screensaver_touch_guard
-            - lambda: |-
-                apply_clock_screensaver_text_color(id(clock_label), id(schedule_clock_text_color).state);
-                auto time = panel_time_or_fallback(id(panel_time).now(), id(homeassistant_time).now());
-                if (time.is_valid()) {
-                  char buf[8];
-                  bool use_12h = id(clock_format_12h);
-                  format_clock_time_without_suffix(buf, sizeof(buf),
-                                                   time.hour, time.minute, use_12h);
-                  lv_label_set_text(id(clock_label), buf);
-                  position_clock_screensaver_label(id(clock_screensaver), id(clock_label), time.minute);
-                }
+            - script.execute: clock_screensaver_refresh_appearance
             - script.execute: clock_bar_hide
             - script.wait: clock_bar_hide
             - lambda: |-
@@ -1555,6 +1578,14 @@ interval:
     then:
       - script.execute: clock_screensaver_keep_on_top
       - script.execute: display_mode_reconcile
+      - if:
+          condition:
+            lambda: |-
+              return id(espcontrol_app).display().current_mode_is(espcontrol::DisplayMode::CLOCK) &&
+                  clock_screensaver_needs_seconds(id(screensaver_clock_time_format).state,
+                                                  id(screensaver_clock_date_format).state);
+          then:
+            - script.execute: clock_screensaver_refresh_appearance
   - interval: 30s
     then:
       - if:
@@ -1564,15 +1595,4 @@ interval:
                   espcontrol::DisplayMode::CLOCK);
           then:
             - script.execute: clock_screensaver_refresh_brightness
-      - lambda: |-
-          if (!id(espcontrol_app).display().current_mode_is(
-                espcontrol::DisplayMode::CLOCK)) return;
-          apply_clock_screensaver_text_color(id(clock_label), id(schedule_clock_text_color).state);
-          auto time = panel_time_or_fallback(id(panel_time).now(), id(homeassistant_time).now());
-          if (!time.is_valid()) return;
-          char buf[8];
-          bool use_12h = id(clock_format_12h);
-          format_clock_time_without_suffix(buf, sizeof(buf),
-                                           time.hour, time.minute, use_12h);
-          lv_label_set_text(id(clock_label), buf);
-          position_clock_screensaver_label(id(clock_screensaver), id(clock_label), time.minute);
+            - script.execute: clock_screensaver_refresh_appearance

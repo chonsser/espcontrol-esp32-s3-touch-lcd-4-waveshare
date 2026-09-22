@@ -20,6 +20,7 @@ import {
     MEDIA_PLAYLIST_CONTENT_TYPE_OPTION,
 } from "../application/config_option_core";
 import { CARD_SIZE_SINGLE } from "../model/grid";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerMediaCardTypes(
     registry: CardRegistry,
     mediaOptions: ConfigMediaOptionsFeature,
@@ -96,16 +97,16 @@ export function registerMediaCardTypes(
     }
     function mediaModeOptions(this: any) {
         var options: any = [
-            ["control_modal", "All Controls"],
-            ["cover_art", "Cover Art"],
-            ["playlist", "Track, Album or Playlist"],
-            ["speaker_group", "Speaker Group"],
-            ["play_pause", "Play/Pause"],
-            ["previous", "Previous"],
-            ["next", "Next"],
-            ["volume", "Volume"],
-            ["position", "Track Position"],
-            ["now_playing", "Now Playing"],
+            ["control_modal", i18n("All Controls")],
+            ["cover_art", i18n("Cover Art")],
+            ["playlist", i18n("Track, Album or Playlist")],
+            ["speaker_group", i18n("Speaker Group")],
+            ["play_pause", i18n("Play/Pause")],
+            ["previous", i18n("Previous")],
+            ["next", i18n("Next")],
+            ["volume", i18n("Volume")],
+            ["position", i18n("Track Position")],
+            ["now_playing", i18n("Now Playing")],
         ];
         return mediaCoverArtCardsSupported() ? options : options.filter(function (this: any, option?: any) {
             return option[0] !== "cover_art";
@@ -113,7 +114,7 @@ export function registerMediaCardTypes(
     }
     var MEDIA_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "media-mode",
             options: mediaModeOptions,
             value: function (this: any, b?: any) {
@@ -121,49 +122,49 @@ export function registerMediaCardTypes(
             },
         },
         entity: {
-            label: "Entity",
+            label: i18n("Entity"),
             idSuffix: "entity",
-            placeholder: "e.g. media_player.living_room",
+            placeholder: i18n("e.g. {example}", { example: "media_player.living_room" }),
             domains: function (this: any) { return cardContractDomains("media"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add an entity before saving.",
+            requiredMessage: i18n("Add an entity before saving."),
         },
         displayMode: {
-            label: "Type",
+            label: i18n("Type"),
             inputId: "media-display",
             options: [
-                ["", "Label"],
-                ["state", "State"],
+                ["", i18n("Label")],
+                ["state", i18n("State")],
             ],
         },
         nowPlayingControls: {
-            label: "Controls",
+            label: i18n("Controls"),
             inputId: "media-controls",
             options: [
-                ["", "None"],
-                ["progress", "Track Position"],
-                ["play_pause", "Play/Pause"],
+                ["", i18n("None")],
+                ["progress", i18n("Track Position")],
+                ["play_pause", i18n("Play/Pause")],
             ],
         },
         controlLabelDisplay: {
-            label: "Label",
+            label: i18n("Label"),
             inputId: "media-control-label-display",
             options: [
-                ["label", "Label"],
-                ["status", "State"],
+                ["label", i18n("Label")],
+                ["status", i18n("State")],
             ],
         },
         controlNumberDisplay: {
-            label: "Top Left",
+            label: i18n("Top Left"),
             inputId: "media-control-number-display",
             options: [
-                ["icon", "Icon"],
-                ["volume", "Volume"],
+                ["icon", i18n("Icon")],
+                ["volume", i18n("Volume")],
             ],
         },
         largeNumbers: {
-            label: "Large Media Numbers",
+            label: i18n("Large Media Numbers"),
             idSuffix: "large-media-numbers",
             supported: function (this: any, b?: any) {
                 var mode: any = mediaEditorMode(b && b.sensor);
@@ -175,12 +176,12 @@ export function registerMediaCardTypes(
         },
     };
     registry.register("media", {
-        label: function (this: any) { return cardContractCardLabel("media"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("media")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("media"); },
         pickerKey: function (this: any) { return cardContractPickerKey("media"); },
         hidden: function (this: any) { return cardContractHidden("media"); },
         hideLabel: true,
-        labelPlaceholder: "e.g. Living Room Speaker",
+        labelPlaceholder: i18n("e.g. Living Room Speaker"),
         defaultConfig: function (this: any) { return cardContractDefaultConfig("media"); },
         cardMetadata: MEDIA_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
@@ -398,17 +399,17 @@ export function registerMediaCardTypes(
             helpers.renderCardEntityField(panel, b, helpers, b.sensor === "playlist"
                 ? {
                     entity: Object.assign({}, MEDIA_CARD_METADATA.entity, {
-                        label: "Speaker Entity",
-                        requiredMessage: "Add a speaker entity before saving.",
+                        label: i18n("Speaker Entity"),
+                        requiredMessage: i18n("Add a speaker entity before saving."),
                     }),
                 }
                 : MEDIA_CARD_METADATA);
             if (b.sensor === "cover_art" || b.sensor === "control_modal") {
                 var nameField: any = helpers.renderCardTextField(panel, b, helpers, {
-                    label: "Name",
+                    label: i18n("Name"),
                     idSuffix: "label",
                     field: "label",
-                    placeholder: "e.g. Living Room Speaker",
+                    placeholder: i18n("e.g. Living Room Speaker"),
                     rerender: true,
                 });
                 helpers.markCardPrimaryField(nameField.field, "name");
@@ -417,15 +418,15 @@ export function registerMediaCardTypes(
             if (b.sensor === "control_modal" || b.sensor === "speaker_group" || b.sensor === "cover_art") {
                 target = target || panel;
                 var groupEntityField: any = helpers.textField(
-                    "Speaker Discovery Entity (optional)",
+                    i18n("Speaker Discovery Entity (optional)"),
                     helpers.idPrefix + "speaker-group-entity",
                     mediaSpeakerGroupEntity(b),
-                    "Default: sensor.speaker_group", "", false);
-                var groupEntityHintText: any = "Leave this blank to use sensor.speaker_group. Only enter another helper if you have more than one speaker helper or have changed the default entity name.";
+                    i18n("Default: {entity}", { entity: "sensor.speaker_group" }), "", false);
+                var groupEntityHintText: any = i18n("Leave this blank to use {entity}. Only enter another helper if you have more than one speaker helper or have changed the default entity name.", { entity: "sensor.speaker_group" });
                 var groupEntityHint: any = document.createElement("button");
                 groupEntityHint.type = "button";
                 groupEntityHint.className = "mdi mdi-information-outline sp-field-info-button";
-                groupEntityHint.setAttribute("aria-label", "About the speaker discovery entity");
+                groupEntityHint.setAttribute("aria-label", i18n("About the speaker discovery entity"));
                 groupEntityHint.setAttribute("aria-expanded", "false");
                 var groupEntityTooltip: any = document.createElement("div");
                 groupEntityTooltip.className = "sp-field-info-text";
@@ -540,13 +541,13 @@ export function registerMediaCardTypes(
             }
             if (b.sensor === "cover_art") {
                 var cardSettingsDisclosure: any = helpers.disclosureSection(
-                    "Card Settings",
+                    i18n("Card Settings"),
                     helpers.idPrefix + "media-cover-art-card-settings",
                     false);
                 cardSettingsDisclosure.panel.classList.add("sp-media-card-settings");
                 var cardSettings: any = cardSettingsDisclosure.section;
                 var detailsToggle: any = helpers.toggleRow(
-                    "Show Track Details",
+                    i18n("Show Track Details"),
                     helpers.idPrefix + "media-cover-art-details",
                     mediaCoverArtDetailsEnabled(b));
                 cardSettings.appendChild(detailsToggle.row);
@@ -558,19 +559,19 @@ export function registerMediaCardTypes(
                 panel.appendChild(cardSettingsDisclosure.panel);
 
                 var secondaryPlayerDisclosure: any = helpers.disclosureSection(
-                    "External Sources",
+                    i18n("External Sources"),
                     helpers.idPrefix + "media-cover-art-secondary-player",
                     false);
                 var secondaryPlayerSettings: any = secondaryPlayerDisclosure.section;
                 secondaryPlayerSettings.appendChild(infoPanel(
                     helpers.idPrefix + "media-cover-art-secondary-player-info",
-                    "Use a second media entity when the primary player switches to a Line In, TV, or HDMI source. Artwork, track details, progress, and controls will follow the second player while it has current media."));
+                    i18n("Use a second media entity when the primary player switches to a Line In, TV, or HDMI source. Artwork, track details, progress, and controls will follow the second player while it has current media.")));
                 var secondaryEntityField: any = helpers.renderCardEntityField(secondaryPlayerSettings, b, helpers, {
                     entity: {
-                        label: "External Source Media Entity",
+                        label: i18n("External Source Media Entity"),
                         idSuffix: "media-cover-art-secondary-entity",
                         value: function (this: any) { return mediaCoverArtSecondaryEntity(b); },
-                        placeholder: "e.g. media_player.apple_tv",
+                        placeholder: i18n("e.g. {example}", { example: "media_player.apple_tv" }),
                         domains: ["media_player"],
                         bindName: null,
                         rerender: false,
@@ -633,17 +634,17 @@ export function registerMediaCardTypes(
                 (b.sensor !== "play_pause" || b.precision !== "state") &&
                 (b.sensor !== "position" || b.precision !== "state")) {
                 helpers.renderCardTextField(panel, b, helpers, {
-                    label: "Label",
+                    label: i18n("Label"),
                     idSuffix: "label",
                     field: "label",
-                    placeholder: b.sensor === "position" ? "Position" : "e.g. Living Room Speaker",
+                    placeholder: b.sensor === "position" ? i18nDevice("Position") : i18n("e.g. Living Room Speaker"),
                     rerender: true,
                 });
             }
             var mediaAdvancedSettings: any = panel;
             if (b.sensor === "control_modal" || b.sensor === "cover_art") {
                 var mediaAdvancedDisclosure: any = helpers.disclosureSection(
-                    "Advanced",
+                    i18n("Advanced"),
                     helpers.idPrefix + "media-advanced",
                     false);
                 mediaAdvancedSettings = mediaAdvancedDisclosure.section;
@@ -652,7 +653,7 @@ export function registerMediaCardTypes(
             if (b.sensor === "volume" || b.sensor === "control_modal" || b.sensor === "speaker_group" || b.sensor === "cover_art") {
                 if (b.sensor === "volume") helpers.renderCardLargeNumbersToggle(panel, b, helpers, MEDIA_CARD_METADATA);
                 var maxField: any = helpers.renderCardNumberField(mediaAdvancedSettings, b, helpers, {
-                    label: "Maximum Volume",
+                    label: i18n("Maximum Volume"),
                     idSuffix: "volume-max",
                     min: 1,
                     max: 100,
@@ -671,10 +672,10 @@ export function registerMediaCardTypes(
             }
             var playlistCardSettings: any = null;
             if (b.sensor === "playlist") {
-                var playlistSourceDisclosure: any = helpers.disclosureSection("Source", helpers.idPrefix + "playlist-source-settings", false);
+                var playlistSourceDisclosure: any = helpers.disclosureSection(i18n("Source"), helpers.idPrefix + "playlist-source-settings", false);
                 var playlistSourceSettings: any = playlistSourceDisclosure.section;
                 panel.appendChild(playlistSourceDisclosure.panel);
-                var playlistCardSettingsDisclosure: any = helpers.disclosureSection("Card Settings", helpers.idPrefix + "playlist-card-settings", false);
+                var playlistCardSettingsDisclosure: any = helpers.disclosureSection(i18n("Card Settings"), helpers.idPrefix + "playlist-card-settings", false);
                 playlistCardSettings = playlistCardSettingsDisclosure.section;
                 panel.appendChild(playlistCardSettingsDisclosure.panel);
                 var playlistInfo: any = document.createElement("div");
@@ -684,12 +685,12 @@ export function registerMediaCardTypes(
                 playlistInfoIcon.className = "mdi mdi-information-outline";
                 playlistInfoIcon.setAttribute("aria-hidden", "true");
                 var playlistInfoText: any = document.createElement("span");
-                playlistInfoText.appendChild(document.createTextNode("Need help finding the media content ID? "));
+                playlistInfoText.appendChild(document.createTextNode(i18n("Need help finding the media content ID?") + " "));
                 var playlistInfoLink: any = document.createElement("a");
                 playlistInfoLink.href = "https://jtenniswood.github.io/espcontrol/card-types/media/#media-content";
                 playlistInfoLink.target = "_blank";
                 playlistInfoLink.rel = "noopener";
-                playlistInfoLink.textContent = "Learn how to configure media content buttons";
+                playlistInfoLink.textContent = i18n("Learn how to configure media content buttons");
                 playlistInfoText.appendChild(playlistInfoLink);
                 playlistInfoText.appendChild(document.createTextNode("."));
                 playlistInfo.appendChild(playlistInfoIcon);
@@ -705,11 +706,11 @@ export function registerMediaCardTypes(
                     setMediaPlaylistContentType(b, playlistContentType);
                     helpers.saveField("options", b.options);
                 }
-                var sourceField: any = helpers.selectField("Source", helpers.idPrefix + "playlist-source", mediaPlaylistSourceOptions(), parsedPlaylistContentId.source);
+                var sourceField: any = helpers.selectField(i18n("Source"), helpers.idPrefix + "playlist-source", mediaPlaylistSourceOptions(), parsedPlaylistContentId.source);
                 playlistSourceSettings.appendChild(sourceField.field);
-                var contentTypeField: any = helpers.selectField("Media Type", helpers.idPrefix + "playlist-content-type", mediaPlaylistContentTypeOptions(), mediaPlaylistContentTypeKnown(playlistContentType) ? playlistContentType : "__custom");
+                var contentTypeField: any = helpers.selectField(i18n("Media Type"), helpers.idPrefix + "playlist-content-type", mediaPlaylistContentTypeOptions(), mediaPlaylistContentTypeKnown(playlistContentType) ? playlistContentType : "__custom");
                 playlistSourceSettings.appendChild(contentTypeField.field);
-                var customContentTypeField: any = helpers.textField("Custom Media Content Type", helpers.idPrefix + "playlist-content-type-custom", mediaPlaylistContentTypeKnown(playlistContentType) ? "" : playlistContentType, "e.g. favorite", "", false);
+                var customContentTypeField: any = helpers.textField(i18n("Custom Media Content Type"), helpers.idPrefix + "playlist-content-type-custom", mediaPlaylistContentTypeKnown(playlistContentType) ? "" : playlistContentType, i18n("e.g. {example}", { example: "favorite" }), "", false);
                 playlistSourceSettings.appendChild(customContentTypeField.field);
                 function updateCustomContentTypeVisibility(this: any) {
                     customContentTypeField.field.hidden = contentTypeField.select.value !== "__custom";
@@ -729,9 +730,9 @@ export function registerMediaCardTypes(
                         : parseMediaPlaylistContentId(mediaPlaylistContentId(b), selectedType).id;
                     helpers.saveField("options", b.options);
                 }
-                var contentIdField: any = helpers.textField("ID", helpers.idPrefix + "playlist-content-id", parsedPlaylistContentId.id, mediaPlaylistContentIdPlaceholder(parsedPlaylistContentId.source, playlistContentType), "", false);
+                var contentIdField: any = helpers.textField(i18n("ID"), helpers.idPrefix + "playlist-content-id", parsedPlaylistContentId.id, mediaPlaylistContentIdPlaceholder(parsedPlaylistContentId.source, playlistContentType), "", false);
                 playlistSourceSettings.appendChild(contentIdField.field);
-                helpers.requireField(contentIdField.input, "Add a media ID before saving.");
+                helpers.requireField(contentIdField.input, i18n("Add a media ID before saving."));
                 function syncContentIdPlaceholder(this: any) {
                     contentIdField.input.placeholder = mediaPlaylistContentIdPlaceholder(sourceField.select.value, selectedPlaylistContentType());
                 }
@@ -762,10 +763,10 @@ export function registerMediaCardTypes(
                 updateCustomContentTypeVisibility();
                 syncContentIdPlaceholder();
                 var playerSourceField: any = helpers.renderCardTextField(playlistSourceSettings, b, helpers, {
-                    label: "Player Source / Input",
+                    label: i18n("Player Source / Input"),
                     idSuffix: "playlist-player-source",
                     bindName: "",
-                    placeholder: "Optional, e.g. Spotify or Line-in",
+                    placeholder: i18n("Optional, e.g. Spotify or Line-in"),
                     value: function (this: any) { return mediaPlaylistPlayerSource(b); },
                 });
                 playerSourceField.input.addEventListener("change", function (this: any) {
@@ -773,10 +774,10 @@ export function registerMediaCardTypes(
                     helpers.saveField("options", b.options);
                 });
                 helpers.renderCardTextField(playlistCardSettings, b, helpers, {
-                    label: "Label",
+                    label: i18n("Label"),
                     idSuffix: "label",
                     field: "label",
-                    placeholder: "e.g. Morning Playlist",
+                    placeholder: i18n("e.g. Morning Playlist"),
                     rerender: true,
                 });
             }
@@ -798,35 +799,38 @@ export function registerMediaCardTypes(
                 if (value === "controls")
                     value = "play_pause";
                 if (value === "previous")
-                    return { mode: "previous", label: "Previous", icon: "skip-previous" };
+                    return { mode: "previous", label: "Previous", deviceLabel: i18nDevice("Previous"), icon: "skip-previous" };
                 if (value === "next")
-                    return { mode: "next", label: "Next", icon: "skip-next" };
+                    return { mode: "next", label: "Next", deviceLabel: i18nDevice("Next"), icon: "skip-next" };
                 if (value === "volume")
-                    return { mode: "volume", label: "Volume", icon: "volume-high" };
+                    return { mode: "volume", label: "Volume", deviceLabel: i18nDevice("Volume"), icon: "volume-high" };
                 if (value === "position")
-                    return { mode: "position", label: "Position", icon: "progress-clock" };
+                    return { mode: "position", label: "Position", deviceLabel: i18nDevice("Position"), icon: "progress-clock" };
                 if (value === "now_playing")
                     return { mode: "now_playing", label: "Now Playing", icon: "music" };
                 if (value === "cover_art")
-                    return { mode: "cover_art", label: "Cover Art", icon: "music" };
+                    return { mode: "cover_art", label: "Cover Art", deviceLabel: i18nDevice("Cover Art"), icon: "music" };
                 if (value === "control_modal")
-                    return { mode: "control_modal", label: "All Controls", icon: "play-pause" };
+                    return { mode: "control_modal", label: "All Controls", deviceLabel: i18nDevice("All Controls"), icon: "play-pause" };
                 if (value === "speaker_group")
-                    return { mode: "speaker_group", label: "Speaker Group", icon: "speaker-multiple" };
+                    return { mode: "speaker_group", label: "Speaker Group", deviceLabel: i18nDevice("Speaker Group"), icon: "speaker-multiple" };
                 if (value === "playlist")
-                    return { mode: "playlist", label: "Playlist", icon: "music" };
-                return { mode: "play_pause", label: "Play/Pause", icon: "play-pause" };
+                    return { mode: "playlist", label: "Playlist", deviceLabel: i18nDevice("Playlist"), icon: "music" };
+                return { mode: "play_pause", label: "Play/Pause", deviceLabel: i18nDevice("Play/Pause"), icon: "play-pause" };
             }
             var info: any = modeInfo(mediaEditorValidMode(b.sensor));
             var mode: any = info.mode;
-            var label: any = (b.label && b.label.trim()) || info.label;
+            var customLabel: any = b.label && b.label.trim();
+            // Emulated panel text: like the firmware, an empty label or the saved English
+            // default shows the default in the device language.
+            var label: any = !customLabel || customLabel === info.label ? (info.deviceLabel || info.label) : customLabel;
             if (mode === "control_modal") {
                 var controlIcon: any = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : info.icon;
                 return {
                     iconHtml: mediaNumberDisplayMode(b) === "volume"
                         ? cardSensorPreviewHtml(b, helpers, "42", null)
                         : '<span class="sp-btn-icon mdi mdi-' + controlIcon + '"></span>',
-                    labelHtml: cardBadgeLabelHtml(helpers, mediaLabelDisplayMode(b) === "status" ? "Playing" : label, MEDIA_CARD_METADATA.preview.badge),
+                    labelHtml: cardBadgeLabelHtml(helpers, mediaLabelDisplayMode(b) === "status" ? i18nDevice("Playing") : label, MEDIA_CARD_METADATA.preview.badge),
                 };
             }
             if (mode === "speaker_group") {
@@ -846,7 +850,7 @@ export function registerMediaCardTypes(
             if (mode === "position") {
                 var bgColor: any = WEB_UI_COLORS.secondary;
                 var progressColor: any = WEB_UI_COLORS.secondary;
-                var positionLabel: any = b.precision === "state" ? "Paused" : label;
+                var positionLabel: any = b.precision === "state" ? i18nDevice("Paused") : label;
                 var positionClass: any = "sp-sensor-preview sp-media-position-time" +
                     (cardLargeNumbersActiveForCardSize(b, helpers, MEDIA_CARD_METADATA) ? " sp-sensor-preview-large" : "");
                 return {
@@ -871,8 +875,8 @@ export function registerMediaCardTypes(
                         iconHtml: '<span class="sp-image-preview sp-media-cover-artwork" style="background-color:#' +
                             helpers.escHtml(coverArtColor) + '"></span>' +
                             '<span class="sp-media-cover-tint"></span>' +
-                            '<span class="sp-media-now-title sp-media-cover-details-title">Track Title</span>',
-                        labelHtml: '<span class="sp-btn-label-row sp-media-cover-details-row"><span class="sp-btn-label sp-media-now-artist">Artist Name</span></span>',
+                            '<span class="sp-media-now-title sp-media-cover-details-title">' + helpers.escHtml(i18n("Track Title")) + '</span>',
+                        labelHtml: '<span class="sp-btn-label-row sp-media-cover-details-row"><span class="sp-btn-label sp-media-now-artist">' + helpers.escHtml(i18n("Artist Name")) + '</span></span>',
                     };
                 }
                 return {
@@ -880,8 +884,8 @@ export function registerMediaCardTypes(
                     iconHtml: '<span class="sp-image-preview" style="background:#' +
                         helpers.escHtml(coverArtColor) + '"></span>',
                     labelHtml: '<span class="sp-image-label"><span class="sp-image-label-stack">' +
-                        '<span class="sp-image-label-text sp-image-label-shadow" aria-hidden="true">Cover Art</span>' +
-                        '<span class="sp-image-label-text sp-image-label-main">Cover Art</span></span></span>',
+                        '<span class="sp-image-label-text sp-image-label-shadow" aria-hidden="true">' + helpers.escHtml(i18nDevice("Cover Art")) + '</span>' +
+                        '<span class="sp-image-label-text sp-image-label-main">' + helpers.escHtml(i18nDevice("Cover Art")) + '</span></span></span>',
                 };
             }
             if (mode === "now_playing") {
@@ -900,18 +904,18 @@ export function registerMediaCardTypes(
                             '</span>';
                 }
                 return {
-                    iconHtml: progressBg + '<span class="sp-media-now-title">Track Title</span>',
-                    labelHtml: '<span class="sp-btn-label-row"><span class="sp-btn-label sp-media-now-artist">Artist Name</span></span>',
+                    iconHtml: progressBg + '<span class="sp-media-now-title">' + helpers.escHtml(i18n("Track Title")) + '</span>',
+                    labelHtml: '<span class="sp-btn-label-row"><span class="sp-btn-label sp-media-now-artist">' + helpers.escHtml(i18n("Artist Name")) + '</span></span>',
                 };
             }
             return {
                 iconHtml: '<span class="sp-btn-icon mdi mdi-' + (b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : info.icon) + '"></span>',
-                labelHtml: cardBadgeLabelHtml(helpers, mode === "play_pause" && b.precision === "state" ? "Playing" : label, MEDIA_CARD_METADATA.preview.badge),
+                labelHtml: cardBadgeLabelHtml(helpers, mode === "play_pause" && b.precision === "state" ? i18nDevice("Playing") : label, MEDIA_CARD_METADATA.preview.badge),
             };
         },
     });
     registry.register("media_cover_art", {
-        label: "Cover Art",
+        label: i18n("Cover Art"),
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("media"); },
         // Retain the old registration only to normalize any saved alias. Cover Art is
         // selected from the Media card's Type field and is not a top-level card type.

@@ -1125,6 +1125,13 @@ inline void media_playback_refresh_stable_artwork(MediaPlaybackState *state,
   image_card_refresh_media_artwork_on_metadata_change(ctx->cover_art);
 }
 
+// "Line-in" is the firmware-authored external input name from
+// media_metadata_policy.h; every other source is Home Assistant data.
+inline std::string media_external_source_display_label(const std::string &source) {
+  if (source == "Line-in") return espcontrol_i18n(std::string("Line-in"));
+  return source;
+}
+
 inline void media_playback_apply_state_to_now_playing_snapshot(
     MediaPlaybackState *state, MediaNowPlayingCtx *ctx) {
   if (!state || !ctx) return;
@@ -1150,7 +1157,7 @@ inline void media_playback_apply_state_to_now_playing_snapshot(
     const std::string title =
       idle_placeholder ? std::string()
       : ctx->external_source_fallback && state->external_source && !state->source.empty()
-        ? state->source
+        ? media_external_source_display_label(state->source)
         : state->title.empty() ? std::string("--") : state->title;
     lv_label_set_display_text(ctx->title_lbl, title.c_str());
     if (!idle_placeholder &&
@@ -2435,7 +2442,10 @@ inline lv_obj_t *setup_media_position_layout(lv_obj_t *btn, lv_obj_t *icon_lbl,
 }
 
 inline std::string media_control_card_label(const ParsedCfg &p) {
-  if (!p.label.empty()) return p.label;
+  if (!p.label.empty()) {
+    return i18n_label_or_default(
+      p.label, media_default_label_english(media_card_mode(p.sensor)));
+  }
   return media_card_mode(p.sensor) == "speaker_group"
     ? espcontrol_i18n(std::string("Speaker Group"))
     : espcontrol_i18n(std::string("Media Control"));

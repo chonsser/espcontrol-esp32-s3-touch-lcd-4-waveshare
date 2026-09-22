@@ -5,6 +5,7 @@ const assert = require("assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { execFileSync } = require("node:child_process");
 const { chromium } = require("playwright");
 const { loadTypeScriptModule } = require("./load_typescript_module");
 const { freshWebOutputDir } = require("./web_source");
@@ -49,6 +50,7 @@ function casesFromManifest() {
   const sharedFourInchSquareSlugs = new Set([
     "esp32-p4-86",
     "guition-esp32-s3-4848s040",
+    "waveshare-esp32-s3-touch-lcd-4",
   ]);
   return Object.entries(manifest.devices || {}).map(([slug, device]) => {
     const aspect = parseAspect(
@@ -1436,6 +1438,39 @@ async function assertSettingsPage(page, label, options = {}, posts = []) {
       has: page.locator(".card-header h3", { hasText: /^Screensaver$/ }),
     })
     .first();
+  const clockAppearance = page.locator("#sp-clock-appearance");
+  assert(await clockAppearance.isVisible(), `${label}: clock appearance is independent of sleep modes`);
+  await clockAppearance.locator(".card-header").click();
+  assert(await clockAppearance.locator("#sp-set-schedule-clock-text-color").isVisible(), `${label}: global clock color is available with disabled schedules`);
+  assert.strictEqual(await nightScheduleCard.locator("#sp-set-schedule-clock-text-color").count(), 0, `${label}: clock color is not duplicated in schedule`);
+  assert.strictEqual(await page.locator("#sp-set-schedule-clock-text-color").count(), 1, `${label}: one global clock color`);
+  assert.strictEqual(await clockAppearance.locator("#sp-set-screensaver-clock-font").isVisible(), false, `${label}: old firmware hides unsupported clock font`);
+  await page.evaluate(() => window.__seedEspState([
+    { id: "select-screen_saver_clock_font", value: "Roboto Bold", option: ["Roboto Thin", "Roboto Bold", "Roboto Mono", "Future"] },
+    { id: "text-screen_saver_clock_time_format", value: "", max_length: 32 },
+    { id: "text-screen_saver_clock_date_format", value: "", max_length: 32 },
+    { id: "select-screen_saver_clock_time_size", value: "Auto", option: ["Auto", "Small", "Medium", "Large"] },
+    { id: "select-screen_saver_clock_date_size", value: "Auto", option: ["Auto", "Small", "Medium"] },
+  ]));
+  const fontSelect = clockAppearance.locator("#sp-set-screensaver-clock-font");
+  assert(await fontSelect.isVisible(), `${label}: advertised firmware exposes font choice`);
+  assert.strictEqual(await fontSelect.inputValue(), "Roboto Bold", `${label}: font SSE synchronizes selection`);
+  assert.deepStrictEqual(await fontSelect.locator("option").evaluateAll(options => options.map(option => option.value)), ["Roboto Thin", "Roboto Bold", "Roboto Mono"], `${label}: future advertised fonts are filtered`);
+  const timePreset = clockAppearance.locator("#sp-set-clock-time-format-preset");
+  assert(await timePreset.isVisible(), `${label}: supported time formatting is available`);
+  const appearancePostStart = posts.length;
+  await timePreset.selectOption("__custom");
+  const timeFormat = clockAppearance.locator("#sp-set-clock-time-format");
+  assert(await timeFormat.isVisible(), `${label}: Custom reveals a draft input`);
+  assert.strictEqual(posts.length, appearancePostStart, `${label}: choosing Custom alone never resets the format`);
+  await timeFormat.fill("%p");
+  await timeFormat.blur();
+  assert.strictEqual(await timeFormat.evaluate(input => input.validity.valid), false, `${label}: invalid custom format is visibly rejected`);
+  assert.strictEqual(posts.length, appearancePostStart, `${label}: invalid custom draft never posts`);
+  await timeFormat.fill("%H:%M:%S");
+  await timeFormat.blur();
+  await waitForPost(posts, { domain: "text", name: "screen_saver_clock_time_format", action: "set", value: "%H:%M:%S" }, `${label}: custom numeric format writes`, appearancePostStart);
+  assert.deepStrictEqual(await clockAppearance.locator("#sp-set-clock-date-size option").evaluateAll(options => options.map(option => option.value)), ["Auto", "Small", "Medium"], `${label}: size selector uses advertised options only`);
   assert(await brightnessCard.isVisible(), `${label}: backlight settings should render`);
   assert(await screensaverCard.isVisible(), `${label}: screensaver settings should render`);
   await brightnessCard.locator(".card-header").click();
@@ -3772,9 +3807,18 @@ async function startBannerCapture(page) {
 
 async function assertBackupImportSmoke(page, posts, testCase) {
   const before = posts.length;
+  const appearanceBackup = backupFixture(testCase.slug, testCase.slots);
+  appearanceBackup.screen.schedule_clock_text_color = "123ABC";
+  Object.assign(appearanceBackup.settings, {
+    screensaver_clock_font: "Roboto Mono",
+    screensaver_clock_time_format: "%I:%M:%S",
+    screensaver_clock_date_format: "%d.%m.%Y",
+    screensaver_clock_time_size: "Large",
+    screensaver_clock_date_size: "Small",
+  });
   await importBackup(
     page,
-    backupFixture(testCase.slug, testCase.slots),
+    appearanceBackup,
     "same-device-backup",
   );
   await page.waitForSelector(".sp-banner.sp-success");
@@ -3784,6 +3828,22 @@ async function assertBackupImportSmoke(page, posts, testCase) {
     ),
     "same-device import succeeds",
   );
+  for (const [domain, name, value] of [
+    ["select", "screen_saver_clock_font", "Roboto Mono"],
+    ["text", "screen_saver_clock_time_format", "%I:%M:%S"],
+    ["text", "screen_saver_clock_date_format", "%d.%m.%Y"],
+    ["select", "screen_saver_clock_time_size", "Large"],
+    ["select", "screen_saver_clock_date_size", "Small"],
+  ]) await waitForPost(posts, { domain, name, action: "set", [domain === "select" ? "option" : "value"]: value }, `backup restores ${name}`, before);
+  await openBackupControls(page);
+  const appearanceDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export", exact: true }).click();
+  const appearanceExport = JSON.parse(fs.readFileSync(await (await appearanceDownload).path(), "utf8"));
+  assert.strictEqual(appearanceExport.version, 2, "clock appearance does not bump backup version");
+  for (const key of ["screensaver_clock_font", "screensaver_clock_time_format", "screensaver_clock_date_format", "screensaver_clock_time_size", "screensaver_clock_date_size"])
+    assert.strictEqual(appearanceExport.settings[key], appearanceBackup.settings[key], `backup roundtrips ${key}`);
+  assert.strictEqual(appearanceExport.screen.schedule_clock_text_color, appearanceBackup.screen.schedule_clock_text_color || "FFFFFF", "global clock color retains existing backup location");
+  await page.getByRole("tab", { name: "Screen", exact: true }).click();
   await waitForPost(
     posts,
     { domain: "text", name: "button_on_color", action: "set", value: "AA5500" },
@@ -5070,7 +5130,10 @@ async function assertNightScheduleSensorControls(page, posts, label) {
   const wakeTimeout = card.locator("#sp-set-schedule-wake-timeout");
   const dimmedBrightness = card.locator("#sp-set-schedule-dimmed-brightness");
   const clockBrightness = card.locator("#sp-set-schedule-clock-brightness");
-  const clockTextColor = card.locator("#sp-set-schedule-clock-text-color");
+  const appearanceCard = page.locator("#sp-clock-appearance");
+  if (await appearanceCard.evaluate((element) => element.classList.contains("collapsed")))
+    await appearanceCard.locator(".card-header").click();
+  const clockTextColor = appearanceCard.locator("#sp-set-schedule-clock-text-color");
   async function actionGroupGap() {
     return actions.evaluate((element) => {
       let previous = element.previousElementSibling;
@@ -6076,10 +6139,185 @@ async function assertPanelNaming(browser) {
   } finally { await context.close(); }
 }
 
+async function assertPolishClockAppearance(page) {
+  await page.evaluate(() => window.__seedEspState([
+    { id: "select-screen_saver_clock_font", value: "Roboto Bold", option: ["Roboto Thin", "Roboto Bold", "Roboto Mono"] },
+    { id: "text-screen_saver_clock_time_format", value: "", max_length: 32 },
+    { id: "text-screen_saver_clock_date_format", value: "", max_length: 32 },
+    { id: "select-screen_saver_clock_time_size", value: "Auto", option: ["Auto", "Small", "Medium", "Large"] },
+    { id: "select-screen_saver_clock_date_size", value: "Auto", option: ["Auto", "Small", "Medium", "Large"] },
+  ]));
+  const appearance = page.locator("#sp-clock-appearance");
+  await appearance.getByText("Wygląd zegara", { exact: true }).waitFor();
+  if (!await appearance.locator("#sp-set-screensaver-clock-font").isVisible()) await appearance.locator(".card-header").click();
+  const originalViewport = page.viewportSize();
+  for (const width of [1280, 400]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const [id, text] of [
+      ["sp-set-screensaver-clock-font", "Czcionka zegara"],
+      ["sp-set-clock-time-format-preset", "Format godziny"],
+      ["sp-set-clock-date-format-preset", "Format daty"],
+      ["sp-set-clock-time-size", "Rozmiar tekstu godziny"],
+      ["sp-set-clock-date-size", "Rozmiar tekstu daty"],
+    ]) {
+      assert.strictEqual(await appearance.locator(`label[for="${id}"]`).textContent(), text);
+      assert(await appearance.locator(`#${id}`).isVisible(), `${width}px: Polish appearance control is visible`);
+    }
+    assert.deepStrictEqual(await appearance.locator("#sp-set-clock-time-size option").allTextContents(), ["Automatyczny", "Mały", "Średni", "Duży"]);
+    assert.deepStrictEqual(await appearance.locator("#sp-set-screensaver-clock-font option").allTextContents(), ["Roboto Thin", "Roboto Bold", "Roboto Mono"], "font protocol labels remain unchanged in Polish");
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${width}px: Polish settings have no horizontal overflow`);
+  }
+  await page.setViewportSize(originalViewport);
+}
+
+async function assertPolishUi(browser, embeddedFallback = false) {
+  const testCase = ACTIVE_CASES[0];
+  const context = await browser.newContext({ viewport: testCase.viewport });
+  await installRoutes(context, testCase.slug, { offlineFallback: embeddedFallback });
+  const page = await context.newPage();
+  const errors = [];
+  const posts = [];
+  let navigations = 0;
+  let pausedPost = null;
+  let pauseCardSave = true;
+  let pauseBackupSetting = false;
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("framenavigated", frame => { if (frame === page.mainFrame()) navigations++; });
+  await installFakeEventSource(page);
+  // Only the device transport is mocked: the UI, SSE dispatch, queues, backup
+  // controller, locale startup and real browser navigation all run unchanged.
+  await page.route("**/*", async route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (request.method() !== "POST" || url.hostname !== "espcontrol.test") {
+      await route.fallback();
+      return;
+    }
+    posts.push(postRecord(request.url()));
+    if (url.pathname === "/select/screen__language/set") {
+      const language = url.searchParams.get("option");
+      await page.evaluate(language => window.__seedEspState([
+        { id: "select-screen__language", state: language, value: language, option: ["en", "pl"] },
+      ]), language);
+    }
+    if ((pauseCardSave && /^\/text\/button_1_config\/set$/.test(url.pathname)) ||
+        (pauseBackupSetting && url.pathname === "/select/screen__clock_format/set")) {
+      await new Promise(resolve => { pausedPost = resolve; });
+      pausedPost = null;
+    }
+    await route.fallback();
+  });
+  async function seed(language) {
+    await page.waitForSelector("#sp-app");
+    await page.waitForFunction(() => window.__eventSources?.length > 0);
+    await page.evaluate(events => window.__seedEspState(events), seededEvents().map(event =>
+      event.id === "select-screen__language"
+        ? { ...event, state: language, value: language, option: ["en", "pl"] } : event));
+    // Card SSE updates are rendered on the next animation frame. Existing
+    // slot elements can still contain the initial "Configure" placeholder.
+    await page.waitForFunction(() =>
+      document.querySelector('.sp-main [data-slot="2"] .sp-btn-label')?.textContent === "Energy");
+  }
+  async function waitForPausedPost(label, timeout = 10000) {
+    const deadline = Date.now() + timeout;
+    while (!pausedPost && Date.now() < deadline)
+      await new Promise(resolve => setTimeout(resolve, 25));
+    assert(pausedPost, `${label}: expected device POST did not arrive`);
+  }
+  async function uploadPolishBackup(data, name) {
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
+    if (!await page.getByRole("button", { name: "Importuj", exact: true }).isVisible())
+      await page.getByText("Kopia zapasowa", { exact: true }).click();
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Importuj", exact: true }).click();
+    const file = writeJsonFixture(name, data);
+    try { await (await chooser).setFiles(file); }
+    finally { fs.rmSync(file, { force: true }); }
+  }
+  try {
+    await page.goto(`http://espcontrol.test/${testCase.slug}?events=1${embeddedFallback ? "&espcontrol_fallback=1" : ""}`, { waitUntil: "domcontentloaded" });
+    await seed("en");
+    await page.locator('.sp-main [data-slot="1"]').click();
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await page.locator(".sp-settings-modal .sp-disclosure").filter({ hasText: "Card Settings" })
+      .first().locator(".sp-disclosure-button").click();
+    await page.locator("#sp-inp-label").fill("Żółta kuchnia");
+    const beforeDraft = navigations;
+    await page.evaluate(() => window.__seedEspState([
+      { id: "select-screen__language", state: "pl", value: "pl", option: ["en", "pl"] },
+    ]));
+    // Two 400ms reload checks must pass without navigation or draft loss.
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeDraft, "Polish language echo must not discard an English editor draft");
+    assert.strictEqual(await page.locator("#sp-inp-label").inputValue(), "Żółta kuchnia");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await waitForPausedPost("paused card POST");
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeDraft, "locale reload must not interrupt the pending card save");
+    pauseCardSave = false;
+    pausedPost();
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).waitFor();
+    assert.strictEqual(navigations, beforeDraft + 1, "exactly one reload activates Polish");
+    await seed("pl");
+    assert.strictEqual(await page.locator(".sp-support-link").textContent(), "Postaw mi kawę");
+    assert.strictEqual(await page.locator('.sp-main [data-slot="2"] .sp-btn-label').textContent(), "Energy", "user labels are not translated");
+    for (const [slot, expected] of [
+      [1, "Wybrano 1 kartę"], [2, "Wybrano 2 karty"], [3, "Wybrano 3 karty"],
+      [4, "Wybrano 4 karty"], [5, "Wybrano 5 kart"],
+    ]) {
+      await page.locator(`.sp-main [data-slot="${slot}"]`).click({ modifiers: slot === 1 ? [] : ["ControlOrMeta"], position: { x: 8, y: 8 } });
+      await page.waitForFunction(expected => document.querySelector(".sp-selection-label")?.textContent === expected, expected);
+      assert.strictEqual(await page.locator(".sp-selection-label").textContent(), expected, "Polish selection plural interpolates the count");
+    }
+    await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
+    assert.strictEqual(await page.locator('label[for="sp-set-language"]').textContent(), "Język");
+    await assertPolishClockAppearance(page);
+    await uploadPolishBackup("{", "polish-invalid-backup");
+    await page.getByText("Nieprawidłowy plik – nie można odczytać JSON", { exact: true }).waitFor();
+    const backup = backupFixture(testCase.slug, testCase.slots);
+    backup.settings.language = "pl";
+    await uploadPolishBackup(backup, "polish-backup");
+    await page.getByText("Konfiguracja została zaimportowana", { exact: true }).waitFor();
+    assert(posts.some(post => post.domain === "select" && post.name === "screen__language" && post.option === "pl"), "backup preserves the language protocol token");
+    assert(posts.some(post => post.domain === "text" && post.name === "button_1_config" && post.value.startsWith("light.kitchen;Kitchen;")), "backup preserves entity ids and user labels");
+
+    // Restoring another language must wait for ALL imported settings, not just
+    // the language POST/SSE echo that appears near the beginning of the restore.
+    backup.settings.language = "en";
+    pauseBackupSetting = true;
+    const beforeRestore = navigations;
+    const beforePosts = posts.length;
+    await uploadPolishBackup(backup, "english-backup-from-polish");
+    // The 15-slot profile queues 135 button/subpage writes before settings;
+    // the real transport's 75ms pacing alone exceeds the card-save 10s budget.
+    await waitForPausedPost("paused backup setting POST", 30000);
+    await page.waitForTimeout(900);
+    assert.strictEqual(navigations, beforeRestore, "backup locale echo cannot reload halfway through restore");
+    pauseBackupSetting = false;
+    pausedPost();
+    await page.getByRole("tab", { name: "Settings", exact: true }).waitFor();
+    assert.strictEqual(navigations, beforeRestore + 1, "backup reloads once after the queue drains");
+    assert(posts.slice(beforePosts).some(post => post.domain === "select" && post.name === "screen__rotation" && post.option === "90"), "the final restore setting posts before locale navigation");
+    assert.deepStrictEqual(errors, [], "Polish UI journey has no browser errors");
+  } finally {
+    if (pausedPost) pausedPost();
+    await context.close();
+  }
+}
+
 (async function main() {
+  execFileSync(process.execPath, [
+    "--test",
+    path.join(ROOT, "tests/web/date_time_text_size_browser.test.js"),
+    path.join(ROOT, "tests/web/screensaver_clock_format_browser.test.js"),
+    path.join(ROOT, "tests/web/clock_card_appearance_browser.test.js"),
+  ], { cwd: ROOT, stdio: "inherit" });
   const browser = await chromium.launch();
   const acceptanceOnly = process.env.ESPCONTROL_BROWSER_ACCEPTANCE_ONLY === "1";
   try {
+    await assertPolishUi(browser);
+    await assertPolishUi(browser, true);
+    if (process.env.ESPCONTROL_I18N_ONLY === "1") { console.log("Polish UI browser checks passed."); return; }
     await assertNamingOfflineBackups(browser);
     await assertPanelNaming(browser);
     if (process.env.ESPCONTROL_NAMING_ONLY === "1") { console.log("Panel naming browser checks passed."); return; }

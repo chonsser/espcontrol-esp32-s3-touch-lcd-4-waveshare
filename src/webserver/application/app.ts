@@ -10,6 +10,7 @@ import type { PreviewContextMenuFeature } from "./preview_context_menu";
 import type { PreviewInteractionsFeature } from "./preview_interactions";
 import type { PreviewRenderFeature } from "./preview_render";
 import type { ButtonSettingsFeature } from "./button_settings";
+import { i18n, webLocale } from "../i18n";
 
 declare const __ESPCONTROL_EMBEDDED_MDI_STYLES__: string;
 
@@ -51,7 +52,7 @@ export function createAppFeature(pageTitle: AppTitleFeature, webStyles: string, 
         link.href = "https://www.buymeacoffee.com/jtenniswood";
         link.target = "_blank";
         link.rel = "noopener";
-        link.textContent = "Buy me a coffee";
+        link.textContent = i18n("Buy me a coffee");
         panel.appendChild(link);
         document.body.appendChild(panel);
         syncTabChrome();
@@ -65,6 +66,8 @@ export function createAppFeature(pageTitle: AppTitleFeature, webStyles: string, 
         document.head.appendChild(style);
     }
     function init(this: any) {
+        if (document.documentElement)
+            document.documentElement.lang = webLocale();
         setViewportMeta();
         setFavicon();
         pageTitle.applyPageTitle();

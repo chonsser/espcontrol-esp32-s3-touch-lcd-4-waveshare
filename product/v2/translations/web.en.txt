@@ -1,0 +1,1020 @@
+# Web configurator strings - English key master.
+# Rewritten by `python3 scripts/build.py web-i18n --extract` from the i18n call sites in
+# src/webserver and the labels in product/v2/card_contract.json. Do not add or
+# reorder entries by hand; translate the values in web.<lang>.txt instead.
+
+# src/webserver/api/request_failure.ts
+cannot_reach_device_is_it_connected=Cannot reach device — is it connected?
+device_returned_an_invalid_response=Device returned an invalid response.
+
+# src/webserver/api/reset_session.ts
+could_not_check_device_capabilities_try_again=Could not check device capabilities. Try again.
+invalid_device_capabilities=Invalid device capabilities
+invalid_device_reset_capabilities=Invalid device reset capabilities
+could_not_check_device_reset_status_reload_the_page_and_try_agai=Could not check device reset status. Reload the page and try again.
+invalid_device_reset_status=Invalid device reset status
+device_reset_or_stale_session_reload_before_changing_settings=Device reset or stale session: reload before changing settings.
+this_firmware_does_not_support_this_reset=This firmware does not support this reset.
+reload_the_page_before_resetting=Reload the page before resetting.
+reset_was_not_accepted_reload_the_page_before_trying_again=Reset was not accepted. Reload the page before trying again.
+
+# src/webserver/application/api.ts
+update_the_device_firmware_before_using_shorter_screensaver_time=Update the device firmware before using shorter screensaver timers.
+screen_dimmed_screensaver_is_not_available_on_this_firmware_upda=Screen dimmed screensaver is not available on this firmware. Update the device firmware, then reload this page.
+
+# src/webserver/application/app.ts
+buy_me_a_coffee=Buy me a coffee
+
+# src/webserver/application/app_backup.ts
+backup_exported_without_the_panel_name_because_naming_is_unavail=Backup exported without the panel name because naming is unavailable.
+this_backup_contains_wifi_sharing_cards_which_require_current_de=This backup contains Wifi Sharing cards, which require current device firmware. Update the panel before restoring this backup.
+could_not_confirm_that_this_device_can_safely_restore_the_layout=Could not confirm that this device can safely restore the layout. Check the connection and try again.
+the_layout_could_not_be_restored_no_other_backup_settings_were_c=The layout could not be restored. No other backup settings were changed.
+configuration_restored_but_panel_naming_or_restart_failed_reason=Configuration restored, but panel naming or restart failed: {reason}
+could_not_restore_backup=Could not restore backup
+
+# src/webserver/application/app_events.ts
+apply_configuration=Apply Configuration
+reconnecting_to_device=Reconnecting to device…
+
+# src/webserver/application/app_state_event_handlers.ts
+12_hour=12-hour
+24_hour=24-hour
+
+# src/webserver/application/app_status_preview.ts
+auto_home_assistant=Auto (Home Assistant)
+temperature=Temperature
+clock=Clock
+voice_services=Voice Services
+connectivity=Connectivity
+clock_bar=Clock Bar
+sunrise_time=Sunrise: {time}
+sunset_time=Sunset: {time}
+
+# src/webserver/application/backup_contract.ts
+this_controller_does_not_support_the_label_card_type_in_this_bac=This controller does not support the {label} card type in this backup.
+
+# src/webserver/application/button_settings.ts
+back_button=Back Button
+label=Label
+back=Back
+done=Done
+settings=Settings
+add_an_entity_before_saving=Add an entity before saving.
+choose_a_compatible_entity_before_saving=Choose a compatible entity before saving.
+card_settings_are_too_large_to_save_shorten_confirmation_text_la=Card settings are too large to save. Shorten confirmation text, labels, or entity IDs.
+that_grid_space_is_no_longer_available_close_this_window_and_try=That grid space is no longer available. Close this window and try again.
+could_not_save_the_configuration_check_the_connection_and_try_ag=Could not save the configuration. Check the connection and try again.
+on_icon=On Icon
+icon=Icon
+search_icons=Search icons…
+unit_precision=Unit Precision
+card=Card
+name_card_type={name} card type
+active_display=Active Display
+numeric=Numeric
+sensor_entity=Sensor Entity
+e_g_example=e.g. {example}
+unit=Unit
+e_g_kitchen=e.g. Kitchen
+entity=Entity
+off_icon=Off Icon
+on_state_pattern=On State Pattern
+solid=Solid
+stripes=Stripes
+save=Save
+
+# src/webserver/application/button_settings_icon_picker.ts
+no_matches=No matches
+
+# src/webserver/application/button_settings_selection.ts
+editing_is_paused_while_the_device_reconnects=Editing is paused while the device reconnects
+name_selected={name} selected
+buttons_selected_hint.one={count} button selected • right click to copy, cut, or delete
+buttons_selected_hint.other={count} buttons selected • right click to copy, cut, or delete
+tap_to_select_shift_ctrl_tap_to_multi_select_right_click_to_mana=tap to select • shift/ctrl+tap to multi-select • right click to manage
+edit=Edit
+hide=Hide
+show=Show
+back_button_selected=Back button selected
+cards_selected.one={count} card selected
+cards_selected.other={count} cards selected
+card_actions=Card actions
+show_degree_symbol=Show Degree Symbol
+
+# src/webserver/application/c6_firmware_ui.ts
+unknown=Unknown
+installing=Installing…
+checking=Checking…
+update_wifi_firmware=Update WiFi Firmware
+check_for_update=Check for Update
+
+# src/webserver/application/card_registry.ts
+toggle__card_type=Toggle
+
+# src/webserver/application/clock_bar_post_api.ts
+clock_bar_setting_is_not_available_on_this_firmware_update_the_d=Clock bar setting is not available on this firmware. Update the device firmware, then reload this page.
+clock_bar_time_setting_is_not_available_on_this_firmware_update=Clock bar time setting is not available on this firmware. Update the device firmware, then reload this page.
+clock_bar_night_mode_icon_setting_is_not_available_on_this_firmw=Clock bar night mode icon setting is not available on this firmware. Update the device firmware, then reload this page.
+network_status_icon_setting_is_not_available_on_this_firmware_up=Network status icon setting is not available on this firmware. Update the device firmware, then reload this page.
+battery_status_setting_is_not_available_on_this_firmware_update=Battery status setting is not available on this firmware. Update the device firmware, then reload this page.
+voice_services_setting_is_not_available_on_this_firmware_update=Voice services setting is not available on this firmware. Update the device firmware, then reload this page.
+temperature_degree_symbol_setting_is_not_available_on_this_firmw=Temperature degree symbol setting is not available on this firmware. Update the device firmware, then reload this page.
+subpage_chevron_setting_is_not_available_on_this_firmware_update=Subpage chevron setting is not available on this firmware. Update the device firmware, then reload this page.
+
+# src/webserver/application/config_confirmation_options.ts
+run_scene=Run Scene
+run_script=Run Script
+trigger_automation=Trigger Automation
+press_button=Press Button
+press_input_button=Press Input Button
+toggle_helper=Toggle Helper
+set_number=Set Number
+set_number_helper=Set Number Helper
+option_select=Option Select
+local_action=Local Action
+
+# src/webserver/application/config_cover_contract.ts
+all_controls=All Controls
+slider_position=Slider: Position
+slider_tilt=Slider: Tilt
+toggle=Toggle
+open=Open
+close=Close
+stop=Stop
+set_position=Set Position
+
+# src/webserver/application/config_date_time_options.ts
+text_size=Text size
+auto=Auto
+small=Small
+medium=Medium
+large=Large
+clock_font=Clock Font
+default=Default
+thin=Thin
+bold=Bold
+monospace=Monospace
+font_preview_is_approximate_the_panel_uses_its_built_in_clock_fo=Font preview is approximate; the panel uses its built-in clock fonts.
+enter_a_numeric_date_or_time_format_using_the_supported_tokens_m=Enter a numeric date or time format using the supported tokens (maximum 32 characters).
+default_global_12_24_hour_setting=Default (global 12/24-hour setting)
+24_hour_with_seconds=24-hour with seconds
+12_hour_with_seconds=12-hour with seconds
+hidden=Hidden
+custom_time_format=Custom Time Format
+custom_date_format=Custom Date Format
+use_h_i_m_s_d_m_y_or_y_digits_and_spaces_only_maximum_32_charact=Use %H, %I, %M, %S, %d, %m, %Y or %y, digits and spaces, : . / - only. Maximum 32 characters, including the formatted result.
+time_format=Time Format
+date_format=Date Format
+custom=Custom
+date_text_size=Date Text Size
+large_clock=Large Clock
+large_time=Large Time
+large_world_clock=Large World Clock
+large_date=Large Date
+type=Type
+time_date=Time & Date
+date=Date
+world_clock=World Clock
+
+# src/webserver/application/config_image_options.ts
+image_cards_are_not_available_on_this_display=Image cards are not available on this display.
+image_slots_camera_cards.one=This display supports up to {count} Camera Card across the main page and subpages.
+image_slots_camera_cards.other=This display supports up to {count} Camera Cards across the main page and subpages.
+image_slots_media_cover_art_cards.one=This display supports up to {count} Media Cover Art card.
+image_slots_media_cover_art_cards.other=This display supports up to {count} Media Cover Art cards.
+image_and_media_cover_art_cards_use_shared_image_slots_you_can_s=Image and Media Cover Art cards use shared image slots. You can save up to {count} of these cards across the main page and subpages.
+
+# src/webserver/application/config_media_options.ts
+home_assistant_media_source=Home Assistant Media Source
+web_url=Web URL
+custom_full_uri=Custom / full URI
+enter_the_type_id=Enter the {type} ID
+playlist=Playlist
+music=Music
+album=Album
+artist=Artist
+track=Track
+channel=Channel
+episode=Episode
+podcast=Podcast
+tv_show=TV Show
+video=Video
+movie=Movie
+app=App
+
+# src/webserver/application/config_modal_tab_options.ts
+power=Power
+brightness=Brightness
+colour_temperature=Colour Temperature
+colour_presets=Colour Presets
+position=Position
+controls=Controls
+tilt=Tilt
+presets=Presets
+mode=Mode
+preset=Preset
+fan=Fan
+swing=Swing
+speed=Speed
+oscillation=Oscillation
+direction=Direction
+light=Light
+qr_code=QR Code
+connection_details=Connection Details
+guest_wi_fi=Guest Wi-Fi
+modal_tabs=Modal Tabs
+drag_name=Drag {name}
+move_name_up=Move {name} up
+move_name_down=Move {name} down
+
+# src/webserver/application/config_post_api.ts
+wifi_sharing_requires_current_device_firmware_update_the_panel_b=Wifi Sharing requires current device firmware. Update the panel before saving this card.
+subpage_is_too_large_to_save_shorten_labels_or_entity_ids=Subpage is too large to save. Shorten labels or entity IDs.
+
+# src/webserver/application/config_robot_card_options.ts
+status=Status
+start_mowing=Start Mowing
+dock=Dock
+pause_resume=Pause / Resume
+start_stop=Start / Stop
+start_dock=Start / Dock
+spot_clean=Spot Clean
+locate=Locate
+clean_area=Clean Area
+
+# src/webserver/application/config_subpage_options.ts
+generic=Generic
+switch=Switch
+lights=Lights
+climate=Climate
+presence=Presence
+media=Media
+alarm=Alarm
+cover=Cover
+garage_door=Garage Door
+gate=Gate
+lock=Lock
+vacuum=Vacuum
+lawn_mower=Lawn Mower
+weather=Weather
+sensor=Sensor
+camera_image=Camera/Image
+
+# src/webserver/application/config_weather_options.ts
+current_conditions=Current Conditions
+temperatures_today=Temperatures Today
+temperatures_tomorrow=Temperatures Tomorrow
+
+# src/webserver/application/controls_fields.ts
+card_settings=Card Settings
+6_digit_hex_e_g_example=6-digit hex e.g. {example}
+large_numbers=Large Numbers
+number=Number
+enabled=Enabled
+
+# src/webserver/application/controls_shell.ts
+primary=Primary
+screen=Screen
+docs=Docs
+button_grid=Button grid
+close_settings=Close settings
+restarts_the_device_to_apply_changes=Restarts the device to apply changes
+waiting_for_device=Waiting for device…
+restarting=Restarting…
+
+# src/webserver/application/firmware_update_post_api.ts
+could_not_start_firmware_update=Could not start firmware update.
+could_not_check_for_firmware_update=Could not check for firmware update.
+could_not_start_wifi_firmware_update=Could not start WiFi firmware update.
+could_not_check_wifi_firmware_update=Could not check WiFi firmware update.
+
+# src/webserver/application/firmware_update_state.ts
+could_not_download_firmware_file_status=Could not download firmware file ({status}).
+device_rejected_firmware_upload_status=Device rejected firmware upload ({status}).
+firmware_update_failed_reason=Firmware update failed: {reason}
+install=Install
+not_checked=Not checked
+install_update=Install Update
+
+# src/webserver/application/firmware_version_state.ts
+checking_version=Checking version...
+dev_build=Dev build
+version_unknown=Version unknown
+
+# src/webserver/application/panel_identity.ts
+could_not_read_the_panel_name_check_the_connection_and_try_again=Could not read the panel name. Check the connection and try again.
+could_not_save_the_panel_name_check_the_connection_and_try_again=Could not save the panel name. Check the connection and try again.
+invalid_panel_identity_response=Invalid panel identity response.
+could_not_read_panel_naming_support_try_again=Could not read panel naming support. Try again.
+panel_name_saved=Panel name saved
+the_panel_is_restarting_reopen_it_at_the_new_address_home_assist=The panel is restarting. Reopen it at the new address. Home Assistant action names may need updating.
+a_panel_name_change_is_already_in_progress=A panel name change is already in progress.
+panel_naming_is_unavailable=Panel naming is unavailable.
+name_saved_but_the_restart_failed_reopen_settings_and_choose_sav=Name saved, but the restart failed. Reopen Settings and choose Save & Restart to retry.
+device_name=Device Name
+save_restart=Save & Restart
+your_device_will_show_as_address_on_your_network=Your device will show as {address} on your network
+your_device_will_use_its_original_firmware_name_and_address_on_y=Your device will use its original firmware name and address on your network
+try_again=Try again
+restore_backup=Restore backup
+also_restore_panel_name=Also restore panel name
+restore_the_name_name_with_this_panel_s_address_hostname_local_t=Restore the name “{name}” with this panel's address {hostname}.local. This restarts the panel and changes ESPHome action names.
+restore_this_panel_s_original_firmware_name_and_address_this_may=Restore this panel's original firmware name and address. This may require a restart.
+restore=Restore
+cancel=Cancel
+
+# src/webserver/application/preview_clipboard.ts
+this_controller_does_not_support_the_type_card_type=This controller does not support the {type} card type.
+subpage_cards_cannot_be_placed_inside_another_subpage=Subpage cards cannot be placed inside another subpage.
+the_type_card_type_cannot_be_placed_inside_a_subpage=The {type} card type cannot be placed inside a subpage.
+a_copied_subpage_has_more_cards_than_this_controller_can_display=A copied subpage has more cards than this controller can display.
+a_copied_subpage_does_not_fit_on_this_controller=A copied subpage does not fit on this controller.
+subpage_cards_can_only_be_pasted_onto_the_home_screen=Subpage cards can only be pasted onto the home screen.
+there_is_not_enough_room_to_paste_every_card=There is not enough room to paste every card.
+a_copied_card_s_settings_are_too_large_for_this_controller=A copied card's settings are too large for this controller.
+a_copied_subpage_is_too_large_for_this_controller=A copied subpage is too large for this controller.
+the_updated_subpage_is_too_large_to_save_on_this_controller=The updated subpage is too large to save on this controller.
+configuration_is_locked=Configuration is locked.
+no_copied_cards_are_available=No copied cards are available.
+cards_pasted_some_were_resized_to_fit=Cards pasted. Some were resized to fit.
+could_not_create_card_code=Could not create card code.
+copy_code=Copy Code
+copy_this_code_to_another_controller=Copy this code to another controller.
+card_transfer_code=Card transfer code
+copy=Copy
+copied=Copied
+could_not_copy_automatically_copy_the_selected_code_manually=Could not copy automatically. Copy the selected code manually.
+paste_code=Paste Code
+paste_the_code_below_nothing_is_changed_until_you_choose_paste=Paste the code below. Nothing is changed until you choose Paste.
+paste_the_code_here=Paste the code here
+paste=Paste
+the_cards_could_not_be_pasted=The cards could not be pasted.
+cards_pasted.one=Card pasted.
+cards_pasted.other={count} cards pasted.
+some_were_resized_to_fit=Some were resized to fit.
+review_local_device_references_on_this_controller=Review local device references on this controller.
+a_subpage_layout_was_resized_to_fit=A subpage layout was resized to fit.
+invalid_card_code=Invalid card code.
+
+# src/webserver/application/preview_context_menu.ts
+copy_cards.one=Copy {count} Card
+copy_cards.other=Copy {count} Cards
+copy_cards_as_code.one=Copy {count} Card as Code
+copy_cards_as_code.other=Copy {count} Cards as Code
+cut_cards.one=Cut {count} Card
+cut_cards.other=Cut {count} Cards
+delete_cards.one=Delete {count} Card
+delete_cards.other=Delete {count} Cards
+single_1x1=Single (1x1)
+tall_2x1=Tall (2x1)
+extra_tall_3x1=Extra Tall (3x1)
+wide_1x2=Wide (1x2)
+extra_wide_1x3=Extra Wide (1x3)
+ultra_wide_1x5=Ultra Wide (1x5)
+large_2x2=Large (2x2)
+extra_large_3x3=Extra Large (3x3)
+max_tall_2x3=Max Tall (2x3)
+massive_3x4=Massive (3x4)
+max_wide_3x2=Max Wide (3x2)
+max_tall_2x3_2=Max tall (2x3)
+massive_wide_3x4=Massive Wide (3x4)
+massive_4x3=Massive (4x3)
+edit_card=Edit Card
+size=Size
+duplicate=Duplicate
+cut=Cut
+delete=Delete
+edit_temperature=Edit Temperature
+edit_voice_services=Edit Voice Services
+hide_name=Hide {name}
+show_name=Show {name}
+edit_label=Edit Label
+exit_subpage=Exit Subpage
+create_card=Create Card
+create_subpage=Create Subpage
+paste_cards.one=Paste {count} Card
+paste_cards.other=Paste {count} Cards
+
+# src/webserver/application/public_firmware_install.ts
+firmware_file_is_not_available_yet=Firmware file is not available yet.
+device_reported_that_the_firmware_upload_failed=Device reported that the firmware upload failed.
+firmware_uploaded_waiting_for_device_to_restart=Firmware uploaded. Waiting for device to restart…
+could_not_upload_firmware_update=Could not upload firmware update.
+
+# src/webserver/application/screen_rotation_state.ts
+degrees_deg={degrees} deg
+
+# src/webserver/application/screen_schedule_post_api.ts
+screen_schedule_is_not_available_on_this_firmware_update_the_dev=Screen schedule is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_trigger_setting_is_not_available_on_this_firmware_u=The schedule trigger setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_sensor_activation_setting_is_not_available_on_this=The schedule sensor activation setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_sensor_setting_is_not_available_on_this_firmware_up=The schedule sensor setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_wake_timeout_setting_is_not_available_on_this_firmw=The schedule wake timeout setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_wake_brightness_setting_is_not_available_on_this_fi=The schedule wake brightness setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_mode_setting_is_not_available_on_this_firmware_upda=The schedule mode setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_dimmed_brightness_setting_is_not_available_on_this=The schedule dimmed brightness setting is not available on this firmware. Update the device firmware, then reload this page.
+the_schedule_clock_brightness_setting_is_not_available_on_this_f=The schedule clock brightness setting is not available on this firmware. Update the device firmware, then reload this page.
+brightness_modes_are_not_available_on_this_firmware_update_the_d=Brightness modes are not available on this firmware. Update the device firmware, then reload this page.
+manual_backlight_control_is_not_available_on_this_firmware_updat=Manual backlight control is not available on this firmware. Update the device firmware, then reload this page.
+manual_brightness_times_are_not_available_on_this_firmware_updat=Manual brightness times are not available on this firmware. Update the device firmware, then reload this page.
+
+# src/webserver/application/screen_schedule_state.ts
+duration_seconds.one={count} second
+duration_seconds.other={count} seconds
+duration_minutes.one={count} minute
+duration_minutes.other={count} minutes
+duration_hours.one={count} hour
+duration_hours.other={count} hours
+
+# src/webserver/application/screensaver_clock_font.ts
+clock_font_was_skipped_because_this_firmware_does_not_support_th=Clock font was skipped because this firmware does not support the requested font or Roboto Thin.
+could_not_restore_the_clock_font=Could not restore the clock font.
+
+# src/webserver/application/screensaver_clock_format.ts
+clock_format_or_text_size_was_skipped_because_this_firmware_does=Clock format or text size was skipped because this firmware does not support it.
+could_not_restore_the_clock_format_or_text_size=Could not restore the clock format or text size.
+time_text_size=Time Text Size
+larger_text_is_reduced_automatically_when_needed_to_fit_the_scre=Larger text is reduced automatically when needed to fit the screen without clipping.
+
+# src/webserver/application/settings_cover_art_section.ts
+show_cover_art=Show Cover Art
+keep_screen_awake_during_playback=Keep Screen Awake During Playback
+media_player_entity=Media Player Entity
+show_after=Show After
+show_track_details_for=Show Track Details For
+never=Never
+always=Always
+screensaver_settings=Screensaver Settings
+enable_if_you_use_an_external_media_player_connected_to_your_spe=Enable if you use an external media player connected to your speakers Line In, TV, or HDMI source. If you add a second media player, cover art, track details, and progress be displayed when the external source is used.
+show_external_sources=Show external sources
+external_source_media_entity=External Source Media Entity
+external_sources=External sources
+advanced_filtering=Advanced Filtering
+only_show_when=Only Show When
+advanced_options=Advanced Options
+media_cover_art_on=Media cover art on
+cover_art_screen_saver=Cover Art Screen Saver
+
+# src/webserver/application/settings_page.ts
+reset_colours_to_defaults=Reset colours to defaults
+reset_colours=Reset colours
+appearance=Appearance
+language=Language
+manual=Manual
+automatic=Automatic
+timed=Timed
+daytime_brightness=Daytime Brightness
+nighttime_brightness=Nighttime Brightness
+dawn=Dawn
+dusk=Dusk
+backlight=Backlight
+font_and_colour_apply_to_the_clock_in_timer_sensor_and_night_sch=Font and colour apply to the clock in Timer, Sensor and Night Schedule modes.
+clock_text_colour=Clock Text Colour
+clock_appearance=Clock Appearance
+timezone=Timezone
+clock_format=Clock Format
+custom_ntp_servers=Custom NTP Servers
+ntp_server_number=NTP Server {number}
+time=Time
+show_clock_bar=Show Clock Bar
+show_night_mode_icon=Show Night Mode Icon
+clock_bar_on=Clock bar on
+voice_services_on=Voice services on
+enable_battery_support=Enable battery support
+battery_icon_on=Battery icon on
+battery=Battery
+rotation=Rotation
+temperature_unit=Temperature Unit
+auto_from_timezone=Auto (from timezone)
+centigrade_c=Centigrade (°C)
+fahrenheit_f=Fahrenheit (°F)
+disabled=Disabled
+timer__screensaver_mode=Timer
+timeout=Timeout
+presence_entity=Presence Entity
+presence_sensor_entity=Presence sensor entity
+screensaver_on=Screensaver on
+screensaver=Screensaver
+return_home_after=Return Home After
+idle_on=Idle on
+idle=Idle
+display__settings_section=Display
+voice_sounds=Voice & Sounds
+sleep_schedule=Sleep & Schedule
+preferences=Preferences
+system=System
+
+# src/webserver/application/settings_page_helpers.ts
+discovering=Discovering
+alarm_delay_audio=Alarm Delay Audio
+tts_announcements=TTS Announcements
+entry_announcement=Entry Announcement
+exit_announcement=Exit Announcement
+beep_volume=Beep Volume
+faster_beeps_during_final_seconds=Faster Beeps During Final Seconds
+entry_and_exit_beeps_use_the_panel_speaker_tts_is_sent_as_a_home=Entry and exit beeps use the panel speaker. TTS is sent as a Home Assistant announcement event only while Voice Services are enabled.
+alarm_audio_on=Alarm audio on
+alarm_audio=Alarm Audio
+then=Then
+display_off=Display Off
+screen_dimmed=Screen Dimmed
+dimmed_screen_brightness=Dimmed Screen Brightness
+daytime_dimmed_screen_brightness=Daytime Dimmed Screen Brightness
+nighttime_dimmed_screen_brightness=Nighttime Dimmed Screen Brightness
+daytime_clock_brightness=Daytime Clock Brightness
+nighttime_clock_brightness=Nighttime Clock Brightness
+
+# src/webserver/application/settings_reset_section.ts
+complete_reset=Complete reset?
+complete_reset_2=Complete reset
+factory_reset=Factory Reset
+backup_your_device_before_resetting=Backup your device before resetting
+save_backup=Save backup
+settings_cannot_be_recovered_without_a_backup=Settings cannot be recovered without a backup.
+requesting_reset=Requesting reset…
+waiting_for_the_display_to_accept_the_reset=Waiting for the display to accept the reset.
+follow_the_display_s_wifi_setup_instructions_to_reconnect_you_ma=Follow the display's Wifi setup instructions to reconnect. You may need to set up its Home Assistant connection again.
+your_wifi_and_home_assistant_connection_will_be_retained_this_pa=Your Wifi and Home Assistant connection will be retained. This page will reload when the display is ready.
+waiting_for_the_display=Waiting for the display
+the_display_has_not_reconnected_yet_check_its_screen_and_reload=The display has not reconnected yet. Check its screen and reload this page when it is ready. Do not restore a backup until reset has completed.
+check_the_display=Check the display
+check_the_display_the_reset_may_already_be_restarting_it_reload=Check the display: the reset may already be restarting it. Reload this page before making further changes.
+a_reset_is_pending_wait_for_the_display_to_restart_before_making=A reset is pending. Wait for the display to restart before making changes.
+partial_reset=Partial reset
+reset_cards_and_preferences_retains_your_configuration_for_wifi=Reset cards and preferences. Retains your configuration for Wifi and Home Assistant
+remove_all_existing_configuration_and_reset_back_to_first_time_s=Remove all existing configuration and reset back to first time setup.
+
+# src/webserver/application/settings_schedule_section.ts
+time_based_night_schedule_overrides_screensaver_presence_wake_an=Time-based Night Schedule overrides screensaver presence wake and Media Cover Art while it is active.
+daytime=Daytime
+night_time=Night Time
+activate_night_schedule_when=Activate Night Schedule When
+sensor_is_off=Sensor Is Off
+sensor_is_on=Sensor Is On
+at_night_time=At Night Time
+screen_off=Screen Off
+when_woken_idle_time_to_screen_off=When Woken, Idle Time to Screen Off
+when_woken_screen_brightness=When Woken, Screen Brightness
+clock_brightness=Clock Brightness
+schedule_on=Schedule on
+night_schedule=Night Schedule
+
+# src/webserver/application/settings_system_section.ts
+hourly=Hourly
+daily=Daily
+weekly=Weekly
+monthly=Monthly
+export=Export
+import=Import
+backup=Backup
+current_version=Current version
+available_version=Available version
+update_available=Update available
+firmware_update_available=Firmware update available
+firmware_updates=Firmware updates
+auto_update=Auto Update
+update_frequency=Update Frequency
+on=On
+automatic_firmware_updates_on=Automatic firmware updates on
+auto_updates=Auto updates
+current=Current
+available=Available
+wifi_firmware_update_available=WiFi firmware update available
+wifi_firmware=WiFi firmware
+version=Version
+install_older_firmware_version_the_display_will_restart_during_i=Install older firmware {version}? The display will restart during installation.
+previous_firmware=Previous firmware
+firmware=Firmware
+connection=Connection
+the_current_home_assistant_artwork_endpoint_is_endpoint=The current Home Assistant artwork endpoint is {endpoint}.
+home_assistant_protocol=Home Assistant Protocol
+home_assistant_port=Home Assistant Port
+home_assistant_settings=Home Assistant Settings
+
+# src/webserver/application/state_loader_api.ts
+restarting_device=Restarting device…
+
+# src/webserver/cards/action.ts
+text=Text
+large_state_numbers=Large State Numbers
+confirmation_required=Confirmation Required
+fields=Fields
+message=Message
+run_this_script=Run this script?
+confirm_button=Confirm Button
+yes=Yes
+cancel_button=Cancel Button
+no=No
+action=Action
+e_g_movie_mode=e.g. Movie Mode
+select_entity=Select Entity
+action_entity=Action Entity
+value=Value
+enter_a_value_before_saving=Enter a value before saving.
+choose_a_select_or_input_select_entity=Choose a select or input_select entity.
+choose_the_number_entity_type_that_matches_this_action=Choose the number entity type that matches this action.
+choose_an_action=Choose an action…
+name_current={name} (current)
+no_local_actions_are_registered_on_this_device_add_register_loca=No local actions are registered on this device. Add register_local_action() calls to your device’s on_boot lambda.
+could_not_reach_device_enter_the_action_key_manually=Could not reach device. Enter the action key manually.
+action_key=Action Key
+add_an_action_key_before_saving=Add an action key before saving.
+loading_actions=Loading actions…
+
+# src/webserver/cards/alarm.ts
+alarm_entity=Alarm Entity
+add_an_alarm_control_panel_entity_before_saving=Add an alarm_control_panel entity before saving.
+label_display=Label Display
+name=Name
+icon_display=Icon Display
+static=Static
+visible_actions=Visible Actions
+e_g_house_alarm=e.g. House Alarm
+modal_settings=Modal Settings
+pin_settings=PIN Settings
+pin_required_for_arming=PIN required for arming
+pin_required_for_disarming=PIN required for disarming
+e_g_arm_away=e.g. Arm Away
+pin_required=PIN required
+
+# src/webserver/cards/climate.ts
+climate_entity=Climate Entity
+add_a_climate_entity_before_saving=Add a climate entity before saving.
+actual=Actual
+target=Target
+icon_temperatures=Icon & Temperatures
+temperature_step=Temperature Step
+1_degree=1 degree
+0_5_degree=0.5 degree
+large_temperature_numbers=Large Temperature Numbers
+e_g_living_room=e.g. Living Room
+temperature_settings=Temperature Settings
+advanced=Advanced
+minimum_temperature=Minimum Temperature
+maximum_temperature=Maximum Temperature
+
+# src/webserver/cards/cover_like_card.ts
+closed_icon=Closed Icon
+open_icon=Open Icon
+
+# src/webserver/cards/door_window.ts
+door=Door
+window=Window
+add_a_door_or_window_sensor_before_saving=Add a door or window sensor before saving.
+e_g_patio_door=e.g. Patio Door
+lit_when_open=Lit When Open
+
+# src/webserver/cards/fan.ts
+fan_entity=Fan Entity
+add_a_fan_entity_before_saving=Add a fan entity before saving.
+e_g_bedroom_fan=e.g. Bedroom Fan
+optional_light=Optional Light
+light_entity=Light Entity
+fans=Fans
+
+# src/webserver/cards/garage.ts
+e_g_open_garage=e.g. Open Garage
+e_g_close_garage=e.g. Close Garage
+display=Display
+when=When
+close__confirm_when=Close
+open__confirm_when=Open
+both=Both
+e_g_garage_door=e.g. Garage Door
+
+# src/webserver/cards/gate.ts
+e_g_open_gate=e.g. Open Gate
+e_g_stop_gate=e.g. Stop Gate
+e_g_close_gate=e.g. Close Gate
+e_g_gate=e.g. Gate
+
+# src/webserver/cards/image.ts
+camera_entity=Camera Entity
+add_a_camera_entity_before_saving=Add a camera entity before saving.
+crop_to_fit=Crop to fit
+show_full_image=Show full image
+show_icon=Show Icon
+show_label=Show Label
+expanded_image=Expanded Image
+
+# src/webserver/cards/internal.ts
+internal_relay=Internal Relay
+no_relays=No relays
+push_button=Push Button
+e_g_porch_light=e.g. Porch Light
+
+# src/webserver/cards/lawn_mower.ts
+lawn_mower_entity=Lawn Mower Entity
+add_a_lawn_mower_entity_before_saving=Add a lawn mower entity before saving.
+e_g_backyard_mower=e.g. Backyard Mower
+
+# src/webserver/cards/light_temperature.ts
+min_color_temp_k=Min Color Temp (K)
+max_color_temp_k=Max Color Temp (K)
+
+# src/webserver/cards/lock.ts
+e_g_unlock_front_door=e.g. Unlock Front Door
+e_g_lock_front_door=e.g. Lock Front Door
+lock__command=Lock
+unlock=Unlock
+e_g_front_door=e.g. Front Door
+locked_icon=Locked Icon
+unlocked_icon=Unlocked Icon
+
+# src/webserver/cards/media.ts
+cover_art=Cover Art
+track_album_or_playlist=Track, Album or Playlist
+speaker_group=Speaker Group
+play_pause=Play/Pause
+previous=Previous
+next=Next
+volume=Volume
+track_position=Track Position
+now_playing=Now Playing
+state=State
+none=None
+top_left=Top Left
+large_media_numbers=Large Media Numbers
+e_g_living_room_speaker=e.g. Living Room Speaker
+speaker_entity=Speaker Entity
+add_a_speaker_entity_before_saving=Add a speaker entity before saving.
+speaker_discovery_entity_optional=Speaker Discovery Entity (optional)
+default_entity=Default: {entity}
+leave_this_blank_to_use_entity_only_enter_another_helper_if_you=Leave this blank to use {entity}. Only enter another helper if you have more than one speaker helper or have changed the default entity name.
+about_the_speaker_discovery_entity=About the speaker discovery entity
+show_track_details=Show Track Details
+external_sources_2=External Sources
+use_a_second_media_entity_when_the_primary_player_switches_to_a=Use a second media entity when the primary player switches to a Line In, TV, or HDMI source. Artwork, track details, progress, and controls will follow the second player while it has current media.
+maximum_volume=Maximum Volume
+source=Source
+need_help_finding_the_media_content_id=Need help finding the media content ID?
+learn_how_to_configure_media_content_buttons=Learn how to configure media content buttons
+media_type=Media Type
+custom_media_content_type=Custom Media Content Type
+id=ID
+add_a_media_id_before_saving=Add a media ID before saving.
+player_source_input=Player Source / Input
+optional_e_g_spotify_or_line_in=Optional, e.g. Spotify or Line-in
+e_g_morning_playlist=e.g. Morning Playlist
+track_title=Track Title
+artist_name=Artist Name
+
+# src/webserver/cards/presence.ts
+add_a_presence_sensor_before_saving=Add a presence sensor before saving.
+clear_icon=Clear Icon
+detected_icon=Detected Icon
+lit_when_detected=Lit When Detected
+
+# src/webserver/cards/push.ts
+e_g_doorbell=e.g. Doorbell
+trigger=Trigger
+
+# src/webserver/cards/screen_lock.ts
+e_g_screen_lock=e.g. Screen Lock
+
+# src/webserver/cards/sensor.ts
+local_sensor=Local Sensor
+add_a_sensor_entity_before_saving=Add a sensor entity before saving.
+large_sensor_numbers=Large Sensor Numbers
+lit_when_active=Lit When Active
+e_g_ups_runtime=e.g. UPS Runtime
+incoming_value_unit=Incoming Value Unit
+seconds=Seconds
+minutes=Minutes
+hours=Hours
+days=Days
+auto_uses_the_unit_reported_by_home_assistant_a_manual_choice_ov=Auto uses the unit reported by Home Assistant. A manual choice overrides it.
+input_status=Input Status
+display_text=Display Text
+e_g_please_empty=e.g. Please empty
+input_status_2=Input Status 2
+display_text_2=Display Text 2
+e_g_full=e.g. Full
+choose_a_sensor=Choose a sensor…
+name_text={name} (text)
+entity_current={entity} (current)
+show_internal_sensors=Show internal sensors
+could_not_reach_device_enter_sensor_key_manually=Could not reach device. Enter sensor key manually.
+sensor_key=Sensor Key
+add_a_sensor_key_before_saving=Add a sensor key before saving.
+loading_sensors=Loading sensors…
+
+# src/webserver/cards/slider.ts
+choose_a_light_fan_number_or_input_number_entity=Choose a light, fan, number, or input_number entity.
+slider=Slider
+e_g_office_blind=e.g. Office Blind
+
+# src/webserver/cards/subpage.ts
+lighting=Lighting
+garage=Garage
+camera=Camera
+e_g_lighting=e.g. Lighting
+show_state=Show State
+state_entity=State Entity
+label_entity={label} Entity
+add_a_label_entity_before_saving=Add a {label} entity before saving.
+add_a_status_entity_before_saving=Add a status entity before saving.
+subpage=Subpage
+edit_subpage=Edit Subpage
+
+# src/webserver/cards/switch.ts
+turn_off_this_device=Turn off this device?
+large_active_display_numbers=Large Active Display Numbers
+off__confirm_when=Off
+on__confirm_when=On
+add_a_light_entity_before_saving=Add a light entity before saving.
+
+# src/webserver/cards/timer.ts
+timer_entity=Timer Entity
+add_a_timer_entity_before_saving=Add a timer entity before saving.
+choose_a_timer_entity_timer=Choose a timer entity (timer.*).
+confirm_before_cancel=Confirm before cancel
+confirmation_time_out_seconds=Confirmation Time Out (Seconds)
+
+# src/webserver/cards/timezone.ts
+city_timezone=City / Timezone
+
+# src/webserver/cards/vacuum.ts
+vacuum_entity=Vacuum Entity
+add_a_vacuum_entity_before_saving=Add a vacuum entity before saving.
+e_g_clean_kitchen=e.g. Clean Kitchen
+e_g_kitchen_vacuum=e.g. Kitchen Vacuum
+area_id=Area ID
+
+# src/webserver/cards/weather.ts
+weather_entity=Weather Entity
+
+# src/webserver/cards/weather_forecast.ts
+weather_forecast=Weather Forecast
+
+# src/webserver/cards/webhook.ts
+url=URL
+e_g_gate_open=e.g. Gate Open
+webhook_settings=Webhook Settings
+add_a_webhook_url_before_saving=Add a webhook URL before saving.
+body=Body
+headers=Headers
+webhook=Webhook
+
+# src/webserver/cards/wifi_qr.ts
+connect_card=Connect Card
+qr_card=QR Card
+wifi_network=Wifi Network
+guest_wi_fi_switch=Guest Wi-Fi switch
+select_a_guest_wi_fi_switch_before_saving=Select a guest Wi-Fi switch before saving.
+network_name_ssid=Network name (SSID)
+guest_wifi=Guest Wifi
+security=Security
+wpa_wpa2_personal=WPA/WPA2 Personal
+open__wifi_security=Open
+password=Password
+8_63_characters_or_64_hexadecimal_characters=8–63 characters, or 64 hexadecimal characters
+hidden_network=Hidden network
+add_a_network_name_before_saving=Add a network name before saving.
+add_a_wifi_password_before_saving=Add a Wifi password before saving.
+the_network_name_must_be_32_bytes_or_fewer=The network name must be 32 bytes or fewer.
+use_8_63_bytes_or_exactly_64_hexadecimal_characters=Use 8–63 bytes, or exactly 64 hexadecimal characters.
+these_credentials_are_too_long_to_save_on_the_panel=These credentials are too long to save on the panel.
+
+# src/webserver/controllers/native_panel_config_controller.ts
+configuration_changed_in_another_browser_reload_before_saving_ag=Configuration changed in another browser. Reload before saving again.
+the_configuration_saved_but_its_older_firmware_copy_did_not_do_n=The configuration saved, but its older-firmware copy did not. Do not downgrade this panel yet.
+this_firmware_requires_web_authentication_for_wifi_sharing_passw=This firmware requires web authentication for Wifi Sharing passwords. Sign in, enable web_server_auth, or update the panel firmware.
+
+# src/webserver/entry.ts
+name_saved_but_the_panel_could_not_restart_try_again=Name saved, but the panel could not restart. Try again.
+wait_for_the_current_panel_operation_to_finish_before_renaming=Wait for the current panel operation to finish before renaming.
+some_configuration_changes_failed_reload_the_page_before_renamin=Some configuration changes failed. Reload the page before renaming.
+the_device_was_reset_reload_this_page_before_making_changes=The device was reset. Reload this page before making changes.
+
+# src/webserver/features/backup.ts
+this_backup_was_taken_from_source_this_device_is_target_layout_w=This backup was taken from {source}; this device is {target}. Layout will be restored, but the native configuration will be skipped.
+config_was_exported_from_a_different_panel_device_layout_may_loo=Config was exported from a different panel ({device}) - layout may look different
+backup_has_imported_slots_current_config_has_current_adapting=Backup has {imported} slots, current config has {current} - adapting
+
+# src/webserver/features/backup_file_controller.ts
+invalid_file_could_not_parse_json=Invalid file — could not parse JSON
+invalid_file_could_not_read_backup=Invalid file — could not read backup
+
+# src/webserver/features/backup_restore_controller.ts
+configuration_restore_failed_check_the_connection_and_try_again=Configuration restore failed. Check the connection and try again.
+invalid_config_file_missing_required_fields=Invalid config file — missing required fields
+configuration_imported_successfully=Configuration imported successfully
+
+# src/webserver/features/legacy_layout_restore.ts
+subpage_slot_is_too_large_to_restore=Subpage {slot} is too large to restore.
+legacy_restore_more.one={names} and {count} more
+legacy_restore_more.other={names} and {count} more
+the_layout_could_not_be_restored_completely_because_native_confi=The layout could not be restored completely because native configuration is unavailable. The device did not retain: {affected}. Some settings may have changed; restore again after native configuration is available.
+
+# src/webserver/features/preview.ts
+toggle_lights_switches_helpers_or_fans=Toggle lights, switches, helpers, or fans.
+run_a_home_assistant_or_local_action=Run a Home Assistant or local action.
+control_or_trigger_alarm_panel_actions=Control or trigger alarm panel actions.
+show_date_time_or_world_clock_values=Show date, time, or world clock values.
+show_climate_status_and_temperature_controls=Show climate status and temperature controls.
+control_blinds_curtains_or_covers=Control blinds, curtains, or covers.
+show_open_or_closed_sensor_state=Show open or closed sensor state.
+show_person_or_presence_status=Show person or presence status.
+control_fan_speed_mode_or_direction=Control fan speed, mode, or direction.
+show_and_control_a_garage_door=Show and control a garage door.
+show_and_control_a_gate=Show and control a gate.
+display_an_image_card_where_supported=Display an image card where supported.
+share_a_wifi_network_using_a_connect_card_or_qr_card=Share a Wifi network using a Connect Card or QR Card.
+control_built_in_device_relays=Control built-in device relays.
+configure_light_switch_brightness_or_temperature_controls=Configure light switch, brightness, or temperature controls.
+show_or_control_a_robotic_lawn_mower=Show or control a robotic lawn mower.
+show_a_sensor_value_from_this_device=Show a sensor value from this device.
+show_and_control_a_lock=Show and control a lock.
+control_media_playback_or_volume=Control media playback or volume.
+open_all_media_controls_and_volume_in_a_modal=Open all media controls and volume in a modal.
+fire_a_momentary_button_event=Fire a momentary button event.
+display_sensor_values_or_states=Display sensor values or states.
+adjust_a_numeric_or_brightness_value=Adjust a numeric or brightness value.
+open_a_nested_page_of_cards=Open a nested page of cards.
+send_a_direct_http_request=Send a direct HTTP request.
+show_or_control_a_vacuum_cleaner=Show or control a vacuum cleaner.
+show_weather_or_forecast_data=Show weather or forecast data.
+configure_a_label_card=Configure a {label} card.
+configure_a_card=Configure a card.
+label_not_available={label} (not available)
+
+# src/webserver/features/settings.ts
+on_2=ON
+
+# src/webserver/model/backup.ts
+invalid_config_file_backup_must_be_a_json_object=Invalid config file - backup must be a JSON object
+invalid_config_file_missing_required_fields_2=Invalid config file - missing required fields
+backup_was_created_by_a_newer_version_of_espcontrol=Backup was created by a newer version of EspControl
+invalid_config_file_unsupported_backup_format=Invalid config file - unsupported backup format
+invalid_native_configuration_backup=Invalid native configuration backup
+
+# src/webserver/model/card_transfer.ts
+invalid_card_code_only_a_subpage_card_can_contain_a_subpage=Invalid card code - only a Subpage card can contain a subpage
+invalid_card_code_expected_a_json_object=Invalid card code - expected a JSON object
+invalid_card_code_missing_a_supported_version=Invalid card code - missing a supported version
+card_code_was_created_by_a_newer_version_of_espcontrol=Card code was created by a newer version of EspControl
+invalid_card_code_unsupported_format=Invalid card code - unsupported format
+invalid_card_code_missing_source_information=Invalid card code - missing source information
+invalid_card_code_no_cards_were_found=Invalid card code - no cards were found
+card_code_contains_too_many_cards=Card code contains too many cards
+card_code_is_too_large_to_copy=Card code is too large to copy
+paste_a_card_code_first=Paste a card code first
+card_code_is_too_large_to_import=Card code is too large to import
+invalid_card_code_could_not_read_the_json=Invalid card code - could not read the JSON
+
+# src/webserver/model/panel_config.ts
+panelconfig_backup_payload_is_not_valid_base64=PanelConfig backup payload is not valid base64
+settings_must_be_an_object=settings must be an object
+setting_values_must_be_strings=setting values must be strings
+configuration_record_exceeds_its_supported_byte_length=configuration record exceeds its supported byte length
+configuration_contains_too_many_records=configuration contains too many records
+invalid_panelconfig_document_header=invalid PanelConfig document header
+panelconfig_contains_too_many_records=PanelConfig contains too many records
+truncated_panelconfig_record=truncated PanelConfig record
+invalid_panelconfig_record_length=invalid PanelConfig record length
+invalid_device_profile_record=invalid device profile record
+invalid_slot_record=invalid slot record
+duplicate_slot_record=duplicate slot record
+invalid_setting_record=invalid setting record
+duplicate_setting_record=duplicate setting record
+unsupported_panelconfig_record_type=unsupported PanelConfig record type
+incomplete_panelconfig_document=incomplete PanelConfig document
+panelconfig_backup_section_is_invalid=PanelConfig backup section is invalid
+panelconfig_backup_version_or_device_profile_is_invalid=PanelConfig backup version or device profile is invalid
+panelconfig_backup_device_profile_does_not_match_its_document=PanelConfig backup device profile does not match its document
+
+# src/webserver/model/panel_identity.ts
+panel_name_must_be_text=Panel name must be text.
+use_up_to_120_utf_8_bytes_with_no_control_characters=Use up to 120 UTF-8 bytes with no control characters.
+invalid_panel_identity_in_backup=Invalid panel identity in backup.
+
+# product/v2/card_contract.json
+timer=Timer
+state_unit=State Unit
+state_precision=State Precision
+arm_away=Arm Away
+arm_home=Arm Home
+arm_night=Arm Night
+arm_vacation=Arm Vacation
+disarm=Disarm
+date_time=Date & Time
+clock_font_2=Clock font
+time_format_2=Time format
+date_format_2=Date format
+date_size=Date size
+visible_tabs=Visible Tabs
+doors_windows=Doors & Windows
+interaction=Interaction
+internal_switches=Internal Switches
+speaker_discovery_entity=Speaker Discovery Entity
+top_left_display=Top Left Display
+media_content_id_uri=Media Content ID / URI
+media_content_type=Media Content Type
+screen_lock=Screen Lock
+status_translation=Status Translation
+subpage_type=Subpage Type
+camera_card=Camera Card
+wifi_sharing=Wifi Sharing
+network_name=Network name

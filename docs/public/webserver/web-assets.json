@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "bundles": [
     {
-      "id": "cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d",
-      "sha256": "cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d",
-      "path": "bundles/cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d/www.js",
+      "id": "2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2",
+      "sha256": "2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2",
+      "path": "bundles/2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2/www.js",
       "deviceProfiles": [
         "guition-esp32-p4-jc1060p470",
         "guition-esp32-p4-jc1060p470-v2",
@@ -13,7 +13,8 @@
         "guition-esp32-p4-jc8012p4a1-v2",
         "guition-esp32-p4-jc8012p4a1-v3",
         "esp32-p4-86",
-        "guition-esp32-s3-4848s040"
+        "guition-esp32-s3-4848s040",
+        "waveshare-esp32-s3-touch-lcd-4"
       ],
       "firmwareVersions": [
         "dev"
@@ -21,9 +22,9 @@
       "webAssetVersion": 2
     },
     {
-      "id": "cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d",
-      "sha256": "cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d",
-      "path": "bundles/cea019684c4883a3e9079520d0bf1708a80e3ce5b406893963a744dd55b05b1d/www.js",
+      "id": "2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2",
+      "sha256": "2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2",
+      "path": "bundles/2a56908847cdd8ac97786b3e70fd2475e8e916160e11d0e3033d8232047763f2/www.js",
       "deviceProfiles": [
         "guition-esp32-p4-jc1060p470",
         "guition-esp32-p4-jc1060p470-v2",
@@ -32,7 +33,8 @@
         "guition-esp32-p4-jc8012p4a1-v2",
         "guition-esp32-p4-jc8012p4a1-v3",
         "esp32-p4-86",
-        "guition-esp32-s3-4848s040"
+        "guition-esp32-s3-4848s040",
+        "waveshare-esp32-s3-touch-lcd-4"
       ],
       "firmwareVersions": [
         "dev"
@@ -51,7 +53,8 @@
         "guition-esp32-p4-jc8012p4a1-v2",
         "guition-esp32-p4-jc8012p4a1-v3",
         "esp32-p4-86",
-        "guition-esp32-s3-4848s040"
+        "guition-esp32-s3-4848s040",
+        "waveshare-esp32-s3-touch-lcd-4"
       ],
       "firmwareVersions": [
         "v2.10.0",
@@ -74,7 +77,8 @@
         "guition-esp32-p4-jc8012p4a1-v2",
         "guition-esp32-p4-jc8012p4a1-v3",
         "esp32-p4-86",
-        "guition-esp32-s3-4848s040"
+        "guition-esp32-s3-4848s040",
+        "waveshare-esp32-s3-touch-lcd-4"
       ],
       "firmwareVersions": [
         "v2.10.0",

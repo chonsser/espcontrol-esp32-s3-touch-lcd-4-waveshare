@@ -33,6 +33,11 @@
       "kind": "glob",
       "role": "authored"
     },
+    "webTranslations": {
+      "path": "product/v2/translations/web.*.txt",
+      "kind": "glob",
+      "role": "authored"
+    },
     "compatibilityFixtures": {
       "path": "product/v2/product_compatibility.json",
       "kind": "file",
@@ -97,7 +102,8 @@
       "guition-esp32-p4-jc1060p470-v2": "product/v2/devices/guition-esp32-p4-jc1060p470-v2.json",
       "guition-esp32-p4-jc4880p443": "product/v2/devices/guition-esp32-p4-jc4880p443.json",
       "esp32-p4-86": "product/v2/devices/esp32-p4-86.json",
-      "guition-esp32-s3-4848s040": "product/v2/devices/guition-esp32-s3-4848s040.json"
+      "guition-esp32-s3-4848s040": "product/v2/devices/guition-esp32-s3-4848s040.json",
+      "waveshare-esp32-s3-touch-lcd-4": "product/v2/devices/waveshare-esp32-s3-touch-lcd-4.json"
     }
   }
 }

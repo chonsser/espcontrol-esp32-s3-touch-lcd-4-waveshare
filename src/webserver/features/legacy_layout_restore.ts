@@ -1,3 +1,4 @@
+import { i18n, i18nPlural } from "../i18n";
 import type { PanelConfigDocument } from "../model";
 
 export interface LegacyLayoutMismatch {
@@ -56,7 +57,7 @@ function expectedLegacyValues(
       dependencies.subpageEntityKeys.length,
       255,
     );
-    if (!chunks) throw new Error(`Subpage ${slot} is too large to restore.`);
+    if (!chunks) throw new Error(i18n("Subpage {slot} is too large to restore.", { slot }));
     for (let index = 0; index < dependencies.subpageEntityKeys.length; index += 1) {
       values.push({
         name: dependencies.entityNameForSlot(dependencies.subpageEntityKeys[index]!, slot),
@@ -91,8 +92,12 @@ export async function restoreLegacyLayoutDocument(
 export function legacyRestoreFailureMessage(result: LegacyLayoutRestoreResult): string {
   const names = result.mismatches.slice(0, 3).map((entry) => entry.name);
   const remainder = result.mismatches.length - names.length;
-  const affected = names.join(", ") + (remainder > 0 ? ` and ${remainder} more` : "");
-  return "The layout could not be restored completely because native configuration is unavailable. " +
-    `The device did not retain: ${affected}. Some settings may have changed; restore again after native ` +
-    "configuration is available.";
+  const listed = names.join(", ");
+  const affected = remainder > 0
+    ? i18nPlural("legacy_restore_more", remainder, { one: "{names} and {count} more", other: "{names} and {count} more" }, { names: listed })
+    : listed;
+  return i18n(
+    "The layout could not be restored completely because native configuration is unavailable. The device did not retain: {affected}. Some settings may have changed; restore again after native configuration is available.",
+    { affected },
+  );
 }

@@ -62,6 +62,7 @@ CPP_SOURCE = r'''
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -85,6 +86,7 @@ class StringRef {
 struct lv_event_t;
 using lv_event_cb_t = void (*)(lv_event_t *);
 struct TestEventHandler { lv_event_cb_t callback; int code; void *data; };
+struct lv_style_value_t { long num = 0; int color = 0; const void *ptr = nullptr; };
 struct lv_obj_t {
   lv_obj_t *parent = nullptr;
   std::vector<lv_obj_t *> children;
@@ -93,7 +95,9 @@ struct lv_obj_t {
   int transform_scale_x = 256;
   int transform_scale_y = 256;
   std::string text;
-  int width = 480;
+  int long_mode = 0;
+  std::map<std::pair<int, int>, lv_style_value_t> local_styles;
+  int width = 480, height = 480, x = 0, y = 0;
   void *user_data = nullptr;
 };
 constexpr int MAX_GRID_SLOTS = 25;
@@ -113,7 +117,15 @@ struct BtnSlot {
 };
 struct lv_disp_t {};
 struct lv_font_t { int line_height = 16; };
-using lv_coord_t = int;
+struct lv_font_glyph_dsc_t { uint16_t adv_w = 0, box_w = 0; int16_t ofs_x = 0; };
+inline bool lv_font_get_glyph_dsc(const lv_font_t *font, lv_font_glyph_dsc_t *out, uint32_t, uint32_t) {
+  out->adv_w = out->box_w = font->line_height / 2;
+  out->ofs_x = 0;
+  return true;
+}
+// Match ESP32 int32_t/LVGL coordinates, not macOS int.
+using lv_coord_t = long;
+using lv_style_prop_t = int;
 using lv_style_selector_t = int;
 using lv_color_t = int;
 using lv_grid_align_t = int;
@@ -127,6 +139,13 @@ static lv_obj_t *lv_active_screen = nullptr;
 inline const char *espcontrol_i18n(const char *text) { return text ? text : ""; }
 inline std::string espcontrol_i18n(const std::string &text) { return text; }
 constexpr int LV_PART_MAIN = 0;
+constexpr int LV_STYLE_TEXT_COLOR = 1;
+constexpr int LV_STYLE_TEXT_FONT = 2;
+constexpr int LV_STYLE_WIDTH = 3, LV_STYLE_HEIGHT = 4, LV_STYLE_X = 5, LV_STYLE_Y = 6;
+constexpr int LV_STYLE_PAD_LEFT = 7, LV_STYLE_PAD_RIGHT = 8;
+constexpr int LV_SIZE_CONTENT = -200;
+constexpr int LV_STYLE_RES_FOUND = 1;
+constexpr int LV_STYLE_RES_NOT_FOUND = 0;
 constexpr int LV_STATE_CHECKED = 1;
 constexpr int LV_STATE_PRESSED = 2;
 constexpr int LV_STATE_DEFAULT = 0;
@@ -149,6 +168,7 @@ constexpr int LV_OBJ_FLAG_CLICKABLE = 1;
 constexpr int LV_OBJ_FLAG_HIDDEN = 2;
 constexpr int LV_GRAD_DIR_HOR = 1;
 inline int lv_color_hex(uint32_t value) { return static_cast<int>(value); }
+inline bool lv_color_eq(lv_color_t left, lv_color_t right) { return left == right; }
 inline int lv_pct(int value) { return value; }
 inline lv_obj_t *lv_scr_act() { return lv_active_screen; }
 inline void lv_obj_set_style_transform_scale_x(lv_obj_t *obj, int scale, int) {
@@ -157,15 +177,39 @@ inline void lv_obj_set_style_transform_scale_x(lv_obj_t *obj, int scale, int) {
 inline void lv_obj_set_style_transform_scale_y(lv_obj_t *obj, int scale, int) {
   if (obj) obj->transform_scale_y = scale;
 }
+inline int lv_obj_get_style_transform_scale_x(lv_obj_t *obj, int) {
+  return obj ? obj->transform_scale_x : 256;
+}
+inline int lv_obj_get_style_transform_scale_y(lv_obj_t *obj, int) {
+  return obj ? obj->transform_scale_y : 256;
+}
 inline void lv_obj_set_style_bg_color(lv_obj_t *, int, lv_style_selector_t) {}
 inline void lv_obj_set_style_bg_grad_color(lv_obj_t *, lv_color_t, lv_style_selector_t) {}
 inline void lv_obj_set_style_bg_grad_dir(lv_obj_t *, int, lv_style_selector_t) {}
-inline void lv_obj_set_style_text_color(lv_obj_t *, lv_color_t, lv_style_selector_t) {}
+inline int lv_obj_get_local_style_prop(lv_obj_t *obj, int prop,
+                                        lv_style_value_t *value, lv_style_selector_t selector) {
+  const auto found = obj->local_styles.find({prop, selector});
+  if (found == obj->local_styles.end()) return LV_STYLE_RES_NOT_FOUND;
+  *value = found->second;
+  return LV_STYLE_RES_FOUND;
+}
+inline void lv_obj_set_style_text_color(lv_obj_t *obj, lv_color_t color, lv_style_selector_t selector) {
+  obj->local_styles[{LV_STYLE_TEXT_COLOR, selector}].color = color;
+}
+inline void lv_obj_set_style_text_font(lv_obj_t *obj, const lv_font_t *font, lv_style_selector_t selector) {
+  obj->local_styles[{LV_STYLE_TEXT_FONT, selector}].ptr = font;
+}
 inline void lv_obj_set_style_text_align(lv_obj_t *, int, lv_style_selector_t) {}
-inline lv_color_t lv_obj_get_style_text_color(lv_obj_t *, lv_style_selector_t) { return 0; }
-inline const lv_font_t *lv_obj_get_style_text_font(lv_obj_t *, lv_style_selector_t) {
+inline lv_color_t lv_obj_get_style_text_color(lv_obj_t *obj, lv_style_selector_t selector) {
+  lv_style_value_t value;
+  return lv_obj_get_local_style_prop(obj, LV_STYLE_TEXT_COLOR, &value, selector) == LV_STYLE_RES_FOUND
+      ? value.color : 0;
+}
+inline const lv_font_t *lv_obj_get_style_text_font(lv_obj_t *obj, lv_style_selector_t selector) {
   static const lv_font_t font;
-  return &font;
+  lv_style_value_t value;
+  return lv_obj_get_local_style_prop(obj, LV_STYLE_TEXT_FONT, &value, selector) == LV_STYLE_RES_FOUND
+      ? static_cast<const lv_font_t *>(value.ptr) : &font;
 }
 inline void lv_obj_set_style_opa(lv_obj_t *, int, int) {}
 inline void lv_obj_set_style_text_opa(lv_obj_t *, int, int) {}
@@ -178,9 +222,19 @@ inline bool lv_obj_has_flag(lv_obj_t *obj, int flag) { return obj && (obj->flags
 inline uint32_t lv_obj_get_child_cnt(lv_obj_t *) { return 0; }
 inline lv_obj_t *lv_obj_get_child(lv_obj_t *, uint32_t) { return nullptr; }
 inline int lv_obj_get_width(lv_obj_t *obj) { return obj ? obj->width : 480; }
-inline int lv_obj_get_height(lv_obj_t *) { return 480; }
-inline int lv_obj_get_style_pad_left(lv_obj_t *, int) { return 0; }
-inline int lv_obj_get_style_pad_right(lv_obj_t *, int) { return 0; }
+inline int lv_obj_get_height(lv_obj_t *obj) { return obj ? obj->height : 480; }
+inline int lv_obj_get_style_pad_left(lv_obj_t *obj, int selector) {
+  return obj->local_styles[{LV_STYLE_PAD_LEFT, selector}].num;
+}
+inline int lv_obj_get_style_pad_right(lv_obj_t *obj, int selector) {
+  return obj->local_styles[{LV_STYLE_PAD_RIGHT, selector}].num;
+}
+inline void lv_obj_set_style_pad_left(lv_obj_t *obj, int value, int selector) {
+  obj->local_styles[{LV_STYLE_PAD_LEFT, selector}].num = value;
+}
+inline void lv_obj_set_style_pad_right(lv_obj_t *obj, int value, int selector) {
+  obj->local_styles[{LV_STYLE_PAD_RIGHT, selector}].num = value;
+}
 inline int lv_obj_get_style_pad_top(lv_obj_t *, int) { return 0; }
 inline int lv_obj_get_style_pad_bottom(lv_obj_t *, int) { return 0; }
 inline int lv_obj_get_style_pad_column(lv_obj_t *, int) { return 0; }
@@ -190,11 +244,26 @@ inline void *lv_obj_get_user_data(lv_obj_t *obj) { return obj ? obj->user_data :
 inline lv_disp_t *lv_disp_get_default() { return lv_test_disp_available ? &lv_test_default_disp : nullptr; }
 inline int lv_disp_get_hor_res(lv_disp_t *) { return lv_test_hor_res; }
 inline int lv_disp_get_ver_res(lv_disp_t *) { return lv_test_ver_res; }
-inline void lv_label_set_long_mode(lv_obj_t *, int) {}
-inline void lv_obj_set_size(lv_obj_t *, int, int) {}
-inline void lv_obj_set_width(lv_obj_t *obj, int width) { if (obj) obj->width = width; }
-inline void lv_obj_set_height(lv_obj_t *, int) {}
-inline void lv_obj_set_pos(lv_obj_t *, int, int) {}
+inline void lv_label_set_long_mode(lv_obj_t *obj, int mode) { obj->long_mode = mode; }
+inline int lv_label_get_long_mode(lv_obj_t *obj) { return obj->long_mode; }
+inline void lv_obj_set_width(lv_obj_t *obj, int width) {
+  if (!obj) return;
+  obj->local_styles[{LV_STYLE_WIDTH, LV_PART_MAIN}].num = width;
+  if (width >= 0) obj->width = width;
+}
+inline void lv_obj_set_height(lv_obj_t *obj, int height) {
+  if (!obj) return;
+  obj->local_styles[{LV_STYLE_HEIGHT, LV_PART_MAIN}].num = height;
+  if (height >= 0) obj->height = height;
+}
+inline void lv_obj_set_size(lv_obj_t *obj, int width, int height) {
+  lv_obj_set_width(obj, width); lv_obj_set_height(obj, height);
+}
+inline void lv_obj_set_pos(lv_obj_t *obj, int x, int y) {
+  obj->x = x; obj->y = y;
+  obj->local_styles[{LV_STYLE_X, LV_PART_MAIN}].num = x;
+  obj->local_styles[{LV_STYLE_Y, LV_PART_MAIN}].num = y;
+}
 inline void lv_obj_set_grid_cell(lv_obj_t *, int, int, int, int, int, int) {}
 inline void lv_obj_set_style_pad_top(lv_obj_t *, int, int) {}
 inline void lv_obj_update_layout(lv_obj_t *) {}
@@ -924,6 +993,7 @@ def check_clock_bar_visual_gaps() -> None:
         "guition-esp32-p4-jc4880p443": '"12"',
         "guition-esp32-p4-jc8012p4a1": '"10"',
         "guition-esp32-s3-4848s040": '"8"',
+        "waveshare-esp32-s3-touch-lcd-4": '"8"',
     }
     for device, value in expected.items():
         packages = DEVICES_DIR / device / "packages.yaml"
@@ -1089,6 +1159,8 @@ def main() -> int:
         shutil.copy2(LAYOUT_HEADER, tmp_path / "button_grid_layout.h")
         shutil.copy2(LIMITS_HEADER, tmp_path / "button_grid_limits.h")
         shutil.copy2(STRING_HEADER, tmp_path / "button_grid_string.h")
+        for header in ("clock_numeric_format.h", "clock_font_measure.h"):
+            shutil.copy2(ROOT / "components" / "espcontrol" / header, tmp_path / header)
         shutil.copy2(DISPLAY_TEXT_HEADER, tmp_path / "display_text.h")
         lvgl_stub = tmp_path / "esphome" / "components" / "lvgl" / "lvgl_esphome.h"
         lvgl_stub.parent.mkdir(parents=True, exist_ok=True)

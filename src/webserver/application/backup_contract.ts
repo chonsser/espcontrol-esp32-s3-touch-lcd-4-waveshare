@@ -1,5 +1,6 @@
 import type { BackupFeature, BackupImportPlan, BackupTargetDevice } from "../features/backup";
-import { buttonConfigDisabledForDevice } from "../features/preview";
+import { buttonConfigDisabledForDevice, registryValue } from "../features/preview";
+import { i18n, webLocale } from "../i18n";
 import type { ApplicationLayoutState } from "./application_context";
 import type { CardRegistry } from "./card_registry";
 import type { ConfigCodecFeature } from "./config_codec";
@@ -21,8 +22,12 @@ export function createBackupContractFeature(
             button,
         )) return;
         const type = button?.type || "";
-        const label = type ? type.replace(/_/g, " ") : "switch";
-        const error = new Error(`This controller does not support the ${label} card type in this backup.`) as Error & { backupMessage?: string };
+        const slug = type ? type.replace(/_/g, " ") : "switch";
+        // English keeps the type slug it has always shown. Other locales show the card's
+        // translated name, so the sentence is not left half English.
+        const name = registryValue(cards.definitions[type], "label", "");
+        const label = webLocale() === "en" || !name || name === type ? slug : name;
+        const error = new Error(i18n("This controller does not support the {label} card type in this backup.", { label })) as Error & { backupMessage?: string };
         error.backupMessage = error.message;
         throw error;
     };

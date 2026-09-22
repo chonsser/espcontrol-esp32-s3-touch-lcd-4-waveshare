@@ -10,6 +10,7 @@ import {
 } from "../generated/card_contract";
 import type { CardRegistry } from "../application/card_registry";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDynamic } from "../i18n";
 
 const PUSH_CARD_METADATA: any = {
     icon: {
@@ -41,11 +42,11 @@ export function registerPushCardTypes(registry: CardRegistry, fields: ControlsFi
     // Momentary trigger card: stored as "push" for config compatibility.
     // Fires an esphome.push_button_pressed event with no toggle state.
     registry.register("push", {
-        label: function (this: any) { return cardContractCardLabel("push"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("push")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("push"); },
         pickerKey: function (this: any) { return cardContractPickerKey("push"); },
         hidden: function (this: any) { return cardContractHidden("push"); },
-        labelPlaceholder: "e.g. Doorbell",
+        labelPlaceholder: i18n("e.g. Doorbell"),
         defaultConfig: function (this: any) { return cardContractDefaultConfig("push"); },
         cardMetadata: PUSH_CARD_METADATA,
         onSelect: function (this: any, b?: any) {
@@ -56,7 +57,7 @@ export function registerPushCardTypes(registry: CardRegistry, fields: ControlsFi
             helpers.renderBasicCardFields(panel, b, helpers, PUSH_CARD_METADATA);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
-            var label: any = b.label || "Trigger";
+            var label: any = b.label || i18n("Trigger");
             return cardBadgePreview(b, helpers, {
                 label: label,
                 iconFallback: pushDefaultIcon(),

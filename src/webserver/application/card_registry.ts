@@ -1,4 +1,5 @@
 import { CARD_RUNTIME_SPECS } from "../generated/card_contract";
+import { i18nKey } from "../i18n";
 
 export type CardDefinitionValue<T> = T | (() => T);
 
@@ -37,7 +38,7 @@ export interface CardUiServices {
 }
 
 const DEFAULT_DEFINITION: CardDefinition = {
-  label: "Toggle",
+  label: i18nKey("toggle__card_type", "Toggle"),
   allowInSubpage: false,
   hideLabel: false,
   labelPlaceholder: null,
@@ -62,7 +63,7 @@ export function createCardRegistry(): CardRegistry {
     const registered = {
       ...DEFAULT_DEFINITION,
       key,
-      label: key || "Toggle",
+      label: key || i18nKey("toggle__card_type", "Toggle"),
       ...definition,
       runtimeSpec: CARD_RUNTIME_SPECS[key] || null,
     };

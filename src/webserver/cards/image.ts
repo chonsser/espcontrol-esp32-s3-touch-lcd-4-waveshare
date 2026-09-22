@@ -12,6 +12,7 @@ import { WEB_UI_COLORS } from "../state/ui_tokens";
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigImageOptionsFeature } from "../application/config_image_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic } from "../i18n";
 export function registerImageCardTypes(
     registry: CardRegistry,
     imageOptions: ConfigImageOptionsFeature,
@@ -32,28 +33,28 @@ export function registerImageCardTypes(
     // Read-only Home Assistant camera/image entity card.
     const IMAGE_CARD_METADATA: any = {
         entity: {
-            label: "Camera Entity",
+            label: i18n("Camera Entity"),
             idSuffix: "entity",
-            placeholder: "e.g. camera.front_door",
+            placeholder: i18n("e.g. {example}", { example: "camera.front_door" }),
             domains: function (this: any) { return cardContractDomains("image"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add a camera entity before saving.",
+            requiredMessage: i18n("Add a camera entity before saving."),
         },
     };
     function imageModalModeOptions(this: any) {
         return [
-            ["fill", "Crop to fit"],
-            ["fit", "Show full image"],
+            ["fill", i18n("Crop to fit")],
+            ["fit", i18n("Show full image")],
         ];
     }
     function renderImageLabelSettings(this: any, panel?: any, b?: any, helpers?: any) {
-        var iconToggle: any = helpers.toggleRow("Show Icon", helpers.idPrefix + "image-icon-toggle", imageIconEnabled(b));
+        var iconToggle: any = helpers.toggleRow(i18n("Show Icon"), helpers.idPrefix + "image-icon-toggle", imageIconEnabled(b));
         panel.appendChild(iconToggle.row);
         if (imageIconEnabled(b) && (!b.icon || b.icon === "Auto"))
             b.icon = "Camera";
         var iconField: any = helpers.renderCardIconPicker(panel, b, helpers, {
-            label: "Icon",
+            label: i18n("Icon"),
             idSuffix: "image-icon",
             pickerIdSuffix: "image-icon-picker",
             fallback: "Camera",
@@ -61,7 +62,7 @@ export function registerImageCardTypes(
             onChange: function (this: any) { renderPreview(); },
         });
         iconField.classList.add("sp-cond-field");
-        var labelToggle: any = helpers.toggleRow("Show Label", helpers.idPrefix + "image-label-toggle", imageLabelEnabled(b));
+        var labelToggle: any = helpers.toggleRow(i18n("Show Label"), helpers.idPrefix + "image-label-toggle", imageLabelEnabled(b));
         panel.appendChild(labelToggle.row);
         function syncIconField(this: any) {
             iconField.classList.toggle("sp-visible", imageIconEnabled(b));
@@ -88,7 +89,7 @@ export function registerImageCardTypes(
         syncIconField();
     }
     function renderImageModalSettings(this: any, panel?: any, b?: any, helpers?: any) {
-        var modeField: any = helpers.selectField("Expanded Image", helpers.idPrefix + "image-modal-mode", imageModalModeOptions(), imageModalMode(b));
+        var modeField: any = helpers.selectField(i18n("Expanded Image"), helpers.idPrefix + "image-modal-mode", imageModalModeOptions(), imageModalMode(b));
         panel.appendChild(modeField.field);
         modeField.select.addEventListener("change", function (this: any) {
             setImageModalMode(b, this.value);
@@ -96,7 +97,7 @@ export function registerImageCardTypes(
         });
     }
     registry.register("image", {
-        label: function (this: any) { return cardContractCardLabel("image"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("image")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("image"); },
         pickerKey: function (this: any) { return cardContractPickerKey("image"); },
         hidden: function (this: any) { return cardContractHidden("image"); },
@@ -128,7 +129,7 @@ export function registerImageCardTypes(
             helpers.renderCardEntityField(panel, b, helpers, IMAGE_CARD_METADATA);
             var nameField: any = helpers.renderCardTextField(panel, b, helpers, {
                 text: {
-                    label: "Name",
+                    label: i18n("Name"),
                     idSuffix: "image-name",
                     bindName: "label",
                     rerender: true,
@@ -136,13 +137,13 @@ export function registerImageCardTypes(
             });
             nameField.field.setAttribute("data-sp-card-primary", "name");
             renderImageLabelSettings(panel, b, helpers);
-            var modalSettingsDisclosure: any = helpers.disclosureSection("Modal Settings", helpers.idPrefix + "image-modal-settings", false);
+            var modalSettingsDisclosure: any = helpers.disclosureSection(i18n("Modal Settings"), helpers.idPrefix + "image-modal-settings", false);
             renderImageModalSettings(modalSettingsDisclosure.section, b, helpers);
             panel.appendChild(modalSettingsDisclosure.panel);
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var tertiaryColor: any = WEB_UI_COLORS.tertiary;
-            var label: any = imageLabelEnabled(b) ? String((b && b.label) || "Camera").trim() : "";
+            var label: any = imageLabelEnabled(b) ? String((b && b.label) || i18nDevice("Camera")).trim() : "";
             var iconName: any = b && b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "camera";
             var icon: any = imageIconEnabled(b) ? '<span class="sp-image-preview-icon mdi mdi-' + iconName + '"></span>' : "";
             return {

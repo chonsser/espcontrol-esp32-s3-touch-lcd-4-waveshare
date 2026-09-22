@@ -1,3 +1,5 @@
+import { i18n } from "../i18n";
+
 export type BackupFileBannerKind = "error" | "success" | "warning";
 
 export interface BackupFileTransport {
@@ -34,12 +36,12 @@ export function createBackupFileController(
         try {
           data = JSON.parse(text);
         } catch (_) {
-          options.showBanner("Invalid file — could not parse JSON", "error");
+          options.showBanner(i18n("Invalid file — could not parse JSON"), "error");
           return;
         }
         onBackup(data);
       }, () => {
-        options.showBanner("Invalid file — could not read backup", "error");
+        options.showBanner(i18n("Invalid file — could not read backup"), "error");
       });
     },
   };

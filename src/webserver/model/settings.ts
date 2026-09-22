@@ -148,6 +148,44 @@ export function scheduleSensorActivationOption(value: unknown): string {
   return normalizeScheduleSensorActivation(value) === "on" ? "Sensor On" : "Sensor Off";
 }
 
+export function isValidScreensaverClockFormat(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 32) return false;
+  if (value === "") return true;
+  let expanded = 0;
+  let hasDigits = false;
+  for (let index = 0; index < value.length; index++) {
+    const character = value[index]!;
+    if (character === "%") {
+      const token = value[++index];
+      if (!token || !"HIMSdmYy".includes(token)) return false;
+      expanded += token === "Y" ? 4 : 2;
+      hasDigits = true;
+    } else {
+      if (!/[0-9 :./-]/.test(character)) return false;
+      hasDigits ||= /[0-9]/.test(character);
+      expanded++;
+    }
+  }
+  return hasDigits && expanded <= 32;
+}
+
+export function normalizeScreensaverClockFormat(value: unknown): string {
+  return isValidScreensaverClockFormat(value) ? value : "";
+}
+
+export const SCREENSAVER_CLOCK_SIZES = ["Auto", "Small", "Medium", "Large"] as const;
+export function normalizeScreensaverClockSize(value: unknown): string {
+  return SCREENSAVER_CLOCK_SIZES.includes(value as typeof SCREENSAVER_CLOCK_SIZES[number]) ? String(value) : "Auto";
+}
+
+export const SCREENSAVER_CLOCK_FONTS = ["Roboto Thin", "Roboto Bold", "Roboto Mono"] as const;
+export type ScreensaverClockFont = typeof SCREENSAVER_CLOCK_FONTS[number];
+
+export function normalizeScreensaverClockFont(value: unknown): ScreensaverClockFont {
+  return SCREENSAVER_CLOCK_FONTS.includes(value as ScreensaverClockFont)
+    ? value as ScreensaverClockFont : "Roboto Thin";
+}
+
 export function normalizeScreensaverAction(value: unknown): string {
   const action = String(value || "").toLowerCase().replace(/[\s-]+/g, "_");
   if (action === "screen_dimmed" || action === "dimmed" || action === "dim") return "dim";
@@ -370,6 +408,11 @@ export interface BackupPanelSettingsState {
   autoUpdate: boolean;
   updateFrequency: string;
   screensaverAction: string;
+  screensaverClockFont: ScreensaverClockFont;
+  screensaverClockTimeFormat: string;
+  screensaverClockDateFormat: string;
+  screensaverClockTimeSize: string;
+  screensaverClockDateSize: string;
   clockScreensaver: boolean;
   clockBrightnessDay: number;
   clockBrightnessNight: number;
@@ -531,6 +574,11 @@ export function normalizeBackupPanelSettings(
       )
       : current.updateFrequency,
     screensaverAction,
+    screensaverClockFont: normalizeScreensaverClockFont(settings.screensaver_clock_font),
+    screensaverClockTimeFormat: normalizeScreensaverClockFormat(settings.screensaver_clock_time_format),
+    screensaverClockDateFormat: normalizeScreensaverClockFormat(settings.screensaver_clock_date_format),
+    screensaverClockTimeSize: normalizeScreensaverClockSize(settings.screensaver_clock_time_size),
+    screensaverClockDateSize: normalizeScreensaverClockSize(settings.screensaver_clock_date_size),
     clockScreensaver: screensaverAction === "clock",
     clockBrightnessDay,
     clockBrightnessNight,

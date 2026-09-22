@@ -10,6 +10,7 @@ import {
 import type { CardRegistry, CardUiServices } from "../application/card_registry";
 import type { ConfigLockOptionsFeature } from "../application/config_lock_options";
 import type { ControlsFieldsFeature } from "../application/controls_fields";
+import { i18n, i18nDevice, i18nDynamic, i18nKey } from "../i18n";
 
 export function registerLockCardTypes(
     registry: CardRegistry,
@@ -26,31 +27,34 @@ export function registerLockCardTypes(
         lockUsesDefaultIcon,
         normalizeLockMode,
     } = lockOptions;
+    function lockCommandPlaceholder(this: any, mode?: any) {
+        return mode === "unlock" ? i18n("e.g. Unlock Front Door") : i18n("e.g. Lock Front Door");
+    }
     // Lock card: lock/unlock toggle with safe default-to-lock behavior and state display.
     const LOCK_CARD_METADATA: any = {
         mode: {
-            label: "Type",
+            label: i18n("Type"),
             idSuffix: "lock-type",
             options: [
-                ["", "Toggle"],
-                ["lock", "Lock"],
-                ["unlock", "Unlock"],
+                ["", i18n("Toggle")],
+                ["lock", i18nKey("lock__command", "Lock")],
+                ["unlock", i18n("Unlock")],
             ],
             value: function (this: any, b?: any) {
                 return normalizeLockMode(b.sensor);
             },
         },
         entity: {
-            label: "Entity",
+            label: i18n("Entity"),
             idSuffix: "entity",
-            placeholder: "e.g. lock.front_door",
+            placeholder: i18n("e.g. {example}", { example: "lock.front_door" }),
             domains: function (this: any) { return cardContractDomains("lock"); },
             bindName: "entity",
             rerender: true,
-            requiredMessage: "Add an entity before saving.",
+            requiredMessage: i18n("Add an entity before saving."),
         },
         labelField: {
-            label: "Label",
+            label: i18n("Label"),
             idSuffix: "label",
             field: "label",
             rerender: true,
@@ -60,7 +64,7 @@ export function registerLockCardTypes(
         },
     };
     registry.register("lock", {
-        label: function (this: any) { return cardContractCardLabel("lock"); },
+        label: function (this: any) { return i18nDynamic(cardContractCardLabel("lock")); },
         allowInSubpage: function (this: any) { return cardContractAllowInSubpage("lock"); },
         pickerKey: function (this: any) { return cardContractPickerKey("lock"); },
         hidden: function (this: any) { return cardContractHidden("lock"); },
@@ -120,7 +124,7 @@ export function registerLockCardTypes(
                 }),
             }));
             helpers.renderCardTextField(panel, b, helpers, Object.assign({}, LOCK_CARD_METADATA.labelField, {
-                placeholder: lockCommandMode(mode) ? "e.g. " + lockModeDefaultLabel(mode) + " Front Door" : "e.g. Front Door",
+                placeholder: lockCommandMode(mode) ? lockCommandPlaceholder(mode) : i18n("e.g. Front Door"),
             }));
             helpers.renderCardEntityField(panel, b, helpers, LOCK_CARD_METADATA);
             var lockedIconVal: any = b.icon && b.icon !== "Auto" ? b.icon : "Lock";
@@ -132,7 +136,7 @@ export function registerLockCardTypes(
                     field: "icon",
                     value: b.icon && b.icon !== "Auto" ? b.icon : lockModeDefaultIcon(mode),
                     fallback: lockModeDefaultIcon(mode),
-                    label: "Icon",
+                    label: i18n("Icon"),
                 });
             }
             else {
@@ -142,20 +146,20 @@ export function registerLockCardTypes(
                     field: "icon",
                     value: lockedIconVal,
                     fallback: "Lock",
-                    label: "Locked Icon",
+                    label: i18n("Locked Icon"),
                 }, {
                     pickerIdSuffix: "icon-on-picker",
                     idSuffix: "icon-on",
                     field: "icon_on",
                     value: unlockedIconVal,
                     fallback: "Lock Open",
-                    label: "Unlocked Icon",
+                    label: i18n("Unlocked Icon"),
                 });
             }
         },
         renderPreview: function (this: any, b?: any, helpers?: any) {
             var mode: any = normalizeLockMode(b.sensor);
-            var label: any = b.label || (lockCommandMode(mode) ? lockModeDefaultLabel(mode) : b.entity || "Lock");
+            var label: any = b.label || (lockCommandMode(mode) ? lockModeDefaultLabel(mode) : b.entity || i18nDevice("Lock"));
             return cardBadgePreview(b, helpers, {
                 label: label,
                 iconFallback: lockModeDefaultIcon(mode),

@@ -7,6 +7,7 @@ import type { AppStatusPreviewFeature } from "./app_status_preview";
 import type { GridFeature } from "./grid";
 import type { ButtonSettingsRenderQueueFeature } from "./button_settings_render_queue";
 import type { ControlsFieldsFeature } from "./controls_fields";
+import { i18n, i18nPlural } from "../i18n";
 
 export interface ButtonSettingsSelectionFeature {
     hideSettingsOverlay(): void;
@@ -54,16 +55,16 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
         c = c || ctx();
         els.previewHint.style.display = "";
         if (isConfigLocked()) {
-            els.previewHint.textContent = "Editing is paused while the device reconnects";
+            els.previewHint.textContent = i18n("Editing is paused while the device reconnects");
         }
         else if (state.clockBarSelectedItem) {
-            els.previewHint.textContent = clockBarItemLabel(state.clockBarSelectedItem) + " selected";
+            els.previewHint.textContent = i18n("{name} selected", { name: clockBarItemLabel(state.clockBarSelectedItem) });
         }
         else if (c.selected.length > 1) {
-            els.previewHint.textContent = c.selected.length + " buttons selected \u2022 right click to copy, cut, or delete";
+            els.previewHint.textContent = i18nPlural("buttons_selected_hint", c.selected.length, { one: "{count} button selected \u2022 right click to copy, cut, or delete", other: "{count} buttons selected \u2022 right click to copy, cut, or delete" });
         }
         else {
-            els.previewHint.textContent = "tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage";
+            els.previewHint.textContent = i18n("tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage");
         }
     }
     function renderClockBarSelectionBar(this: any) {
@@ -74,11 +75,11 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
             state.clockBarSelectedItem === "voice";
         var label: any = document.createElement("span");
         label.className = "sp-selection-label";
-        label.textContent = clockBarItemLabel(state.clockBarSelectedItem) + " selected";
+        label.textContent = i18n("{name} selected", { name: clockBarItemLabel(state.clockBarSelectedItem) });
         els.selectionBar.appendChild(label);
         var actions: any = document.createElement("div");
         actions.className = "sp-selection-actions";
-        var editBtn: any = createActionButton("sp-selection-btn sp-selection-btn-primary", "Edit", "pencil");
+        var editBtn: any = createActionButton("sp-selection-btn sp-selection-btn-primary", i18n("Edit"), "pencil");
         editBtn.disabled = !canEditClockBarItem;
         editBtn.addEventListener("click", function (this: any, e?: any) {
             e.preventDefault();
@@ -94,7 +95,7 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
         });
         actions.appendChild(editBtn);
         var visible: any = clockBarItemActive(state.clockBarSelectedItem);
-        var hideBtn: any = createActionButton("sp-selection-btn", visible ? "Hide" : "Show", visible ? "eye-off-outline" : "eye-outline");
+        var hideBtn: any = createActionButton("sp-selection-btn", visible ? i18n("Hide") : i18n("Show"), visible ? "eye-off-outline" : "eye-outline");
         hideBtn.addEventListener("click", function (this: any, e?: any) {
             e.preventDefault();
             e.stopPropagation();
@@ -120,16 +121,16 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
         var label: any = document.createElement("span");
         label.className = "sp-selection-label";
         if (c.selected.length === 1 && c.selected[0] === -2) {
-            label.textContent = "Back button selected";
+            label.textContent = i18n("Back button selected");
         }
         else {
-            label.textContent = c.selected.length === 1 ? "1 card selected" : c.selected.length + " cards selected";
+            label.textContent = i18nPlural("cards_selected", c.selected.length, { one: "{count} card selected", other: "{count} cards selected" });
         }
         els.selectionBar.appendChild(label);
         var actions: any = document.createElement("div");
         actions.className = "sp-selection-actions";
         if (c.selected.length === 1) {
-            var editBtn: any = createActionButton("sp-selection-btn sp-selection-btn-primary", "Edit", "pencil");
+            var editBtn: any = createActionButton("sp-selection-btn sp-selection-btn-primary", i18n("Edit"), "pencil");
             editBtn.addEventListener("click", function (this: any, e?: any) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -137,7 +138,7 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
             });
             actions.appendChild(editBtn);
         }
-        var menuBtn: any = createActionButton("sp-selection-btn", "", "dots-horizontal", "Card actions");
+        var menuBtn: any = createActionButton("sp-selection-btn", "", "dots-horizontal", i18n("Card actions"));
         menuBtn.addEventListener("click", function (this: any, e?: any) {
             e.preventDefault();
             e.stopPropagation();
@@ -221,28 +222,28 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
             els.settingsOverlay.classList.add("sp-visible");
         var title: any = document.createElement("div");
         title.className = "sp-section-title";
-        title.textContent = "Temperature";
+        title.textContent = i18n("Temperature");
         container.appendChild(title);
         var panel: any = document.createElement("div");
         panel.className = "sp-panel";
         var entityField: any = document.createElement("div");
         entityField.className = "sp-field";
-        entityField.appendChild(fieldLabel("Entity", "sp-clockbar-temperature-entity"));
+        entityField.appendChild(fieldLabel(i18n("Entity"), "sp-clockbar-temperature-entity"));
         var entityInp: any = entityInput("sp-clockbar-temperature-entity", primaryClockBarTemperatureEntity(), "sensor.outdoor_temperature", ["sensor"]);
         entityField.appendChild(entityInp);
         panel.appendChild(entityField);
-        var degreeToggle: any = toggleRow("Show Degree Symbol", "sp-clockbar-temperature-degree-symbol", state.temperatureDegreeSymbolOn);
+        var degreeToggle: any = toggleRow(i18n("Show Degree Symbol"), "sp-clockbar-temperature-degree-symbol", state.temperatureDegreeSymbolOn);
         panel.appendChild(degreeToggle.row);
         var saveRow: any = document.createElement("div");
         saveRow.className = "sp-btn-row sp-btn-row--save sp-has-secondary";
         var visible: any = clockBarItemActive("temperature");
-        var hideBtn: any = createActionButton("sp-action-btn sp-hide-btn", visible ? "Hide" : "Show", visible ? "eye-off-outline" : "eye-outline");
+        var hideBtn: any = createActionButton("sp-action-btn sp-hide-btn", visible ? i18n("Hide") : i18n("Show"), visible ? "eye-off-outline" : "eye-outline");
         hideBtn.addEventListener("click", function (this: any) {
             setClockBarItemVisible("temperature", !visible);
             closeSettings();
         });
         saveRow.appendChild(hideBtn);
-        var saveBtn: any = createActionButton("sp-action-btn sp-save-btn", "Save");
+        var saveBtn: any = createActionButton("sp-action-btn sp-save-btn", i18n("Save"));
         saveBtn.addEventListener("click", function (this: any) {
             saveClockBarTemperatureSettings(entityInp.value, degreeToggle.input.checked);
             closeSettings();

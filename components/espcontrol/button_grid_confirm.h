@@ -146,8 +146,8 @@ inline void switch_confirmation_open_modal(const ParsedCfg &p, lv_obj_t *btn_obj
   lv_coord_t message_y = group_top + message_h / 2 - layout.panel_h / 2;
   lv_coord_t action_y = group_top + message_h + message_button_gap + action_h / 2 - layout.panel_h / 2;
   lv_coord_t action_w = no_w + button_gap + confirm_w;
-  lv_coord_t no_x = -action_w / 2 + no_w / 2;
-  lv_coord_t confirm_x = action_w / 2 - confirm_w / 2;
+  lv_coord_t no_x = action_w / 2 - no_w / 2;
+  lv_coord_t confirm_x = -action_w / 2 + confirm_w / 2;
   lv_obj_align(ui.message_lbl, LV_ALIGN_CENTER, 0, message_y);
   lv_obj_align(ui.no_btn, LV_ALIGN_CENTER, no_x, action_y);
   lv_obj_align(ui.confirm_btn, LV_ALIGN_CENTER, confirm_x, action_y);

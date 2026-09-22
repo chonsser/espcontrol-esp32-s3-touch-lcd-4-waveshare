@@ -1730,7 +1730,16 @@ async function verifyLocalFirmwareProfileSelection() {
   vm.runInContext(productionBundle, sandbox, { filename: "shared-local-www.js" });
   sandbox.__ESPCONTROL_START_EMBEDDED__();
   await new Promise((resolve) => setImmediate(resolve));
-  assert.deepStrictEqual(requested, ["/espcontrol/version.json", "/api/v1/capabilities", "/api/v1/capabilities"]);
+  assert.deepStrictEqual(requested, [
+    "/espcontrol/version.json",
+    "/api/v1/capabilities",
+    "/select/Screen%20Saver%20Clock%20Font?detail=all",
+    "/text/Screen%20Saver%20Clock%20Time%20Format?detail=all",
+    "/text/Screen%20Saver%20Clock%20Date%20Format?detail=all",
+    "/select/Screen%20Saver%20Clock%20Time%20Size?detail=all",
+    "/select/Screen%20Saver%20Clock%20Date%20Size?detail=all",
+    "/api/v1/capabilities",
+  ]);
   assert(
     sandbox.__domEvents.some((event) => event.type === "DOMContentLoaded"),
     "shared local bundle starts after resolving the firmware device profile",

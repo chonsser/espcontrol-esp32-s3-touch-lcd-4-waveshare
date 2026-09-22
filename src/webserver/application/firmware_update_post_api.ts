@@ -1,5 +1,6 @@
 import type { EntityStateFeature } from "./entity_state";
 import type { ApplicationApiFeature } from "./api";
+import { i18nMark } from "../i18n";
 
 export interface FirmwareUpdatePostApiFeature {
     postFirmwareUpdateInstall(): void;
@@ -27,7 +28,7 @@ export function createFirmwareUpdatePostApiFeature(
         entityLookupNames("firmware_update").forEach(function (this: any, name?: any) {
             uniquePush(urls, "/update/" + encodeURIComponent(name) + "/install");
         });
-        post(urls, null, "Could not start firmware update.");
+        post(urls, null, i18nMark("Could not start firmware update."));
     }
     function postFirmwareUpdateCheck(this: any) {
         var urls: any = [];
@@ -36,7 +37,7 @@ export function createFirmwareUpdatePostApiFeature(
         entityLookupNames("firmware_check_for_update").forEach(function (this: any, name?: any) {
             uniquePush(urls, "/button/" + encodeURIComponent(name) + "/press");
         });
-        post(urls, null, "Could not check for firmware update.");
+        post(urls, null, i18nMark("Could not check for firmware update."));
     }
     function postC6FirmwareUpdateInstall(this: any) {
         var urls: any = [];
@@ -45,7 +46,7 @@ export function createFirmwareUpdatePostApiFeature(
         entityLookupNames("esp32_c6_install_update").forEach(function (this: any, name?: any) {
             uniquePush(urls, "/button/" + encodeURIComponent(name) + "/press");
         });
-        post(urls, null, "Could not start WiFi firmware update.");
+        post(urls, null, i18nMark("Could not start WiFi firmware update."));
     }
     function postC6FirmwareUpdateCheck(this: any) {
         var urls: any = [];
@@ -54,7 +55,7 @@ export function createFirmwareUpdatePostApiFeature(
         entityLookupNames("esp32_c6_check_for_update").forEach(function (this: any, name?: any) {
             uniquePush(urls, "/button/" + encodeURIComponent(name) + "/press");
         });
-        post(urls, null, "Could not check WiFi firmware update.");
+        post(urls, null, i18nMark("Could not check WiFi firmware update."));
     }
     return {
         postFirmwareUpdateInstall,

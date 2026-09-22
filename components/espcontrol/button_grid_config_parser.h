@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "clock_numeric_format.h"
 #include "button_grid_card_runtime.h"
 #include "button_grid_string.h"
 #include "button_grid_saved_config_action_generated.h"
@@ -872,14 +873,34 @@ inline bool card_large_numbers_supported(const ParsedCfg &p) {
 
 inline std::string date_time_card_options_normalized(const std::string &options,
                                                      const ParsedCfg &p) {
-  if (!card_large_numbers_supported(p)) return "";
-  if (cfg_option_token_present(options, "large_numbers") ||
-      large_numbers_explicitly_disabled(options)) {
-    std::string out;
+  std::string out;
+  if (card_large_numbers_supported(p) &&
+      (cfg_option_token_present(options, "large_numbers") ||
+       large_numbers_explicitly_disabled(options))) {
     append_large_numbers_option(out, options);
-    return out;
   }
-  return "";
+  const std::string size = cfg_option_value(options, "text_size");
+  if ((p.type == "calendar" || p.type == "clock" || p.type == "timezone") &&
+      (size == "small" || size == "medium" || size == "large")) {
+    if (!out.empty()) out += ",";
+    out += "text_size=" + size;
+  }
+  if (p.type == "clock") {
+    const auto append = [&](const char *key, const std::string &value) {
+      if (!out.empty()) out += ",";
+      out += std::string(key) + "=" + encode_compact_field(value);
+    };
+    const std::string font = cfg_option_value(options, "clock_font");
+    if (font == "thin" || font == "bold" || font == "mono") append("clock_font", font);
+    for (const char *key : {"time_format", "date_format"}) {
+      const std::string value = cfg_option_value(options, key);
+      if (!value.empty() && parse_clock_screensaver_format(value).valid) append(key, value);
+    }
+    const std::string date_size = cfg_option_value(options, "date_size");
+    if (date_size == "small" || date_size == "medium" || date_size == "large")
+      append("date_size", date_size);
+  }
+  return out;
 }
 
 inline std::string normalize_garage_label_display(const std::string &value) {

@@ -1,3 +1,4 @@
+import { i18n } from "./i18n";
 import { resetAwareFetch } from "./api/reset_session";
 import * as DeviceConfig from "./device_config";
 import * as Model from "./model";
@@ -25,6 +26,8 @@ import { createEntityStateFeature } from "./application/entity_state";
 import { createClockBarFeature, type ClockBarFeature } from "./application/clock_bar_state";
 import { createFirmwareUpdateFeature, type FirmwareUpdateFeature } from "./application/firmware_update_state";
 import { createScreensaverTimeoutFeature } from "./application/screensaver_timeout";
+import { createScreensaverClockFontFeature } from "./application/screensaver_clock_font";
+import { createScreensaverClockFormatFeature } from "./application/screensaver_clock_format";
 import { createC6FirmwareFeature, type C6FirmwareFeature } from "./application/c6_firmware_ui";
 import { createGridFeature } from "./application/grid";
 import {
@@ -273,12 +276,12 @@ function composeApplicationContext(): ApplicationContext {
     },
     restart: async () => {
       const response = await requestApi.postButtonPress("Apply Configuration");
-      if (!response?.ok) throw new Error("Name saved, but the panel could not restart. Try again.");
+      if (!response?.ok) throw new Error(i18n("Name saved, but the panel could not restart. Try again."));
     },
     beforeSave: async () => {
-      if (shell.isConfigLocked()) throw new Error("Wait for the current panel operation to finish before renaming.");
+      if (shell.isConfigLocked()) throw new Error(i18n("Wait for the current panel operation to finish before renaming."));
       await requestApi.postQueue;
-      if (requestApi.postQueueError) throw new Error("Some configuration changes failed. Reload the page before renaming.");
+      if (requestApi.postQueueError) throw new Error(i18n("Some configuration changes failed. Reload the page before renaming."));
     },
     makeCard: (title, body) => fields.makeCollapsibleCard(title, body, true),
     infoPanel: (id, text) => settingsUi.infoPanel(id, text),
@@ -368,7 +371,7 @@ function composeApplicationContext(): ApplicationContext {
   );
   dom.document.addEventListener("espcontrol-reset-stale", () => {
     shell.setConfigLocked(true, "Device reset — reload this page before editing.");
-    shell.showBanner("The device was reset. Reload this page before making changes.", "error");
+    shell.showBanner(i18n("The device was reset. Reload this page before making changes."), "error");
   });
   const nativePanelConfig = createNativePanelConfigMigrationController({
     deviceProfile: () => layout.deviceId,
@@ -418,6 +421,7 @@ function composeApplicationContext(): ApplicationContext {
     state: AppInstance.state,
     now: core.now,
     renderButtonSettings: () => buttonSettings.render(),
+    renderPreview: () => preview.render(),
     effectiveTimezoneOption: (value) => environment.effectiveTimezoneOptionForWeb(value),
     timezoneId: (value) => statusPreview.getTzId(value),
     timezoneOptionsWithFallback: (options, selected) => environment.timezoneOptionsWithFallback(options, selected),
@@ -491,6 +495,10 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout,
     shell,
   );
+  const screensaverClockFont = createScreensaverClockFontFeature(runtime, requestApi, entityState, shell);
+  void screensaverClockFont.load();
+  const screensaverClockFormat = createScreensaverClockFormatFeature(runtime, requestApi, entityState, shell);
+  void screensaverClockFormat.load();
   firmwarePostApi = createFirmwareUpdatePostApiFeature(entityState, requestApi);
   const artworkPostApi = createArtworkPostApiFeature(entityState, requestApi);
   const schedulePostApi = createScreenSchedulePostApiFeature(entityState, requestApi);
@@ -698,6 +706,8 @@ function composeApplicationContext(): ApplicationContext {
     grid,
     settingsHelpers,
     preview,
+    screensaverClockFont,
+    screensaverClockFormat,
   );
   const backupModel = createBackupFeature({
     deviceId: layout.deviceId,
@@ -821,6 +831,8 @@ function composeApplicationContext(): ApplicationContext {
     core,
     screenScheduleState,
     screensaverTimeout,
+    screensaverClockFont,
+    screensaverClockFormat,
     firmwareUpdate,
     clockBar: clockBarState,
     entityState,
@@ -837,8 +849,11 @@ function composeApplicationContext(): ApplicationContext {
   });
   const reconnect = createReconnectController<unknown>({
     eventStreamEnabled: stateLoader.eventStreamEnabled,
-    loadInitialState: (handleState, markConnected) =>
-      stateLoader.loadInitialState(handleState, markConnected),
+    loadInitialState: (handleState, markConnected) => {
+      void screensaverClockFont.load();
+      void screensaverClockFormat.load();
+      return stateLoader.loadInitialState(handleState, markConnected);
+    },
     createEventSource: dom.createEventSource,
     getActiveSource: () => runtime.eventSource,
     setActiveSource: (source) => { runtime.eventSource = source; },
@@ -891,7 +906,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout, screenRotation, appearance, clockBarState, entityState,
     shell, requestApi, statusPreview, artworkPostApi, schedulePostApi,
     clockBarPostApi, fields, settingsHelpers, scheduleSection, coverArtSection,
-    systemSection, preview,
+    systemSection, preview, screensaverClockFont, screensaverClockFormat,
   );
   requestApi.connectReconnect(appEvents.connect);
   // Start after composition; the service retries on a later Settings visit if offline.

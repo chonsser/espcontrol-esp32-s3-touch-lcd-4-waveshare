@@ -26,6 +26,7 @@ import type { GridFeature } from "./grid";
 import type { ButtonSettingsSelectionFeature } from "./button_settings_selection";
 import type { PreviewRenderFeature } from "./preview_render";
 import type { PreviewClipboardFeature } from "./preview_clipboard";
+import { i18n, i18nPlural } from "../i18n";
 export interface PreviewContextMenuDependencies {
     readonly document: Document;
     readonly window: Window;
@@ -187,38 +188,38 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
         renderButtonSettings();
     }
     function addBulkCardMenuItems(this: any, slots?: any) {
-        addCtxItem("clipboard-outline", "Copy " + slots.length + " Cards", function (this: any) { copyButtons(slots); });
-        addCtxItem("code-json", "Copy " + slots.length + " Cards as Code", function (this: any) { showCopyCardCode(slots); });
-        addCtxItem("content-cut", "Cut " + slots.length + " Cards", function (this: any) { cutButtons(slots); });
-        addCtxItem("delete", "Delete " + slots.length + " Cards", function (this: any) { deleteButtons(slots); }, true);
+        addCtxItem("clipboard-outline", i18nPlural("copy_cards", slots.length, { one: "Copy {count} Card", other: "Copy {count} Cards" }), function (this: any) { copyButtons(slots); });
+        addCtxItem("code-json", i18nPlural("copy_cards_as_code", slots.length, { one: "Copy {count} Card as Code", other: "Copy {count} Cards as Code" }), function (this: any) { showCopyCardCode(slots); });
+        addCtxItem("content-cut", i18nPlural("cut_cards", slots.length, { one: "Cut {count} Card", other: "Cut {count} Cards" }), function (this: any) { cutButtons(slots); });
+        addCtxItem("delete", i18nPlural("delete_cards", slots.length, { one: "Delete {count} Card", other: "Delete {count} Cards" }), function (this: any) { deleteButtons(slots); }, true);
     }
     function cardSizeMenuOptions(this: any, b?: any) {
         var options: any = [
-            { size: CARD_SIZE_SINGLE, label: "Single (1x1)" },
+            { size: CARD_SIZE_SINGLE, label: i18n("Single (1x1)") },
         ];
         if (!cardRequiresSquareSize(b) && !cardIsWifiSharing(b)) {
-            options.push({ size: CARD_SIZE_TALL, label: "Tall (2x1)" });
-            options.push({ size: CARD_SIZE_EXTRA_TALL, label: "Extra Tall (3x1)" });
-            options.push({ size: CARD_SIZE_WIDE, label: "Wide (1x2)" });
-            options.push({ size: CARD_SIZE_EXTRA_WIDE, label: "Extra Wide (1x3)" });
+            options.push({ size: CARD_SIZE_TALL, label: i18n("Tall (2x1)") });
+            options.push({ size: CARD_SIZE_EXTRA_TALL, label: i18n("Extra Tall (3x1)") });
+            options.push({ size: CARD_SIZE_WIDE, label: i18n("Wide (1x2)") });
+            options.push({ size: CARD_SIZE_EXTRA_WIDE, label: i18n("Extra Wide (1x3)") });
             if (cardSupportsUltraWideSize(b))
-                options.push({ size: CARD_SIZE_ULTRA_WIDE, label: "Ultra Wide (1x5)" });
+                options.push({ size: CARD_SIZE_ULTRA_WIDE, label: i18n("Ultra Wide (1x5)") });
         }
-        options.push({ size: CARD_SIZE_LARGE, label: "Large (2x2)" });
+        options.push({ size: CARD_SIZE_LARGE, label: i18n("Large (2x2)") });
         if (cardSupportsExtraLargeSize(b) && dependencies.layout.gridCols >= 3 && dependencies.layout.gridRows >= 3)
-            options.push({ size: CARD_SIZE_EXTRA_LARGE, label: "Extra Large (3x3)" });
+            options.push({ size: CARD_SIZE_EXTRA_LARGE, label: i18n("Extra Large (3x3)") });
         if (cardSupportsWifiPortraitSizes(b)) {
-            options.push({ size: CARD_SIZE_MAX_TALL, label: "Max Tall (2x3)" });
-            options.push({ size: CARD_SIZE_PORTRAIT_LARGE, label: "Massive (3x4)" });
+            options.push({ size: CARD_SIZE_MAX_TALL, label: i18n("Max Tall (2x3)") });
+            options.push({ size: CARD_SIZE_PORTRAIT_LARGE, label: i18n("Massive (3x4)") });
         }
         if (cardSupportsMaxSize(b)) {
-            options.push({ size: CARD_SIZE_MAX_WIDE, label: "Max Wide (3x2)" });
-            options.push({ size: CARD_SIZE_MAX_TALL, label: "Max tall (2x3)" });
+            options.push({ size: CARD_SIZE_MAX_WIDE, label: i18n("Max Wide (3x2)") });
+            options.push({ size: CARD_SIZE_MAX_TALL, label: i18n("Max tall (2x3)") });
         }
         if (cardSupportsLandscapeLargeSize(b))
-            options.push({ size: CARD_SIZE_LANDSCAPE_LARGE, label: "Massive Wide (3x4)" });
+            options.push({ size: CARD_SIZE_LANDSCAPE_LARGE, label: i18n("Massive Wide (3x4)") });
         if (cardSupportsPortraitLargeSize(b))
-            options.push({ size: CARD_SIZE_PORTRAIT_LARGE, label: "Massive (4x3)" });
+            options.push({ size: CARD_SIZE_PORTRAIT_LARGE, label: i18n("Massive (4x3)") });
         return options;
     }
     function addSingleCardMenuItems(this: any, slot?: any) {
@@ -228,20 +229,20 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
         }
         var c: any = ctx();
         var b: any = c.buttons[slot - 1];
-        addCtxItem("pencil", "Edit Card", function (this: any) { openCardSettings(slot); });
+        addCtxItem("pencil", i18n("Edit Card"), function (this: any) { openCardSettings(slot); });
         var ctxTypeDef: any = dependencies.cards.definitions[(b && b.type) || ""];
         if (ctxTypeDef && ctxTypeDef.contextMenuItems &&
             (!c.isSub || buttonTypeRegistryValue(ctxTypeDef, "allowInSubpage", false))) {
             ctxTypeDef.contextMenuItems(slot, b, { addCtxItem: addCtxItem });
         }
         var sz: any = c.sizes[slot] || 1;
-        addCtxSubmenu("arrow-expand-all", "Size", function (this: any, sub?: any) {
+        addCtxSubmenu("arrow-expand-all", i18n("Size"), function (this: any, sub?: any) {
             cardSizeMenuOptions(b).forEach(function (this: any, option?: any) {
                 addSubItem(sub, "", option.label, function (this: any) { resizeSlot(slot, option.size); }, sz === option.size);
             });
         });
         addCtxDivider();
-        addCtxItem("content-copy", "Duplicate", function (this: any) {
+        addCtxItem("content-copy", i18n("Duplicate"), function (this: any) {
             if (c.isSub) {
                 duplicateSubpageButton(slot);
             }
@@ -249,23 +250,23 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
                 duplicateButton(slot);
             }
         });
-        addCtxItem("clipboard-outline", "Copy", function (this: any) { copySlot(slot); });
-        addCtxItem("code-json", "Copy Code", function (this: any) { showCopyCardCode([slot]); });
-        addCtxItem("content-cut", "Cut", function (this: any) { cutSlot(slot); });
-        addCtxItem("delete", "Delete", function (this: any) { deleteSlot(slot); }, true);
+        addCtxItem("clipboard-outline", i18n("Copy"), function (this: any) { copySlot(slot); });
+        addCtxItem("code-json", i18n("Copy Code"), function (this: any) { showCopyCardCode([slot]); });
+        addCtxItem("content-cut", i18n("Cut"), function (this: any) { cutSlot(slot); });
+        addCtxItem("delete", i18n("Delete"), function (this: any) { deleteSlot(slot); }, true);
     }
     function addClockBarMenuItems(this: any, item?: any) {
         if (isClockBarTemperatureItem(item)) {
-            addCtxItem("pencil", "Edit Temperature", function (this: any) { openClockBarTemperatureSettings(); });
+            addCtxItem("pencil", i18n("Edit Temperature"), function (this: any) { openClockBarTemperatureSettings(); });
             addCtxDivider();
         }
         else if (item === "voice") {
-            addCtxItem("pencil", "Edit Voice Services", function (this: any) { openVoiceServicesSettings(); });
+            addCtxItem("pencil", i18n("Edit Voice Services"), function (this: any) { openVoiceServicesSettings(); });
             addCtxDivider();
         }
         var visible: any = clockBarItemActive(item);
         var label: any = clockBarItemLabel(item);
-        addCtxItem(visible ? "eye-off-outline" : "eye-outline", (visible ? "Hide " : "Show ") + label, function (this: any) {
+        addCtxItem(visible ? "eye-off-outline" : "eye-outline", visible ? i18n("Hide {name}", { name: label }) : i18n("Show {name}", { name: label }), function (this: any) {
             setClockBarItemVisible(item, !visible);
         });
     }
@@ -348,18 +349,18 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
     function addBackButtonMenuItems(this: any) {
         var sp: any = getSubpage(state.editingSubpage);
         var bkSz: any = sp.sizes[-2] || 1;
-        addCtxItem("pencil", "Edit Label", function (this: any) { openCardSettings(-2); });
-        addCtxItem("keyboard-return", "Exit Subpage", function (this: any) { exitSubpage(); });
+        addCtxItem("pencil", i18n("Edit Label"), function (this: any) { openCardSettings(-2); });
+        addCtxItem("keyboard-return", i18n("Exit Subpage"), function (this: any) { exitSubpage(); });
         addCtxDivider();
-        addCtxSubmenu("arrow-expand-all", "Size", function (this: any, sub?: any) {
-            addSubItem(sub, "", "Single (1x1)", function (this: any) { resizeSlot(-2, 1); }, bkSz === 1);
-            addSubItem(sub, "", "Tall (2x1)", function (this: any) { resizeSlot(-2, 2); }, bkSz === 2);
-            addSubItem(sub, "", "Extra Tall (3x1)", function (this: any) { resizeSlot(-2, 5); }, bkSz === 5);
-            addSubItem(sub, "", "Wide (1x2)", function (this: any) { resizeSlot(-2, 3); }, bkSz === 3);
-            addSubItem(sub, "", "Extra Wide (1x3)", function (this: any) { resizeSlot(-2, 6); }, bkSz === 6);
+        addCtxSubmenu("arrow-expand-all", i18n("Size"), function (this: any, sub?: any) {
+            addSubItem(sub, "", i18n("Single (1x1)"), function (this: any) { resizeSlot(-2, 1); }, bkSz === 1);
+            addSubItem(sub, "", i18n("Tall (2x1)"), function (this: any) { resizeSlot(-2, 2); }, bkSz === 2);
+            addSubItem(sub, "", i18n("Extra Tall (3x1)"), function (this: any) { resizeSlot(-2, 5); }, bkSz === 5);
+            addSubItem(sub, "", i18n("Wide (1x2)"), function (this: any) { resizeSlot(-2, 3); }, bkSz === 3);
+            addSubItem(sub, "", i18n("Extra Wide (1x3)"), function (this: any) { resizeSlot(-2, 6); }, bkSz === 6);
             if (cardSupportsUltraWideSize(null))
-                addSubItem(sub, "", "Ultra Wide (1x5)", function (this: any) { resizeSlot(-2, CARD_SIZE_ULTRA_WIDE); }, bkSz === CARD_SIZE_ULTRA_WIDE);
-            addSubItem(sub, "", "Large (2x2)", function (this: any) { resizeSlot(-2, 4); }, bkSz === 4);
+                addSubItem(sub, "", i18n("Ultra Wide (1x5)"), function (this: any) { resizeSlot(-2, CARD_SIZE_ULTRA_WIDE); }, bkSz === CARD_SIZE_ULTRA_WIDE);
+            addSubItem(sub, "", i18n("Large (2x2)"), function (this: any) { resizeSlot(-2, 4); }, bkSz === 4);
         });
     }
     function showEmptySlotMenu(this: any, e?: any, pos?: any) {
@@ -369,13 +370,13 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
         ctxMenu = document.createElement("div");
         ctxMenu.className = "sp-ctx-menu";
         var c: any = ctx();
-        addCtxItem("plus", "Create Card", function (this: any) { addSlot(pos); });
+        addCtxItem("plus", i18n("Create Card"), function (this: any) { addSlot(pos); });
         if (!c.isSub) {
-            addCtxItem("folder-plus", "Create Subpage", function (this: any) { addSubpageSlot(pos); });
+            addCtxItem("folder-plus", i18n("Create Subpage"), function (this: any) { addSubpageSlot(pos); });
         }
         if (state.clipboard) {
             var count: any = state.clipboard.buttons.length;
-            addCtxItem("content-paste", count > 1 ? "Paste " + count + " Cards" : "Paste", function (this: any) {
+            addCtxItem("content-paste", count > 1 ? i18nPlural("paste_cards", count, { one: "Paste {count} Card", other: "Paste {count} Cards" }) : i18n("Paste"), function (this: any) {
                 if (c.isSub) {
                     pasteSubpageButton(pos);
                 }
@@ -385,7 +386,7 @@ export function createPreviewContextMenuFeature(dependencies: PreviewContextMenu
             });
         }
         addCtxDivider();
-        addCtxItem("code-json", "Paste Code", function (this: any) {
+        addCtxItem("code-json", i18n("Paste Code"), function (this: any) {
             showPasteCardCode(pos, c.isSub);
         });
         document.body.appendChild(ctxMenu);

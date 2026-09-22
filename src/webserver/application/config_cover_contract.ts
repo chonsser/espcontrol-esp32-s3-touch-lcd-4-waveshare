@@ -1,4 +1,5 @@
 import { cardContractOptionSpec } from "./config_option_core";
+import { i18n } from "../i18n";
 
 export function coverCommandMode(mode?: unknown): boolean {
     return mode === "open" || mode === "close" || mode === "stop" || mode === "set_position";
@@ -19,14 +20,14 @@ export function normalizeCoverMode(mode?: unknown, allowCommands?: unknown): str
 
 export function coverModeOptionsForSettings(_currentMode?: unknown): string[][] {
     return [
-        ["modal", "All Controls"],
-        ["", "Slider: Position"],
-        ["tilt", "Slider: Tilt"],
-        ["toggle", "Toggle"],
-        ["open", "Open"],
-        ["close", "Close"],
-        ["stop", "Stop"],
-        ["set_position", "Set Position"],
+        ["modal", i18n("All Controls")],
+        ["", i18n("Slider: Position")],
+        ["tilt", i18n("Slider: Tilt")],
+        ["toggle", i18n("Toggle")],
+        ["open", i18n("Open")],
+        ["close", i18n("Close")],
+        ["stop", i18n("Stop")],
+        ["set_position", i18n("Set Position")],
     ];
 }
 

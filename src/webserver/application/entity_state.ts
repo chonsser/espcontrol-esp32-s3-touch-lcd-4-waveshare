@@ -2,6 +2,7 @@ import { state } from "../state/app_instance";
 import { ENTITY_CATALOG } from "../generated/entity_catalog";
 import { entityStateKeys } from "../state/event_state";
 import type { ConfigConfirmationOptionsFeature } from "./config_confirmation_options";
+import { webLocale } from "../i18n";
 
 type EntityDefinition = {
     readonly domain?: string;
@@ -181,7 +182,7 @@ export function createEntityStateFeature(dependencies: EntityStateDependencies) 
             var bl: any = optionLabelForEntity(b).toLowerCase();
             if (al === bl)
                 return a.localeCompare(b);
-            return al.localeCompare(bl);
+            return al.localeCompare(bl, webLocale());
         });
         return ids.map(function (this: any, id?: any) {
             return { value: id, label: optionLabelForEntity(id) };

@@ -3,6 +3,7 @@ import * as EspControlModel from "../model";
 import { uniqueOptions } from "./ui_primitives";
 import type { UiRuntimeState } from "./state";
 import type { ApplicationLayoutState } from "./application_context";
+import { i18n } from "../i18n";
 
 export interface ScreenRotationFeature {
     normalize(value?: any): string;
@@ -79,7 +80,7 @@ export function createScreenRotationFeature(
     function appendOption(select?: any, opt?: any) {
         var o: any = document.createElement("option");
         o.value = opt;
-        o.textContent = display(opt) + " deg";
+        o.textContent = i18n("{degrees} deg", { degrees: display(opt) });
         select.appendChild(o);
     }
     function startupRequired() {

@@ -945,9 +945,14 @@ function main() {
   assert.doesNotMatch(firmware, /if \(fan_card_type\(p\.type\)\)/);
   assert.match(firmware, /#include "button_grid_saved_config_date_time_generated\.h"/);
   assert.match(firmware, /normalize_saved_config_date_time\(\s*p, normalize_saved_config_date_time_fields, date_time_card_options_normalized\)/);
-  assert.doesNotMatch(firmware, /if \(p\.type == "calendar"\) \{/);
-  assert.doesNotMatch(firmware, /if \(p\.type == "clock"\) \{/);
-  assert.doesNotMatch(firmware, /if \(p\.type == "timezone"\) \{/);
+  // Generated field normalization owns this dispatcher; its explicit option
+  // hooks may branch by date/time type (e.g. clock-only numeric formats).
+  const normalizeParserStart = firmware.indexOf("inline ParsedCfg normalize_parsed_cfg");
+  assert(normalizeParserStart >= 0, "Production parser normalization not found");
+  const normalizeParser = firmware.slice(normalizeParserStart);
+  assert.doesNotMatch(normalizeParser, /if \(p\.type == "calendar"\) \{/);
+  assert.doesNotMatch(normalizeParser, /if \(p\.type == "clock"\) \{/);
+  assert.doesNotMatch(normalizeParser, /if \(p\.type == "timezone"\) \{/);
   assert.match(firmware, /#include "button_grid_saved_config_mower_generated\.h"/);
   assert.match(firmware, /normalize_saved_config_mower\(p, normalize_saved_config_mower_fields\)/);
   assert.doesNotMatch(firmware, /if \(p\.type == "lawn_mower"\) \{/);
@@ -957,7 +962,6 @@ function main() {
   assert.doesNotMatch(firmware, /if \(p\.type == "presence"\) \{\s*p\.entity\.clear\(\);/);
   assert.match(firmware, /#include "button_grid_saved_config_access_generated\.h"/);
   assert.match(firmware, /normalize_saved_config_access\(\s*p, normalize_saved_config_access_fields,/);
-  const normalizeParser = firmware.slice(firmware.indexOf("inline ParsedCfg normalize_parsed_cfg"));
   assert.doesNotMatch(normalizeParser, /if \(p\.type == "garage"\) \{\s*if \(!card_runtime_garage_mode_valid/);
   assert.doesNotMatch(normalizeParser, /if \(p\.type == "gate"\) \{\s*if \(!card_runtime_gate_mode_valid/);
   assert.doesNotMatch(normalizeParser, /if \(p\.type == "cover"\) \{\s*if \(!card_runtime_cover_mode_valid/);

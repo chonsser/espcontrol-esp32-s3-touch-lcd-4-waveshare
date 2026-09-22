@@ -1,3 +1,4 @@
+import { i18n } from "../i18n";
 import type { PanelIdentityBackup } from "../model/panel_identity";
 import type { CardConfig } from "../contracts/types";
 import {
@@ -166,14 +167,16 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       config.native_config_skipped_device_profile;
     if (nativeDeviceProfile && nativeDeviceProfile !== targetDeviceId) {
       warnings.push(
-        `This backup was taken from ${nativeDeviceProfile}; this device is ${targetDeviceId}. ` +
-          "Layout will be restored, but the native configuration will be skipped.",
+        i18n(
+          "This backup was taken from {source}; this device is {target}. Layout will be restored, but the native configuration will be skipped.",
+          { source: nativeDeviceProfile, target: targetDeviceId },
+        ),
       );
     } else if (config.device && config.device !== targetDeviceId) {
-      warnings.push(`Config was exported from a different panel (${config.device}) - layout may look different`);
+      warnings.push(i18n("Config was exported from a different panel ({device}) - layout may look different", { device: config.device }));
     }
     if (importedCount !== targetSlots) {
-      warnings.push(`Backup has ${importedCount} slots, current config has ${targetSlots} - adapting`);
+      warnings.push(i18n("Backup has {imported} slots, current config has {current} - adapting", { imported: importedCount, current: targetSlots }));
     }
 
     const layoutPlan = planBackupButtonLayout(

@@ -15,6 +15,7 @@ import type { EntityStateFeature } from "./entity_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { ApplicationApiFeature } from "./api";
 import type { GridFeature } from "./grid";
+import { i18n, i18nDynamic, i18nPlural } from "../i18n";
 export interface PreviewClipboardDependencies {
     readonly configPersistence: ConfigPersistenceFeature;
     readonly document: Document;
@@ -149,19 +150,16 @@ export function createPreviewClipboardFeature(
         var type: any = normalized.type || "";
         var typeDef: any = dependencies.cards.definitions[type];
         if (!typeDef) {
-            throw cardTransferError("This controller does not support the " +
-                cardTransferTypeLabel(type) + " card type.");
+            throw cardTransferError(i18n("This controller does not support the {type} card type.", { type: cardTransferTypeLabel(type) }));
         }
         if (buttonConfigDisabledForDevice(normalized)) {
-            throw cardTransferError("This controller does not support the " +
-                cardTransferTypeLabel(type) + " card type.");
+            throw cardTransferError(i18n("This controller does not support the {type} card type.", { type: cardTransferTypeLabel(type) }));
         }
         if (inSubpage && type === "subpage") {
-            throw cardTransferError("Subpage cards cannot be placed inside another subpage.");
+            throw cardTransferError(i18n("Subpage cards cannot be placed inside another subpage."));
         }
         if (inSubpage && !buttonTypeRegistryValue(typeDef, "allowInSubpage", false)) {
-            throw cardTransferError("The " + cardTransferTypeLabel(type) +
-                " card type cannot be placed inside a subpage.");
+            throw cardTransferError(i18n("The {type} card type cannot be placed inside a subpage.", { type: cardTransferTypeLabel(type) }));
         }
         if (type === "internal" ||
             (type === "action" && normalized.sensor === ACTION_CARD_LOCAL_ACTION) ||
@@ -210,7 +208,7 @@ export function createPreviewClipboardFeature(
             requestedSizes[-2] = 1;
         }
         if (orderedSlots.length > dependencies.layout.numSlots) {
-            throw cardTransferError("A copied subpage has more cards than this controller can display.");
+            throw cardTransferError(i18n("A copied subpage has more cards than this controller can display."));
         }
         var targetSizes: any = {};
         for (var requestedSlot in requestedSizes) {
@@ -229,7 +227,7 @@ export function createPreviewClipboardFeature(
         });
         for (var orderedIndex: any = 0; orderedIndex < orderedSlots.length; orderedIndex++) {
             if (!placed[orderedSlots[orderedIndex]]) {
-                throw cardTransferError("A copied subpage does not fit on this controller.");
+                throw cardTransferError(i18n("A copied subpage does not fit on this controller."));
             }
         }
         var slotMap: any = {};
@@ -290,7 +288,7 @@ export function createPreviewClipboardFeature(
             };
             if (transfer.subpage) {
                 if (targetIsSubpage) {
-                    throw cardTransferError("Subpage cards can only be pasted onto the home screen.");
+                    throw cardTransferError(i18n("Subpage cards can only be pasted onto the home screen."));
                 }
                 var parsed: any = EspControlModel.parseStructuredSubpageConfig(transfer.subpage);
                 parsed.buttons = parsed.buttons.map(function (subpageButton: any) {
@@ -361,17 +359,17 @@ export function createPreviewClipboardFeature(
         for (var i: any = 0; i < entries.length; i++) {
             var newSlot: any = firstUnusedClipboardSlot(nextGrid, dependencies.layout.numSlots);
             if (newSlot < 0)
-                return { error: "There is not enough room to paste every card." };
+                return { error: i18n("There is not enough room to paste every card.") };
             var entry: any = entries[i];
             var requestedSize: any = entry.size || 1;
             var placement: any = findDuplicatePlacement(nextGrid, pos, requestedSize, dependencies.layout.numSlots);
             if (placement.pos < 0)
-                return { error: "There is not enough room to paste every card." };
+                return { error: i18n("There is not enough room to paste every card.") };
             if (placement.size !== requestedSize)
                 resized++;
             var buttonConfig: any = clipboardButtonConfig(entry);
             if (serializeButtonConfig(buttonConfig).length > 255) {
-                return { error: "A copied card's settings are too large for this controller." };
+                return { error: i18n("A copied card's settings are too large for this controller.") };
             }
             nextButtons[newSlot - 1] = buttonConfig;
             if (placement.size === 1)
@@ -384,7 +382,7 @@ export function createPreviewClipboardFeature(
                 subpage.sizes = {};
                 buildSubpageGrid(subpage);
                 if (!clipboardSubpageFits(subpage)) {
-                    return { error: "A copied subpage is too large for this controller." };
+                    return { error: i18n("A copied subpage is too large for this controller.") };
                 }
                 nextSubpages[newSlot] = subpage;
             }
@@ -422,19 +420,18 @@ export function createPreviewClipboardFeature(
             var entry: any = entries[i];
             var typeDef: any = dependencies.cards.definitions[entry.type || ""];
             if (entry.subpageConfig || entry.type === "subpage") {
-                return { error: "Subpage cards can only be pasted onto the home screen." };
+                return { error: i18n("Subpage cards can only be pasted onto the home screen.") };
             }
             if (!typeDef || !buttonTypeRegistryValue(typeDef, "allowInSubpage", false)) {
-                return { error: "The " + cardTransferTypeLabel(entry.type || "") +
-                        " card type cannot be placed inside a subpage." };
+                return { error: i18n("The {type} card type cannot be placed inside a subpage.", { type: cardTransferTypeLabel(entry.type || "") }) };
             }
             var newSlot: any = firstUnusedClipboardSlot(subpage.grid, dependencies.layout.numSlots);
             if (newSlot < 0)
-                return { error: "There is not enough room to paste every card." };
+                return { error: i18n("There is not enough room to paste every card.") };
             var requestedSize: any = entry.size || 1;
             var placement: any = findDuplicatePlacement(subpage.grid, pos, requestedSize, dependencies.layout.numSlots);
             if (placement.pos < 0)
-                return { error: "There is not enough room to paste every card." };
+                return { error: i18n("There is not enough room to paste every card.") };
             if (placement.size !== requestedSize)
                 resized++;
             while (subpage.buttons.length < newSlot)
@@ -449,15 +446,15 @@ export function createPreviewClipboardFeature(
         }
         subpage.order = serializeSubpageGrid(subpage);
         if (!clipboardSubpageFits(subpage)) {
-            return { error: "The updated subpage is too large to save on this controller." };
+            return { error: i18n("The updated subpage is too large to save on this controller.") };
         }
         return { subpage: subpage, slots: slots, resized: resized };
     }
     function performClipboardPaste(entries: any, pos: any, targetIsSubpage: any) {
         if (isConfigLocked())
-            return { ok: false, error: "Configuration is locked." };
+            return { ok: false, error: i18n("Configuration is locked.") };
         if (!entries || !entries.length)
-            return { ok: false, error: "No copied cards are available." };
+            return { ok: false, error: i18n("No copied cards are available.") };
         if (!canAddImageCards(imageCardCountInClipboardEntries(entries))) {
             showImageCardLimitBanner();
             return { ok: false, error: imageSlotCapacityMessage() };
@@ -498,7 +495,7 @@ export function createPreviewClipboardFeature(
             return result;
         state.clipboard = null;
         if (result.resized)
-            showBanner("Cards pasted. Some were resized to fit.", "warning");
+            showBanner(i18n("Cards pasted. Some were resized to fit."), "warning");
         return result;
     }
     function pasteSubpageButton(this: any, pos?: any) {
@@ -509,7 +506,7 @@ export function createPreviewClipboardFeature(
             return result;
         state.clipboard = null;
         if (result.resized)
-            showBanner("Cards pasted. Some were resized to fit.", "warning");
+            showBanner(i18n("Cards pasted. Some were resized to fit."), "warning");
         return result;
     }
     var cardTransferOverlay: any = null;
@@ -549,7 +546,7 @@ export function createPreviewClipboardFeature(
         close.innerHTML = '<svg class="sp-transfer-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
             '<path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.29 19.7 2.88 18.29 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"></path>' +
             '</svg>';
-        close.setAttribute("aria-label", "Close");
+        close.setAttribute("aria-label", i18n("Close"));
         close.addEventListener("click", closeCardTransferDialog);
         dialog.appendChild(close);
         overlay.appendChild(dialog);
@@ -572,18 +569,18 @@ export function createPreviewClipboardFeature(
             code = cardTransferCodeForSlots(slots);
         }
         catch (error: any) {
-            showBanner(error.cardTransferMessage || error.message || "Could not create card code.", "error");
+            showBanner(error.cardTransferMessage || error.message || i18n("Could not create card code."), "error");
             return;
         }
-        var dialog: any = createCardTransferDialog("Copy Code");
+        var dialog: any = createCardTransferDialog(i18n("Copy Code"));
         var intro: any = document.createElement("p");
-        intro.textContent = "Copy this code to another controller.";
+        intro.textContent = i18n("Copy this code to another controller.");
         dialog.appendChild(intro);
         var textarea: any = document.createElement("textarea");
         textarea.className = "sp-input sp-textarea sp-transfer-code";
         textarea.readOnly = true;
         textarea.value = code;
-        textarea.setAttribute("aria-label", "Card transfer code");
+        textarea.setAttribute("aria-label", i18n("Card transfer code"));
         dialog.appendChild(textarea);
         var status = document.createElement("p");
         status.className = "sp-transfer-note";
@@ -592,14 +589,14 @@ export function createPreviewClipboardFeature(
         var actions = document.createElement("div");
         actions.className = "sp-transfer-actions sp-btn-row";
         var copy = createActionButton("sp-action-btn sp-transfer-copy-btn", "", "content-copy");
-        var copyLabel: any = document.createTextNode("Copy");
+        var copyLabel: any = document.createTextNode(i18n("Copy"));
         copy.appendChild(copyLabel);
         var copyIcon: any = copy.querySelector(".mdi");
         var copyResetTimer: any;
         function setCopyButtonState(copied: any) {
             copy.classList.toggle("sp-copied", copied);
             copyIcon.className = copied ? "mdi mdi-check" : "mdi mdi-content-copy";
-            copyLabel.textContent = copied ? "Copied" : "Copy";
+            copyLabel.textContent = copied ? i18n("Copied") : i18n("Copy");
         }
         copy.addEventListener("click", async function () {
             if (copyResetTimer) {
@@ -632,7 +629,7 @@ export function createPreviewClipboardFeature(
             }
             status.textContent = copied
                 ? ""
-                : "Could not copy automatically. Copy the selected code manually.";
+                : i18n("Could not copy automatically. Copy the selected code manually.");
             copy.disabled = false;
             if (copied && dialog.isConnected) {
                 setCopyButtonState(true);
@@ -650,14 +647,14 @@ export function createPreviewClipboardFeature(
         textarea.select();
     }
     function showPasteCardCode(pos: any, targetIsSubpage: any) {
-        var dialog: any = createCardTransferDialog("Paste Code");
+        var dialog: any = createCardTransferDialog(i18n("Paste Code"));
         var intro: any = document.createElement("p");
-        intro.textContent = "Paste the code below. Nothing is changed until you choose Paste.";
+        intro.textContent = i18n("Paste the code below. Nothing is changed until you choose Paste.");
         dialog.appendChild(intro);
         var textarea: any = document.createElement("textarea");
         textarea.className = "sp-input sp-textarea sp-transfer-code";
-        textarea.placeholder = "Paste the code here";
-        textarea.setAttribute("aria-label", "Card transfer code");
+        textarea.placeholder = i18n("Paste the code here");
+        textarea.setAttribute("aria-label", i18n("Card transfer code"));
         dialog.appendChild(textarea);
         var errorText: any = document.createElement("div");
         errorText.className = "sp-transfer-error";
@@ -665,10 +662,10 @@ export function createPreviewClipboardFeature(
         dialog.appendChild(errorText);
         var actions: any = document.createElement("div");
         actions.className = "sp-transfer-actions sp-btn-row";
-        var cancel: any = createActionButton("sp-action-btn sp-cancel-btn", "Cancel");
+        var cancel: any = createActionButton("sp-action-btn sp-cancel-btn", i18n("Cancel"));
         cancel.addEventListener("click", closeCardTransferDialog);
         actions.appendChild(cancel);
-        var paste: any = createActionButton("sp-action-btn sp-save-btn", "Paste");
+        var paste: any = createActionButton("sp-action-btn sp-save-btn", i18n("Paste"));
         paste.addEventListener("click", function () {
             errorText.textContent = "";
             try {
@@ -676,28 +673,28 @@ export function createPreviewClipboardFeature(
                 var converted: any = clipboardEntriesFromCardTransfer(envelope, targetIsSubpage);
                 var result: any = performClipboardPaste(converted.entries, pos, targetIsSubpage);
                 if (!result.ok) {
-                    errorText.textContent = result.error || "The cards could not be pasted.";
+                    errorText.textContent = result.error || i18n("The cards could not be pasted.");
                     return;
                 }
                 closeCardTransferDialog();
-                var message: any = result.count === 1 ? "Card pasted." : result.count + " cards pasted.";
+                var message: any = i18nPlural("cards_pasted", result.count, { one: "Card pasted.", other: "{count} cards pasted." });
                 var warning: any = false;
                 if (result.resized || converted.warnings.cardResized) {
-                    message += " Some were resized to fit.";
+                    message += " " + i18n("Some were resized to fit.");
                     warning = true;
                 }
                 if (converted.warnings.local) {
-                    message += " Review local device references on this controller.";
+                    message += " " + i18n("Review local device references on this controller.");
                     warning = true;
                 }
                 if (converted.warnings.subpageResized) {
-                    message += " A subpage layout was resized to fit.";
+                    message += " " + i18n("A subpage layout was resized to fit.");
                     warning = true;
                 }
                 showBanner(message, warning ? "warning" : "success");
             }
             catch (error: any) {
-                errorText.textContent = error.cardTransferMessage || error.message || "Invalid card code.";
+                errorText.textContent = i18nDynamic(error.cardTransferMessage || error.message) || i18n("Invalid card code.");
             }
         });
         actions.appendChild(paste);

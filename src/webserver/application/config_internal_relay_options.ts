@@ -1,6 +1,7 @@
 import type { DeviceConfig } from "../state/types";
 import { cardContractCard } from "../generated/card_contract";
 import { cardContractOptionSpec } from "./config_option_core";
+import { i18nDevice } from "../i18n";
 
 export function createConfigInternalRelayOptionsFeature(
     deviceProfile: Pick<DeviceConfig, "features">,
@@ -54,7 +55,7 @@ export function createConfigInternalRelayOptionsFeature(
             if (relay && relay.key === key)
                 return relay.label;
         }
-        return key ? key.replace(/_/g, " ").replace(/\b\w/g, function (character: string) { return character.toUpperCase(); }) : "Relay";
+        return key ? key.replace(/_/g, " ").replace(/\b\w/g, function (character: string) { return character.toUpperCase(); }) : i18nDevice("Relay");
     }
 
     return {

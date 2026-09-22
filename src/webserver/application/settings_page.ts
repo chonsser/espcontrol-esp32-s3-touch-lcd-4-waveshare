@@ -3,21 +3,26 @@ import { NTP_SERVER_DEFAULTS } from "../state/app_state";
 import { WEB_UI_COLORS } from "../state/ui_tokens";
 import {
     normalizeBrightnessMode,
+    normalizeHexColor,
     normalizeLanguage,
     normalizeTemperatureUnit,
     normalizeTimeOfDay,
 } from "../model/settings";
+import { i18n, i18nKey, requestWebLocale } from "../i18n";
 import type { ConfigCodecFeature } from "./config_codec";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
 import type { ApplicationLayoutState } from "./application_context";
-import { appendLanguageOption, languageOptionsWithFallback } from "./language_state";
+import { appendLanguageOption, languageOptionsWithFallback, webLocaleReloadAllowed } from "./language_state";
 import { hasCustomNtpServers, resetNtpServersToDefaults, syncNtpServerUi } from "./ntp_state";
 import { syncIdleUi } from "./idle_state";
 import { getActiveScreensaverMode } from "./screensaver_state";
 import type { EnvironmentStateFeature } from "./environment_state";
+import { durationMinutesLabel, durationSecondsLabel } from "./screen_schedule_state";
 import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
+import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
+import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
 import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { AppearanceFeature } from "./appearance_state";
 import type { ClockBarFeature } from "./clock_bar_state";
@@ -39,7 +44,7 @@ export interface SettingsPageFeature {
     buildSettingsPage(...args: any[]): any;
 }
 
-export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postSelect" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus" | "postVoiceServices">, fields: Pick<ControlsFieldsFeature, "colorField" | "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "buildAlarmDelayAudioSettingsCard" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">): SettingsPageFeature {
+export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindTextPost">, runtime: UiRuntimeState, core: Pick<CoreFeature, "syncPreviewOrientation">, layout: ApplicationLayoutState, environment: EnvironmentStateFeature, schedule: ScreenScheduleStateFeature, screensaverTimeout: ScreensaverTimeoutFeature, screenRotation: ScreenRotationFeature, appearance: AppearanceFeature, clockBar: ClockBarFeature, entityState: Pick<EntityStateFeature, "entityName" | "entityInput">, shell: Pick<ControlsShellFeature, "createActionButton" | "buildApplyBar">, requestApi: Pick<ApplicationApiFeature, "postText" | "postSelect" | "postScreensaverMode" | "postScreensaverTimeout" | "postHomeScreenTimeout">, statusPreview: Pick<AppStatusPreviewFeature, "appendTimezoneOption" | "syncInput" | "updateClock" | "updateSunInfo" | "updateTempPreview">, artworkPostApi: Pick<ArtworkPostApiFeature, "postPresenceSensorEntity">, schedulePostApi: Pick<ScreenSchedulePostApiFeature, "postBrightnessMode" | "postDisplayBacklightBrightness" | "postBrightnessDawnTime" | "postBrightnessDuskTime">, clockBarPostApi: Pick<ClockBarPostApiFeature, "postClockBar" | "postClockBarNightMode" | "postBatteryStatus" | "postVoiceServices">, fields: Pick<ControlsFieldsFeature, "colorField" | "condField" | "createRangeSlider" | "fieldLabel" | "makeCollapsibleCard" | "segmentControl" | "selectField" | "textInput" | "toggleRow">, helpers: Pick<SettingsPageHelpersFeature, "appendSettingsSection" | "buildAlarmDelayAudioSettingsCard" | "createScreensaverThenControls" | "createTimeInput" | "statusBadge" | "syncClockScreensaverControls" | "syncCoverArtScreensaverUi" | "syncMediaPlayerSleepPreventionUi">, scheduleSection: SettingsScheduleSectionFeature, coverArtSection: SettingsCoverArtSectionFeature, systemSection: SettingsSystemSectionFeature, preview: Pick<PreviewRenderFeature, "render">, screensaverClockFont: ScreensaverClockFontFeature, screensaverClockFormat: ScreensaverClockFormatFeature): SettingsPageFeature {
     const { render: renderPreview } = preview;
     const { appendSettingsSection, buildAlarmDelayAudioSettingsCard, createScreensaverThenControls, createTimeInput, statusBadge, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = helpers;
     const { buildScreenScheduleSettingsCard } = scheduleSection;
@@ -82,17 +87,17 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         });
         appearBody.appendChild(onColor);
         els.setOnColor = onColor;
-        var appearanceResetButton: any = createActionButton("sp-icon-button sp-card-header-action", "", "restore", "Reset colours to defaults");
-        appearanceResetButton.title = "Reset colours";
+        var appearanceResetButton: any = createActionButton("sp-icon-button sp-card-header-action", "", "restore", i18n("Reset colours to defaults"));
+        appearanceResetButton.title = i18n("Reset colours");
         appearanceResetButton.addEventListener("click", function (this: any, event?: any) {
             event.stopPropagation();
             resetAppearanceColors(true);
         });
-        var appearanceCard: any = makeCollapsibleCard("Appearance", appearBody, true, null, appearanceResetButton);
+        var appearanceCard: any = makeCollapsibleCard(i18n("Appearance"), appearBody, true, null, appearanceResetButton);
         var languageBody: any = document.createElement("div");
         var languageField: any = document.createElement("div");
         languageField.className = "sp-field";
-        languageField.appendChild(fieldLabel("Language", "sp-set-language"));
+        languageField.appendChild(fieldLabel(i18n("Language"), "sp-set-language"));
         var languageSelect: any = document.createElement("select");
         languageSelect.className = "sp-select";
         languageSelect.id = "sp-set-language";
@@ -103,18 +108,26 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         languageSelect.value = normalizeLanguage(state.language);
         languageSelect.addEventListener("change", function (this: any) {
             state.language = normalizeLanguage(this.value);
-            postSelect(entityName("screen_language"), state.language);
+            // Follow the device language once the POST has completed; a reload now would abort it.
+            // post() never rejects: it resolves null on a network error and the failed Response on an
+            // HTTP error, so only follow when the device accepted the change. The SSE echo
+            // 'select-screen__language' still follows whenever the device really changed.
+            postSelect(entityName("screen_language"), state.language).then(function (this: any, response?: any) {
+                if (!response || !response.ok)
+                    return;
+                requestWebLocale(state.language, webLocaleReloadAllowed);
+            });
             renderPreview();
         });
         languageField.appendChild(languageSelect);
         languageBody.appendChild(languageField);
-        var languageCard: any = makeCollapsibleCard("Language", languageBody, true);
+        var languageCard: any = makeCollapsibleCard(i18n("Language"), languageBody, true);
         els.setLanguage = languageSelect;
         var blBody: any = document.createElement("div");
         var brightnessModeSegment: any = segmentControl([
-            ["manual", "Manual"],
-            ["sunrise_sunset", "Automatic"],
-            ["fixed_times", "Timed"],
+            ["manual", i18n("Manual")],
+            ["sunrise_sunset", i18n("Automatic")],
+            ["fixed_times", i18n("Timed")],
         ], normalizeBrightnessMode(state.brightnessMode), function (this: any, mode?: any) {
             state.brightnessMode = normalizeBrightnessMode(mode);
             postBrightnessMode(state.brightnessMode);
@@ -123,7 +136,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         blBody.appendChild(brightnessModeSegment.segment);
         els.setBrightnessModeButtons = brightnessModeSegment.buttons;
         var brightnessManualField: any = condField();
-        var manualSlider: any = createRangeSlider("Brightness", state.manualBrightnessVal, function (this: any, value?: any) {
+        var manualSlider: any = createRangeSlider(i18n("Brightness"), state.manualBrightnessVal, function (this: any, value?: any) {
             state.manualBrightnessVal = parseFloat(value) || 100;
             postDisplayBacklightBrightness(state.manualBrightnessVal);
         });
@@ -133,23 +146,23 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         els.setManualBrightness = manualSlider.range;
         els.setManualBrightnessVal = manualSlider.val;
         var brightnessAutomaticFields: any = condField();
-        var daySlider: any = createRangeSlider("Daytime Brightness", state.brightnessDayVal, entityName("screen_daytime_brightness"));
+        var daySlider: any = createRangeSlider(i18n("Daytime Brightness"), state.brightnessDayVal, entityName("screen_daytime_brightness"));
         brightnessAutomaticFields.appendChild(daySlider.wrap);
         els.setDayBrightness = daySlider.range;
         els.setDayBrightnessVal = daySlider.val;
-        var nightSlider: any = createRangeSlider("Nighttime Brightness", state.brightnessNightVal, entityName("screen_nighttime_brightness"));
+        var nightSlider: any = createRangeSlider(i18n("Nighttime Brightness"), state.brightnessNightVal, entityName("screen_nighttime_brightness"));
         brightnessAutomaticFields.appendChild(nightSlider.wrap);
         els.setNightBrightness = nightSlider.range;
         els.setNightBrightnessVal = nightSlider.val;
         var brightnessManualTimes: any = condField();
-        var dawnTime: any = createTimeInput("Dawn", "sp-set-brightness-dawn-time", state.brightnessDawnTime, "06:00", function (this: any, value?: any) {
+        var dawnTime: any = createTimeInput(i18n("Dawn"), "sp-set-brightness-dawn-time", state.brightnessDawnTime, "06:00", function (this: any, value?: any) {
             state.brightnessDawnTime = normalizeTimeOfDay(value, "06:00");
             postBrightnessDawnTime(state.brightnessDawnTime);
             syncScreenScheduleUi();
         });
         brightnessManualTimes.appendChild(dawnTime.wrap);
         els.setBrightnessDawnTime = dawnTime.input;
-        var duskTime: any = createTimeInput("Dusk", "sp-set-brightness-dusk-time", state.brightnessDuskTime, "18:00", function (this: any, value?: any) {
+        var duskTime: any = createTimeInput(i18n("Dusk"), "sp-set-brightness-dusk-time", state.brightnessDuskTime, "18:00", function (this: any, value?: any) {
             state.brightnessDuskTime = normalizeTimeOfDay(value, "18:00");
             postBrightnessDuskTime(state.brightnessDuskTime);
             syncScreenScheduleUi();
@@ -166,12 +179,33 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         blBody.appendChild(brightnessAutomaticFields);
         els.setBrightnessAutomaticFields = brightnessAutomaticFields;
         updateSunInfo();
-        var backlightCard: any = makeCollapsibleCard("Backlight", blBody, true);
+        var backlightCard: any = makeCollapsibleCard(i18n("Backlight"), blBody, true);
         var scheduleCard: any = buildScreenScheduleSettingsCard();
+        const clockAppearanceBody = document.createElement("div");
+        const clockAppearanceInfo = document.createElement("p");
+        clockAppearanceInfo.textContent = i18n("Font and colour apply to the clock in Timer, Sensor and Night Schedule modes.");
+        clockAppearanceBody.appendChild(clockAppearanceInfo);
+        const clockFont = selectField(i18n("Clock Font"), "sp-set-screensaver-clock-font", [], state.screensaverClockFont, function (this: HTMLSelectElement) {
+            void screensaverClockFont.setFont(this.value);
+        });
+        els.setScreensaverClockFont = clockFont.select;
+        els.setScreensaverClockFontField = clockFont.field;
+        clockAppearanceBody.appendChild(clockFont.field);
+        screensaverClockFont.syncUi();
+        clockAppearanceBody.appendChild(screensaverClockFormat.buildControls(fields));
+        clockAppearanceBody.appendChild(fieldLabel(i18n("Clock Text Colour")));
+        const clockTextColor = colorField("sp-set-schedule-clock-text-color", state.scheduleClockTextColor, function (hex: string) {
+            state.scheduleClockTextColor = normalizeHexColor(hex, "FFFFFF");
+            postText(entityName("screen_schedule_clock_text_color"), state.scheduleClockTextColor);
+        });
+        els.setScheduleClockTextColor = clockTextColor;
+        clockAppearanceBody.appendChild(clockTextColor);
+        const clockAppearanceCard = makeCollapsibleCard(i18n("Clock Appearance"), clockAppearanceBody, true);
+        clockAppearanceCard.id = "sp-clock-appearance";
         var clockBody: any = document.createElement("div");
         var tzField: any = document.createElement("div");
         tzField.className = "sp-field";
-        tzField.appendChild(fieldLabel("Timezone", "sp-set-timezone"));
+        tzField.appendChild(fieldLabel(i18n("Timezone"), "sp-set-timezone"));
         var tzSelect: any = document.createElement("select");
         tzSelect.className = "sp-select";
         tzSelect.id = "sp-set-timezone";
@@ -194,14 +228,14 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         els.setTimezone = tzSelect;
         var cfField: any = document.createElement("div");
         cfField.className = "sp-field";
-        cfField.appendChild(fieldLabel("Clock Format", "sp-set-clock-format"));
+        cfField.appendChild(fieldLabel(i18n("Clock Format"), "sp-set-clock-format"));
         var cfSelect: any = document.createElement("select");
         cfSelect.className = "sp-select";
         cfSelect.id = "sp-set-clock-format";
         state.clockFormatOptions.forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
             o.value = opt;
-            o.textContent = opt === "12h" ? "12-hour" : "24-hour";
+            o.textContent = opt === "12h" ? i18n("12-hour") : i18n("24-hour");
             cfSelect.appendChild(o);
         });
         cfSelect.value = state.clockFormat;
@@ -214,7 +248,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         var ntpField: any = document.createElement("div");
         ntpField.className = "sp-field";
         state.customNtpServers = state.customNtpServers || hasCustomNtpServers();
-        var customNtpServers: any = toggleRow("Custom NTP Servers", "sp-set-custom-ntp-servers", state.customNtpServers);
+        var customNtpServers: any = toggleRow(i18n("Custom NTP Servers"), "sp-set-custom-ntp-servers", state.customNtpServers);
         ntpField.appendChild(customNtpServers.row);
         els.setCustomNtpServersToggle = customNtpServers.input;
         customNtpServers.input.addEventListener("change", function (this: any) {
@@ -248,15 +282,15 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             ntpList.appendChild(input);
             return input;
         }
-        els.setNtpServer1 = addNtpServerInput("sp-set-ntp-server-1", "ntpServer1", entityName("screen_ntp_server_1"), NTP_SERVER_DEFAULTS[0], "NTP Server 1");
-        els.setNtpServer2 = addNtpServerInput("sp-set-ntp-server-2", "ntpServer2", entityName("screen_ntp_server_2"), NTP_SERVER_DEFAULTS[1], "NTP Server 2");
-        els.setNtpServer3 = addNtpServerInput("sp-set-ntp-server-3", "ntpServer3", entityName("screen_ntp_server_3"), NTP_SERVER_DEFAULTS[2], "NTP Server 3");
+        els.setNtpServer1 = addNtpServerInput("sp-set-ntp-server-1", "ntpServer1", entityName("screen_ntp_server_1"), NTP_SERVER_DEFAULTS[0], i18n("NTP Server {number}", { number: 1 }));
+        els.setNtpServer2 = addNtpServerInput("sp-set-ntp-server-2", "ntpServer2", entityName("screen_ntp_server_2"), NTP_SERVER_DEFAULTS[1], i18n("NTP Server {number}", { number: 2 }));
+        els.setNtpServer3 = addNtpServerInput("sp-set-ntp-server-3", "ntpServer3", entityName("screen_ntp_server_3"), NTP_SERVER_DEFAULTS[2], i18n("NTP Server {number}", { number: 3 }));
         ntpField.appendChild(ntpList);
         syncNtpServerUi(runtime, syncInput);
         clockBody.appendChild(ntpField);
-        var timeSettingsCard: any = makeCollapsibleCard("Time", clockBody, true);
+        var timeSettingsCard: any = makeCollapsibleCard(i18n("Time"), clockBody, true);
         var clockBarBody: any = document.createElement("div");
-        var clockBar: any = toggleRow("Show Clock Bar", "sp-set-clock-bar", state.clockBarOn);
+        var clockBar: any = toggleRow(i18n("Show Clock Bar"), "sp-set-clock-bar", state.clockBarOn);
         clockBarBody.appendChild(clockBar.row);
         els.setClockBarToggle = clockBar.input;
         clockBar.input.addEventListener("change", function (this: any) {
@@ -265,7 +299,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             syncClockBarUi();
             postClockBar(state.clockBarOn);
         });
-        var clockBarNightMode: any = toggleRow("Show Night Mode Icon", "sp-set-clock-bar-night-mode", state.clockBarNightModeOn);
+        var clockBarNightMode: any = toggleRow(i18n("Show Night Mode Icon"), "sp-set-clock-bar-night-mode", state.clockBarNightModeOn);
         clockBarBody.appendChild(clockBarNightMode.row);
         els.setClockBarNightModeToggle = clockBarNightMode.input;
         clockBarNightMode.input.addEventListener("change", function (this: any) {
@@ -273,15 +307,15 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             syncClockBarUi();
             postClockBarNightMode(state.clockBarNightModeOn);
         });
-        var clockBarBadge: any = statusBadge("Clock bar on");
+        var clockBarBadge: any = statusBadge(i18n("Clock bar on"));
         els.setClockBarBadge = clockBarBadge;
         syncClockBarUi();
         syncTemperatureUi();
-        var clockBarCard: any = makeCollapsibleCard("Clock Bar", clockBarBody, true, clockBarBadge);
+        var clockBarCard: any = makeCollapsibleCard(i18n("Clock Bar"), clockBarBody, true, clockBarBadge);
         var voiceServicesCard: any = null;
         if (voiceServicesUiState().settingsVisible) {
             var voiceServicesBody: any = document.createElement("div");
-            var voiceServices: any = toggleRow("Voice Services", "sp-set-voice-services", state.voiceServicesOn);
+            var voiceServices: any = toggleRow(i18n("Voice Services"), "sp-set-voice-services", state.voiceServicesOn);
             voiceServicesBody.appendChild(voiceServices.row);
             els.setVoiceServicesToggle = voiceServices.input;
             voiceServices.input.addEventListener("change", function (this: any) {
@@ -289,16 +323,16 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
                 syncClockBarUi();
                 postVoiceServices(state.voiceServicesOn);
             });
-            var voiceServicesBadge: any = statusBadge("Voice services on");
+            var voiceServicesBadge: any = statusBadge(i18n("Voice services on"));
             els.setVoiceServicesBadge = voiceServicesBadge;
             syncClockBarUi();
-            voiceServicesCard = makeCollapsibleCard("Voice Services", voiceServicesBody, true, voiceServicesBadge);
+            voiceServicesCard = makeCollapsibleCard(i18n("Voice Services"), voiceServicesBody, true, voiceServicesBadge);
             els.voiceServicesCard = voiceServicesCard;
         }
         var batteryStatusCard: any = null;
         if (layout.config.features && layout.config.features.battery) {
             var batteryStatusBody: any = document.createElement("div");
-            var batteryStatus: any = toggleRow("Enable battery support", "sp-set-battery-status", state.batteryStatusOn);
+            var batteryStatus: any = toggleRow(i18n("Enable battery support"), "sp-set-battery-status", state.batteryStatusOn);
             batteryStatusBody.appendChild(batteryStatus.row);
             els.setBatteryStatusToggle = batteryStatus.input;
             batteryStatus.input.addEventListener("change", function (this: any) {
@@ -306,10 +340,10 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
                 syncClockBarUi();
                 postBatteryStatus(state.batteryStatusOn);
             });
-            var batteryStatusBadge: any = statusBadge("Battery icon on");
+            var batteryStatusBadge: any = statusBadge(i18n("Battery icon on"));
             els.setBatteryStatusBadge = batteryStatusBadge;
             syncClockBarUi();
-            batteryStatusCard = makeCollapsibleCard("Battery", batteryStatusBody, true, batteryStatusBadge);
+            batteryStatusCard = makeCollapsibleCard(i18n("Battery"), batteryStatusBody, true, batteryStatusBadge);
             els.batteryStatusCard = batteryStatusCard;
         }
         var alarmDelayAudioCard: any = buildAlarmDelayAudioSettingsCard();
@@ -318,7 +352,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             var rotationBody: any = document.createElement("div");
             var rotField: any = document.createElement("div");
             rotField.className = "sp-field";
-            rotField.appendChild(fieldLabel("Rotation", "sp-set-screen-rotation"));
+            rotField.appendChild(fieldLabel(i18n("Rotation"), "sp-set-screen-rotation"));
             var rotSelect: any = document.createElement("select");
             rotSelect.className = "sp-select";
             rotSelect.id = "sp-set-screen-rotation";
@@ -334,20 +368,20 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
             });
             rotField.appendChild(rotSelect);
             rotationBody.appendChild(rotField);
-            rotationCard = makeCollapsibleCard("Rotation", rotationBody, true);
+            rotationCard = makeCollapsibleCard(i18n("Rotation"), rotationBody, true);
             els.setScreenRotation = rotSelect;
         }
         var tempBody: any = document.createElement("div");
         var unitField: any = document.createElement("div");
         unitField.className = "sp-field";
-        unitField.appendChild(fieldLabel("Temperature Unit", "sp-set-temperature-unit"));
+        unitField.appendChild(fieldLabel(i18n("Temperature Unit"), "sp-set-temperature-unit"));
         var unitSelect: any = document.createElement("select");
         unitSelect.className = "sp-select";
         unitSelect.id = "sp-set-temperature-unit";
         [
-            ["Auto", "Auto (from timezone)"],
-            ["\u00B0C", "Centigrade (\u00B0C)"],
-            ["\u00B0F", "Fahrenheit (\u00B0F)"],
+            ["Auto", i18n("Auto (from timezone)")],
+            ["\u00B0C", i18n("Centigrade (\u00B0C)")],
+            ["\u00B0F", i18n("Fahrenheit (\u00B0F)")],
         ].forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
             o.value = opt[0];
@@ -365,14 +399,14 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         tempBody.appendChild(unitField);
         els.setTemperatureUnit = unitSelect;
         syncTemperatureUi();
-        var temperatureCard: any = makeCollapsibleCard("Temperature", tempBody, true);
+        var temperatureCard: any = makeCollapsibleCard(i18n("Temperature"), tempBody, true);
         var ssBody: any = document.createElement("div");
         var ssMode: any = getActiveScreensaverMode();
-        ssBody.appendChild(fieldLabel("Mode"));
+        ssBody.appendChild(fieldLabel(i18n("Mode")));
         var ssModeSegment: any = segmentControl([
-            ["disabled", "Disabled"],
-            ["timer", "Timer"],
-            ["sensor", "Sensor"],
+            ["disabled", i18n("Disabled")],
+            ["timer", i18nKey("timer__screensaver_mode", "Timer")],
+            ["sensor", i18n("Sensor")],
         ], ssMode, function (this: any, mode?: any) {
             setSsMode(mode);
             state.screensaverMode = mode;
@@ -383,7 +417,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         var sensorBtn: any = ssModeSegment.buttons.sensor;
         ssBody.appendChild(ssModeSegment.segment);
         var timerPanel: any = document.createElement("div");
-        var timeoutControl: any = selectField("Timeout", "sp-set-ss-timeout", [], state.screensaverTimeout, function (this: any) {
+        var timeoutControl: any = selectField(i18n("Timeout"), "sp-set-ss-timeout", [], state.screensaverTimeout, function (this: any) {
             var n: any = parseFloat(this.value);
             if (isFinite(n))
                 state.screensaverTimeout = n;
@@ -418,8 +452,8 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         var sensorPanel: any = document.createElement("div");
         var presenceField: any = document.createElement("div");
         presenceField.className = "sp-field";
-        presenceField.appendChild(fieldLabel("Presence Entity", "sp-set-presence"));
-        var presInp: any = entityInput("sp-set-presence", state.presenceEntity, "Presence sensor entity", ["binary_sensor", "sensor"]);
+        presenceField.appendChild(fieldLabel(i18n("Presence Entity"), "sp-set-presence"));
+        var presInp: any = entityInput("sp-set-presence", state.presenceEntity, i18n("Presence sensor entity"), ["binary_sensor", "sensor"]);
         presenceField.appendChild(presInp);
         sensorPanel.appendChild(presenceField);
         bindTextPost(presInp, entityName("presence_sensor_entity"), {
@@ -450,7 +484,7 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         syncClockScreensaverControls();
         syncMediaPlayerSleepPreventionUi();
         syncCoverArtScreensaverUi();
-        var ssBadge: any = statusBadge("Screensaver on");
+        var ssBadge: any = statusBadge(i18n("Screensaver on"));
         els.setScreensaverBadge = ssBadge;
         function setSsMode(this: any, mode?: any) {
             ssMode = mode;
@@ -465,20 +499,20 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         }
         els.setSsMode = setSsMode;
         setSsMode(ssMode);
-        var screensaverCard: any = makeCollapsibleCard("Screensaver", ssBody, true, ssBadge);
+        var screensaverCard: any = makeCollapsibleCard(i18n("Screensaver"), ssBody, true, ssBadge);
         var idleBody: any = document.createElement("div");
-        idleBody.appendChild(fieldLabel("Return Home After"));
+        idleBody.appendChild(fieldLabel(i18n("Return Home After")));
         var hsSelect: any = document.createElement("select");
         hsSelect.className = "sp-select";
         hsSelect.id = "sp-set-hs-timeout";
         var hsOptions: any = [
-            { label: "Disabled", value: 0 },
-            { label: "10 seconds", value: 10 },
-            { label: "20 seconds", value: 20 },
-            { label: "30 seconds", value: 30 },
-            { label: "1 minute", value: 60 },
-            { label: "2 minutes", value: 120 },
-            { label: "5 minutes", value: 300 },
+            { label: i18n("Disabled"), value: 0 },
+            { label: durationSecondsLabel(10), value: 10 },
+            { label: durationSecondsLabel(20), value: 20 },
+            { label: durationSecondsLabel(30), value: 30 },
+            { label: durationMinutesLabel(1), value: 60 },
+            { label: durationMinutesLabel(2), value: 120 },
+            { label: durationMinutesLabel(5), value: 300 },
         ];
         hsOptions.forEach(function (this: any, opt?: any) {
             var o: any = document.createElement("option");
@@ -495,33 +529,34 @@ export function createSettingsPageFeature(codec: Pick<ConfigCodecFeature, "bindT
         });
         idleBody.appendChild(hsSelect);
         els.setHSTimeout = hsSelect;
-        var idleBadge: any = statusBadge("Idle on");
+        var idleBadge: any = statusBadge(i18n("Idle on"));
         els.setIdleBadge = idleBadge;
         syncIdleUi(runtime);
-        var idleCard: any = makeCollapsibleCard("Idle", idleBody, true, idleBadge);
+        var idleCard: any = makeCollapsibleCard(i18n("Idle"), idleBody, true, idleBadge);
         var systemSettingsCards: any = buildSystemSettingsCards();
-        appendSettingsSection(config, "Display", [
+        appendSettingsSection(config, i18nKey("display__settings_section", "Display"), [
             appearanceCard,
             backlightCard,
             idleCard,
             clockBarCard,
             rotationCard,
         ]);
-        appendSettingsSection(config, "Voice & Sounds", [
+        appendSettingsSection(config, i18n("Voice & Sounds"), [
             voiceServicesCard,
             alarmDelayAudioCard,
         ]);
-        appendSettingsSection(config, "Sleep & Schedule", [
+        appendSettingsSection(config, i18n("Sleep & Schedule"), [
             coverArtCard,
             screensaverCard,
+            clockAppearanceCard,
             scheduleCard,
         ]);
-        appendSettingsSection(config, "Preferences", [
+        appendSettingsSection(config, i18n("Preferences"), [
             languageCard,
             timeSettingsCard,
             temperatureCard,
         ]);
-        appendSettingsSection(config, "System", [
+        appendSettingsSection(config, i18n("System"), [
             systemSettingsCards.identityCard,
             systemSettingsCards.backupCard,
             systemSettingsCards.firmwareCard,

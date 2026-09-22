@@ -26,6 +26,7 @@ REQUIRED_SOURCES = {
     "entityNames": ("file", "authored"),
     "icons": ("file", "authored"),
     "translations": ("glob", "authored"),
+    "webTranslations": ("glob", "authored"),
     "compatibilityFixtures": ("file", "authored"),
 }
 PRODUCT_MODEL_STAGES = {"legacy-adapter", "generated-pilot", "generated-source"}

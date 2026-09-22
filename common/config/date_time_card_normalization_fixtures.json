@@ -1,5 +1,41 @@
 [
   {
+    "name": "calendar datetime keeps requested size alongside legacy flag",
+    "input": "sensor.date;;;;;;calendar;datetime;text_size=small,large_numbers=off,ignored=1",
+    "expected": {
+      "entity": "sensor.date", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "calendar", "precision": "datetime",
+      "options": "large_numbers=off,text_size=small"
+    }
+  },
+  {
+    "name": "clock keeps medium text size",
+    "input": ";;;;;;clock;;text_size=medium",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "text_size=medium"
+    }
+  },
+  {
+    "name": "world clock keeps large text size",
+    "input": ";;;;;;timezone;;text_size=large",
+    "expected": {
+      "entity": "UTC (GMT+0)", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "timezone", "precision": "",
+      "options": "text_size=large"
+    }
+  },
+  {
+    "name": "invalid text size falls back to existing layout",
+    "input": ";;;;;;clock;;text_size=999,large_numbers",
+    "expected": {
+      "entity": "", "label": "", "icon": "Auto", "icon_on": "Auto",
+      "sensor": "", "unit": "", "type": "clock", "precision": "",
+      "options": "large_numbers"
+    }
+  },
+  {
     "name": "calendar default fills date entity",
     "input": ";;;;;;calendar;;",
     "expected": {

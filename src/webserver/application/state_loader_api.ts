@@ -18,6 +18,7 @@ import type { EntityStateFeature } from "./entity_state";
 import type { ControlsShellFeature } from "./controls_shell";
 import type { ApplicationApiFeature } from "./api";
 import type { GridMigrationFeature } from "./grid_migration";
+import { i18n } from "../i18n";
 export interface StateLoaderDependencies {
     readonly subpageEntityKeys: () => string[];
     readonly connectEvents: () => void;
@@ -119,7 +120,7 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
         loadStateItems(cardStateEntities(), handleState, 4).then(function (this: any, loadedCount?: any) {
             if (loadedCount === 0) {
                 setConfigLocked(true, "Reconnecting to device\u2026");
-                showBanner("Reconnecting to device\u2026", "offline");
+                showBanner(i18n("Reconnecting to device\u2026"), "offline");
                 setTimeout(dependencies.connectEvents, 5000);
                 return;
             }
@@ -227,7 +228,7 @@ export function createStateLoaderFeature(runtime: UiRuntimeState, layout: Applic
             runtime.eventSource = null;
         }
         setConfigLocked(true, "Restarting device\u2026");
-        showBanner("Restarting device\u2026", "offline");
+        showBanner(i18n("Restarting device\u2026"), "offline");
         setTimeout(function (this: any) {
             dependencies.connectEvents();
         }, 15000);

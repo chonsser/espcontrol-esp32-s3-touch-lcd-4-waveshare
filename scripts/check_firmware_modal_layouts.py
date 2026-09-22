@@ -48,6 +48,7 @@ def assert_profile_contract(fixtures: dict, profiles: dict[str, dict]) -> None:
         "guition-esp32-p4-jc8012p4a1-v2": "guition-esp32-p4-jc8012p4a1",
         "guition-esp32-p4-jc8012p4a1-v3": "guition-esp32-p4-jc8012p4a1",
         "guition-esp32-p4-jc1060p470-v2": "guition-esp32-p4-jc1060p470",
+        "waveshare-esp32-s3-touch-lcd-4": "guition-esp32-s3-4848s040",
     }
     unexpected = sorted(set(missing) - set(allowed_aliases))
     assert not unexpected, f"modal geometry fixtures missing devices: {', '.join(unexpected)}"

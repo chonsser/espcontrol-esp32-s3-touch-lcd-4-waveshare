@@ -1,5 +1,6 @@
 import { state } from "../state/app_instance";
-import { normalizeBrightnessMode } from "../model/settings";
+import { normalizeBrightnessMode, normalizeLanguage } from "../model/settings";
+import { i18n, i18nDevice } from "../i18n";
 import type { UiRuntimeState } from "./state";
 import type { CoreFeature } from "./core";
 import type { ApplicationLayoutState } from "./application_context";
@@ -87,8 +88,9 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
         }
     }
     function formatTimezoneOption(this: any, opt?: any) {
+        // Label only: the option value stays AUTO_TIMEZONE_OPTION.
         if (isHomeAssistantAutoTimezone(opt))
-            return opt;
+            return i18n("Auto (Home Assistant)");
         var tzId: any = getTzId(opt);
         var offset: any = timezoneOffsetMinutes(tzId, webserverNow());
         if (offset == null || !isFinite(offset))
@@ -101,13 +103,25 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
         o.textContent = formatTimezoneOption(opt);
         select.appendChild(o);
     }
+    // The emulated clock follows the device language, like the panel; English keeps "en-US".
+    function clockPreviewLocale(this: any) {
+        var language: any = normalizeLanguage(state.language);
+        if (language === "en")
+            return "en-US";
+        try {
+            return Intl.DateTimeFormat.supportedLocalesOf([language]).length ? language : "en-US";
+        }
+        catch (_) {
+            return "en-US";
+        }
+    }
     function updateClockText(this: any) {
         if (!els.clock)
             return;
         var now: any = webserverNow();
         var tzId: any = getTzId(effectiveTimezoneOptionForWeb(state.timezone));
         try {
-            var parts: any = new Intl.DateTimeFormat("en-US", {
+            var parts: any = new Intl.DateTimeFormat(clockPreviewLocale(), {
                 timeZone: tzId, hour: "numeric", minute: "2-digit",
                 hour12: state.clockFormat === "12h"
             }).formatToParts(now);
@@ -185,14 +199,14 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
     }
     function clockBarItemLabel(this: any, item?: any) {
         if (isClockBarTemperatureItem(item))
-            return "Temperature";
+            return i18n("Temperature");
         if (item === "time")
-            return "Clock";
+            return i18n("Clock");
         if (item === "voice")
-            return "Voice Services";
+            return i18n("Voice Services");
         if (item === "network")
-            return "Connectivity";
-        return "Clock Bar";
+            return i18n("Connectivity");
+        return i18n("Clock Bar");
     }
     function createClockBarItemElement(this: any, item?: any, section?: any) {
         var button: any = document.createElement("div");
@@ -254,7 +268,7 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
                 const parent = state.buttons[state.editingSubpage - 1];
                 const title = document.createElement("span");
                 title.className = "sp-clockbar-subpage-title";
-                title.textContent = String(parent?.label || "").trim() || "Subpage";
+                title.textContent = String(parent?.label || "").trim() || i18nDevice("Subpage");
                 title.title = title.textContent;
                 container.className = "sp-clockbar-section sp-clockbar-left";
                 container.appendChild(title);
@@ -309,9 +323,9 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
         el.classList.add("sp-visible");
         var parts: any = [];
         if (state.sunrise)
-            parts.push("Sunrise: " + state.sunrise);
+            parts.push(i18n("Sunrise: {time}", { time: state.sunrise }));
         if (state.sunset)
-            parts.push("Sunset: " + state.sunset);
+            parts.push(i18n("Sunset: {time}", { time: state.sunset }));
         el.textContent = parts.join(" \u00a0/\u00a0 ");
     }
     function updateTempPreview(this: any) {

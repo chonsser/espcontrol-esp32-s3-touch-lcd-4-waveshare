@@ -3,6 +3,25 @@ import { LANGUAGE_LABELS } from "../state/app_state";
 import { normalizeLanguage } from "../model/settings";
 import { uniqueOptions } from "./ui_primitives";
 import type { UiRuntimeState } from "./state";
+// ── Web locale reload guard ───────────────────────────────────────────
+// requestWebLocale() reloads the page when the device language changes. Work that
+// must not be cut short (a backup import posting its settings) holds the reload;
+// requestWebLocale() keeps retrying until every hold is released.
+var webLocaleReloadHolds: number = 0;
+export function holdWebLocaleReload(): () => void {
+        var released: boolean = false;
+        webLocaleReloadHolds++;
+        return function () {
+            if (released)
+                return;
+            released = true;
+            webLocaleReloadHolds--;
+        };
+}
+export function webLocaleReloadAllowed(): boolean {
+        return webLocaleReloadHolds === 0 && !state.configLocked
+            && !state.settingsDraft?.dirty && !state.settingsDraft?.isNew;
+}
 export function languageLabel(value?: any) {
         value = normalizeLanguage(value);
         return LANGUAGE_LABELS[value] || value;

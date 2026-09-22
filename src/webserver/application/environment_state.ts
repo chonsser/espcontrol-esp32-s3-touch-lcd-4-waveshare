@@ -1,6 +1,7 @@
 import { state } from "../state/app_instance";
 import { AUTO_TIMEZONE_OPTION, FALLBACK_TIMEZONE_OPTION } from "../state/app_state";
 import { normalizeLanguage } from "../model/settings";
+import { i18nDevice } from "../i18n";
 import type { VoiceServicesController } from "../features/voice_services_controller";
 import type { ApplicationLayoutState } from "./application_context";
 
@@ -60,7 +61,7 @@ export function createEnvironmentStateFeature(
     function monthNameForIndex(index?: any) {
         var monthIndex: any = parseInt(index, 10);
         if (!isFinite(monthIndex) || monthIndex < 0 || monthIndex > 11)
-            return "Date";
+            return i18nDevice("Date");
         try {
             return new Intl.DateTimeFormat(normalizeLanguage(state.language), { month: "long" })
                 .format(new Date(Date.UTC(2000, monthIndex, 1)));
