@@ -1,3 +1,4 @@
+import { copyLongPressOptions } from "./config_long_press_options";
 import { configOptionValue, setConfigOptionValue } from "../model/config_primitives";
 import {
     CLIMATE_CONTROL_TABS_OPTION,
@@ -293,7 +294,7 @@ export function createConfigModalTabOptionsFeature(
     function renderModalTabSettings(this: any, panel?: any, b?: any, helpers?: any, config?: any) {
         var section: any = dependencies.document.createElement("div");
         panel.appendChild(section);
-        b.options = config.normalizeOptions(b.options);
+        b.options = copyLongPressOptions(config.normalizeOptions(b.options), b.options);
         var tabs: any = config.tabs(b);
         var definitions: any = config.definitions();
         var definitionByValue: any = {};

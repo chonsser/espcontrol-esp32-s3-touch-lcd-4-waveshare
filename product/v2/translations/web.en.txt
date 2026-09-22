@@ -82,6 +82,16 @@ off_icon=Off Icon
 on_state_pattern=On State Pattern
 solid=Solid
 stripes=Stripes
+long_press=Long Press
+same_as_tap=Same as tap
+show_more_info=Show more info
+no_action=No action
+info_entity_optional=Info Entity (optional)
+e_g_sensor_living_room_temperature=e.g. sensor.living_room_temperature
+use_an_entity_id_such_as_sensor_living_room_temperature=Use an entity ID such as sensor.living_room_temperature.
+additional_information_optional=Additional Information (optional)
+text_to_show_on_the_panel=Text to show on the panel
+hold_the_card_to_show_its_name_and_current_state_leave_info_enti=Hold the card to show its name and current state. Leave Info Entity empty to use the card's entity. A long press does not run the tap action.
 save=Save
 
 # src/webserver/application/button_settings_icon_picker.ts

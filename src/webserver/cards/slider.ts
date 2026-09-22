@@ -1,3 +1,4 @@
+import { cardSupportsLongPress } from "../application/config_long_press_options";
 import {
     cardContractAllowInSubpage,
     cardContractCard,
@@ -233,6 +234,7 @@ export function registerSliderCardTypes(
                         helpers.saveField("unit", position);
                     }
                     function setCoverMode(this: any, mode?: any, persist?: any) {
+                        const supportedLongPress = cardSupportsLongPress(b);
                         coverMode = normalizeCoverMode(mode, true);
                         interactionSelect.value = coverMode;
                         if (coverMode === "set_position") {
@@ -256,6 +258,7 @@ export function registerSliderCardTypes(
                             b.sensor = coverMode;
                         }
                         syncCoverUi();
+                        if (persist && supportedLongPress !== cardSupportsLongPress(b)) helpers.refreshSettings();
                     }
                     interactionSelect.addEventListener("change", function (this: any) { setCoverMode(this.value, true); });
                     coverPositionInput.addEventListener("change", function (this: any) { setCoverPosition(this.value); });

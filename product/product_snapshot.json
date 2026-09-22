@@ -9818,6 +9818,28 @@
           "type": "alarm",
           "precision": "",
           "options": "pin_arm=0,actions=away%7Cdisarm"
+        },
+        "long_press_info": {
+          "entity": "light.kitchen",
+          "label": "Kitchen",
+          "icon": "Auto",
+          "icon_on": "Auto",
+          "sensor": "",
+          "unit": "",
+          "type": "",
+          "precision": "",
+          "options": "long_press=more_info,long_press_entity=sensor.kitchen_power,long_press_text=Power%2C today%3B details"
+        },
+        "long_press_none": {
+          "entity": "script.goodnight",
+          "label": "Goodnight",
+          "icon": "Auto",
+          "icon_on": "Auto",
+          "sensor": "script.turn_on",
+          "unit": "",
+          "type": "action",
+          "precision": "",
+          "options": "long_press=none"
         }
       },
       "subpage": {

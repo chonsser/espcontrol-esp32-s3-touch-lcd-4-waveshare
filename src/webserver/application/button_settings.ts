@@ -1,3 +1,5 @@
+import { longPressAction, longPressDefaultEntity, copyLongPressOptions, cardSupportsLongPress } from "./config_long_press_options";
+import { configOptionValue, setConfigOptionValue } from "../model/config_primitives";
 import { state } from "../state/app_instance";
 import * as EspControlModel from "../model";
 import { applySpans, CARD_SIZE_SINGLE, clearSpans } from "../model/grid";
@@ -183,6 +185,7 @@ export function createButtonSettingsFeature(
         if (!pendingNewDraft)
             state.settingsDraft = cardEditorDraftController.ensureExistingDraft(state.settingsDraft, location, liveButton);
         var b: any = state.settingsDraft!.button;
+        let longPressOptions = b.options;
         var isNewDraft: any = !!state.settingsDraft!.isNew;
         var title: any = document.createElement("div");
         title.className = "sp-section-title";
@@ -196,6 +199,7 @@ export function createButtonSettingsFeature(
             cardEditorDraftController.markDirty(state.settingsDraft, draftKey);
         }
         function saveField(this: any, field?: any, val?: any) {
+            b.options = copyLongPressOptions(b.options, longPressOptions);
             markDraftDirty();
         }
         function fieldContainer(this: any, input?: any) {
@@ -784,6 +788,7 @@ export function createButtonSettingsFeature(
             entityInput: entityInput,
             bindField: bindField,
             saveField: saveField,
+            refreshSettings: renderButtonSettings,
             applyCardMetadataFields: applyCardMetadataFields,
             renderCardModeSelector: renderCardModeSelector,
             renderCardLargeNumbersToggle: renderCardLargeNumbersToggle,
@@ -805,6 +810,7 @@ export function createButtonSettingsFeature(
             idPrefix: idPrefix,
             isSub: c.isSub,
         };
+        b.options = copyLongPressOptions(b.options, "");
         if (typeDef && typeDef.renderSettingsBeforeLabel &&
             (!c.isSub || buttonTypeRegistryValue(typeDef, "allowInSubpage", false))) {
             typeDef.renderSettingsBeforeLabel(panel, b, slot, typeHelpers);
@@ -850,6 +856,44 @@ export function createButtonSettingsFeature(
                 renderPreview();
             });
             panel.appendChild(patternField.field);
+        }
+        b.options = copyLongPressOptions(b.options, longPressOptions);
+        if (cardSupportsLongPress(b)) {
+            const holdAction = selectField(i18n("Long Press"), idPrefix + "long-press", [
+                ["", i18n("Same as tap")], ["more_info", i18n("Show more info")], ["none", i18n("No action")],
+            ], longPressAction(b.options), function (this: HTMLSelectElement) {
+                longPressOptions = setConfigOptionValue(b.options, "long_press", this.value);
+                b.options = copyLongPressOptions(b.options, longPressOptions);
+                saveField("options", b.options);
+                renderButtonSettings();
+            });
+            panel.appendChild(holdAction.field);
+            if (longPressAction(b.options) === "more_info") {
+                const infoEntity = entityField(i18n("Info Entity (optional)"), idPrefix + "long-press-entity",
+                    configOptionValue(b.options, "long_press_entity"),
+                    longPressDefaultEntity(b) || i18n("e.g. sensor.living_room_temperature"), []);
+                panel.appendChild(infoEntity.field);
+                requireField(infoEntity.input, i18n("Use an entity ID such as sensor.living_room_temperature."),
+                    undefined, (value: string) => !value.trim() || /^[a-z_]+\.[a-z0-9_]+$/.test(value.trim()));
+                const infoText = textField(i18n("Additional Information (optional)"), idPrefix + "long-press-text",
+                    configOptionValue(b.options, "long_press_text"), i18n("Text to show on the panel"));
+                infoText.input.maxLength = 160;
+                panel.appendChild(infoText.field);
+                for (const [control, name] of [[infoEntity.input, "long_press_entity"], [infoText.input, "long_press_text"]]) {
+                    const save = () => {
+                        longPressOptions = setConfigOptionValue(b.options, name, control.value);
+                        b.options = copyLongPressOptions(b.options, longPressOptions);
+                        saveField("options", b.options);
+                    };
+                    control.addEventListener("input", save);
+                    control.addEventListener("change", save);
+                    control.addEventListener("blur", save);
+                }
+                const hint = document.createElement("p");
+                hint.className = "sp-hint";
+                hint.textContent = i18n("Hold the card to show its name and current state. Leave Info Entity empty to use the card's entity. A long press does not run the tap action.");
+                panel.appendChild(hint);
+            }
         }
         groupCardSettingsFields(panel, idPrefix);
         var saveRow: any = document.createElement("div");

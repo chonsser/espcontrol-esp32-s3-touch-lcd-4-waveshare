@@ -5431,6 +5431,81 @@ async function assertGuestWifiSettings(page, label) {
   await page.waitForFunction(() => !document.querySelector(".sp-settings-overlay.sp-visible"));
 }
 
+async function assertLongPressEditorJourney(browser, testCase) {
+  for (const fixture of [
+    "light.kitchen;Kitchen;Auto;Auto",
+    ";Presence;Auto;Auto;binary_sensor.kitchen;;presence",
+    "media_player.living;Next;Auto;Auto;next;;media",
+    "cover.office;Office;Auto;Auto;modal;;cover",
+  ]) {
+    const nativeState = nativeConfigState(testCase.slug);
+    nativeState.document.buttons[1] = fixture;
+    const context = await browser.newContext({ viewport: testCase.viewport });
+    await installRoutes(context, testCase.slug, { nativeState });
+    const page = await context.newPage();
+    await installFakeEventSource(page);
+    async function expand() {
+      if (!(await page.locator("#sp-inp-long-press").isVisible())) {
+        await page.locator(".sp-disclosure").filter({has: page.locator("#sp-inp-long-press")})
+          .locator(".sp-disclosure-button").first().click();
+      }
+    }
+    async function open() {
+      await page.locator('.sp-main [data-slot="1"]').click();
+      await page.getByRole("button", { name: "Edit", exact: true }).click();
+      await expand();
+    }
+    try {
+      await page.goto(`http://espcontrol.test/${testCase.slug}?events=1`, {waitUntil: "domcontentloaded"});
+      await page.waitForSelector("#sp-app");
+      await page.waitForFunction(() => window.__eventSources && window.__eventSources.length > 0);
+      await seedNativeDocument(page, nativeState);
+      await open();
+      await page.locator("#sp-inp-long-press").selectOption("more_info");
+      await expand();
+      assert.strictEqual(await page.locator("#sp-inp-long-press").inputValue(), "more_info", `${fixture}: mode survives family renderer`);
+      await page.locator("#sp-inp-long-press-entity").fill("sensor.kitchen_power");
+      await page.locator("#sp-inp-long-press-text").fill("Power, today; details");
+      if (fixture.includes(";;media")) {
+        await page.locator("#sp-inp-media-mode").selectOption("previous");
+        await expand();
+        assert.strictEqual(await page.locator("#sp-inp-long-press-text").inputValue(), "Power, today; details");
+      }
+      const before = nativeState.puts.length;
+      await page.getByRole("button", {name: "Save", exact: true}).click();
+      await waitForNativeState(nativeState, () => nativeState.puts.length > before &&
+        nativeState.document.buttons[1].includes("long_press=more_info"), "long press save");
+      await page.reload({waitUntil: "domcontentloaded"});
+      await page.waitForSelector("#sp-app");
+      await page.waitForFunction(() => window.__eventSources && window.__eventSources.length > 0);
+      await seedNativeDocument(page, nativeState);
+      await open();
+      assert.strictEqual(await page.locator("#sp-inp-long-press").inputValue(), "more_info");
+      assert.strictEqual(await page.locator("#sp-inp-long-press-entity").inputValue(), "sensor.kitchen_power");
+      assert.strictEqual(await page.locator("#sp-inp-long-press-text").inputValue(), "Power, today; details");
+      fs.mkdirSync(FAILURE_DIR, {recursive: true});
+      await page.screenshot({path: path.join(FAILURE_DIR, "long-press-settings.png"), fullPage: true});
+      if (fixture.includes(";;cover")) {
+        await page.locator("#sp-inp-cover-interaction").selectOption("");
+        assert.strictEqual(await page.locator("#sp-inp-long-press").count(), 0, "cover slider excludes hold action");
+        await page.locator("#sp-inp-cover-interaction").selectOption("modal");
+        await expand();
+        assert.strictEqual(await page.locator("#sp-inp-long-press").inputValue(), "more_info", "cover mode change preserves hold settings");
+      }
+      await page.locator("#sp-inp-long-press").selectOption("none");
+      await expand();
+      assert.strictEqual(await page.locator("#sp-inp-long-press-entity").count(), 0);
+      const beforeDisable = nativeState.puts.length;
+      await page.getByRole("button", {name: "Save", exact: true}).click();
+      await waitForNativeState(nativeState, () => nativeState.puts.length > beforeDisable &&
+        nativeState.document.buttons[1].includes("long_press=none"), "long press disable");
+      assert(!nativeState.document.buttons[1].includes("long_press_entity="));
+    } finally {
+      await context.close();
+    }
+  }
+}
+
 async function assertNativeProfileJourney(browser, testCase) {
   const nativeState = nativeConfigState(testCase.slug);
   const context = await browser.newContext({ viewport: testCase.viewport });
@@ -6329,6 +6404,7 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     await assertResetControls(browser);
     for (const testCase of ACTIVE_CASES) {
       if (!acceptanceOnly) await runCase(browser, testCase);
+      if (testCase.exerciseInteractions) await assertLongPressEditorJourney(browser, testCase);
       await assertNativeProfileJourney(browser, testCase);
       await assertLegacyProfileFallback(browser, testCase);
       if (testCase.exerciseInteractions) await assertLegacyRestoreVerificationFailure(browser, testCase);

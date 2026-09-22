@@ -890,7 +890,7 @@ inline void handle_button_press(const std::string &cfg, int slot_num,
     // press event avoids scheduling a pointless pressed-card repaint first.
     lv_obj_clear_state(btn_obj, LV_STATE_PRESSED);
   }
-  if (p.type != "media") return;
+  if (p.type != "media" || !card_long_press_action(p).empty()) return;
   std::string mode = media_card_mode(p.sensor);
   if (!media_fast_press_mode(mode) || p.entity.empty()) return;
   media_fast_press_slots()[slot_num] = true;

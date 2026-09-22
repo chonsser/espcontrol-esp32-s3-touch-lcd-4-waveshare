@@ -1299,7 +1299,46 @@ inline std::string normalize_saved_config_subpage_options(
   return subpage_card_options_normalized(options, p.sensor, p.precision);
 }
 
+// Sliders own their press/release gestures; the shared action belongs to buttons.
+inline bool card_supports_long_press(const ParsedCfg &config) {
+  if (config.type == "slider" || config.type == "light_brightness" ||
+      config.type == "light_temperature" || config.type == "fan_speed") return false;
+  if (config.type == "cover" && (config.sensor.empty() || config.sensor == "tilt")) return false;
+  return !(config.type == "media" && (config.sensor == "position" ||
+    ((config.sensor.empty() || config.sensor == "now_playing") && config.precision == "progress")));
+}
+
+// Shared interaction options survive each card family's normalization.
+inline std::string card_long_press_action(const ParsedCfg &config) {
+  if (!card_supports_long_press(config)) return "";
+  const std::string action = cfg_option_value(config.options, "long_press");
+  return action == "more_info" || action == "none" ? action : "";
+}
+
+inline std::string copy_long_press_options(const std::string &target, const std::string &source) {
+  std::string out;
+  for (const auto &part : split_config_fields(target, ',')) {
+    if (part.empty() || part.compare(0, 11, "long_press=") == 0 ||
+        part.compare(0, 18, "long_press_entity=") == 0 ||
+        part.compare(0, 16, "long_press_text=") == 0) continue;
+    if (!out.empty()) out += ",";
+    out += part;
+  }
+  const std::string action = cfg_option_value(source, "long_press");
+  if (action != "more_info" && action != "none") return out;
+  if (!out.empty()) out += ",";
+  out += "long_press=" + action;
+  if (action == "more_info") {
+    for (const char *name : {"long_press_entity", "long_press_text"}) {
+      const std::string value = trim_saved_option_value(cfg_option_value(source, name));
+      if (!value.empty()) out += std::string(",") + name + "=" + encode_compact_field(value);
+    }
+  }
+  return out;
+}
+
 inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
+  const std::string long_press_options = p.options;
   migrate_saved_config_action_legacy(p);
   const bool was_legacy_text_sensor = p.type == "text_sensor";
   migrate_saved_config_sensor_legacy(p);
@@ -1355,6 +1394,7 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
   normalize_saved_config_sensor(p, was_legacy_text_sensor,
                                 normalize_saved_config_sensor_fields,
                                 sensor_card_options_normalized);
+  p.options = copy_long_press_options(p.options, long_press_options);
   return p;
 }
 

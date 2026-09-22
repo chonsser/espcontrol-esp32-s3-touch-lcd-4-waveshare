@@ -81,6 +81,16 @@ off_icon=Ikona wyłączenia
 on_state_pattern=Wzór stanu włączenia
 solid=Jednolity
 stripes=Paski
+long_press=Przytrzymanie
+same_as_tap=Tak jak dotknięcie
+show_more_info=Pokaż więcej informacji
+no_action=Brak działania
+info_entity_optional=Encja informacji (opcjonalnie)
+e_g_sensor_living_room_temperature=np. sensor.living_room_temperature
+use_an_entity_id_such_as_sensor_living_room_temperature=Podaj identyfikator encji, np. sensor.living_room_temperature.
+additional_information_optional=Dodatkowe informacje (opcjonalnie)
+text_to_show_on_the_panel=Tekst wyświetlany na panelu
+hold_the_card_to_show_its_name_and_current_state_leave_info_enti=Przytrzymaj kartę, aby wyświetlić jej nazwę i bieżący stan. Pozostaw pole encji informacji puste, aby użyć encji karty. Przytrzymanie nie wykonuje akcji dotknięcia.
 save=Zapisz
 
 # src/webserver/application/button_settings_icon_picker.ts
