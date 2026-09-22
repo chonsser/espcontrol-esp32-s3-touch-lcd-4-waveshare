@@ -199,3 +199,76 @@ test("dragging routes to its own screen and a cross-screen drop cannot move card
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
 });
+
+test("a screen without a mapping keeps the value assigned to it", async () => {
+ const app = await mount({ discover: async () => ({ status: "ready", options: ["Home", "Music", "Weather", "Rooms"] }) }), { page } = app;
+ try {
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.locator('select option[value="Weather"]').waitFor({ state: "attached" });
+  await weather.locator(".sp-screen-state select").selectOption("Weather");
+  await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
+  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic\n4\tWeather");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("two screens without mappings each keep their own value", async () => {
+ const app = await mount({ discover: async () => ({ status: "ready", options: ["Home", "Music", "Weather", "Rooms"] }) }), { page } = app;
+ try {
+  const rooms = page.locator('[data-screen-slot="2"]');
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.locator('select option[value="Weather"]').waitFor({ state: "attached" });
+  await weather.locator(".sp-screen-state select").selectOption("Weather");
+  await rooms.locator(".sp-screen-state select").selectOption("Rooms");
+  assert.equal(await weather.locator(".sp-screen-state select").inputValue(), "Weather", "the first screen keeps its value");
+  await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
+  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic\n4\tWeather\n2\tRooms");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("assigning a value that another screen already uses moves it instead of failing to save", async () => {
+ const app = await mount(), { page } = app;
+ try {
+  const music = page.locator('[data-screen-slot="3"]');
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.locator('select option[value="Music"]').waitFor({ state: "attached" });
+  await weather.locator(".sp-screen-state select").selectOption("Music");
+  assert.equal(await music.locator(".sp-screen-state select").inputValue(), "", "the value leaves the screen that held it");
+  await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
+  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  assert.equal(app.settings.rules, "0\tHome\n4\tMusic");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("an unfilled mapping row never blocks saving", async () => {
+ const app = await mount(), { page } = app;
+ try {
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.getByRole("button", { name: "Add state value", exact: true }).click();
+  await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
+  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("two screens fit side by side and each preview is wider than the old layout", async () => {
+ const app = await mount(), { page } = app;
+ try {
+  const home = await page.locator('[data-screen-slot="0"]').boundingBox();
+  const rooms = await page.locator('[data-screen-slot="2"]').boundingBox();
+  assert.ok(home && rooms && rooms.x > home.x, "two screens share a row");
+  // The preview used to render at the profile's fixed --screen-w (264px) and left
+  // most of its column empty; it now fills the column and scales its cqw contents.
+  const preview = await page.locator('[data-screen-slot="0"] .sp-screen').boundingBox();
+  assert.ok(preview && preview.width > 400, `the preview fills its column, got ${preview?.width}`);
+  assert.ok(preview.width <= home.width, "the preview stays inside its column");
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.equal(overflow, 0, "the gallery adds no horizontal overflow");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});

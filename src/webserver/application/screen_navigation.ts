@@ -127,14 +127,6 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
   function buildToolbar(): HTMLElement {
     const toolbar = document.createElement("div");
     toolbar.className = "sp-screen-toolbar";
-    toolbar.append(deps.fields.fieldLabel(i18n("Screen"), "sp-screen-picker"));
-    const picker = document.createElement("select");
-    picker.id = "sp-screen-picker";
-    picker.className = "sp-select";
-    picker.addEventListener("change", () => {
-      if (!busy && !deps.editor?.state.configLocked) deps.editor?.select(Number(picker.value));
-      sync();
-    });
     const add = button("+", () => { void addScreen(); });
     add.id = "sp-screen-add";
     add.setAttribute("aria-label", i18n("Add screen"));
@@ -142,20 +134,8 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
     const status = document.createElement("span");
     status.className = "sp-hint";
     status.setAttribute("role", "status");
-    toolbar.append(picker, add, status);
-    let signature = "";
+    toolbar.append(add, status);
     syncToolbar = () => {
-      const options = [...screens()];
-      const next = JSON.stringify(options);
-      if (signature !== next) {
-        signature = next;
-        picker.replaceChildren(...options.map(([slot, label]) => {
-          const option = document.createElement("option");
-          option.value = String(slot); option.textContent = label; return option;
-        }));
-      }
-      picker.value = String(selected());
-      picker.disabled = busy || !!deps.editor?.state.configLocked;
       add.disabled = busy || !nativeReady || !!deps.editor?.state.configLocked;
       status.textContent = screenMessage;
     };
@@ -233,7 +213,8 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
         input.addEventListener("change", () => {
           const next = controller.view().draft.rows;
           next[index] = { target: slot, state: input.value };
-          controller.edit({ rows: next });
+          // A value routes to exactly one screen, so assigning it here takes it off any other row.
+          controller.edit({ rows: next.filter((row, position) => position === index || !input.value || row.state !== input.value) });
         });
         wrap.append(deps.fields.fieldLabel(i18n("State value {number}", { number: position + 1 }), input.id), input,
           button(i18n("Remove mapping {number}", { number: position + 1 }), () => controller.edit({ rows: controller.view().draft.rows.filter((_, i) => i !== index) })));

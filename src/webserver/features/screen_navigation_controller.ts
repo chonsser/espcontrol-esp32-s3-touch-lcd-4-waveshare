@@ -93,7 +93,8 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
       if (!supported || state.status === "saving") return false;
       let saved: ScreenNavigationSettings;
       try {
-        saved = { entity: validateScreenNavigationEntity(state.draft.entity), rules: serializeScreenNavigationRules(state.draft.rows, dependencies.targets()), wake: state.draft.wake };
+        const rows = state.draft.rows.filter(row => row.state !== "");
+        saved = { entity: validateScreenNavigationEntity(state.draft.entity), rules: serializeScreenNavigationRules(rows, dependencies.targets()), wake: state.draft.wake };
       } catch (error) {
         state.status = "error";
         state.message = (error as Error).message;
