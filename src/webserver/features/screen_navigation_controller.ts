@@ -11,6 +11,8 @@ export interface ScreenNavigationView {
   draft: ScreenNavigationDraft;
   dirty: boolean;
   supported: boolean;
+  /** Entity last read from or written to the panel; a differing draft is still being typed. */
+  savedEntity: string;
   message: string;
 }
 export interface ScreenNavigationController {
@@ -31,8 +33,9 @@ export interface ScreenNavigationDependencies {
 }
 
 export function createScreenNavigationController(dependencies: ScreenNavigationDependencies): ScreenNavigationController {
-  let state: Omit<ScreenNavigationView, "supported"> = { status: "idle", draft: { entity: "", rows: [], wake: true }, dirty: false, message: "" };
+  let state: Omit<ScreenNavigationView, "supported" | "savedEntity"> = { status: "idle", draft: { entity: "", rows: [], wake: true }, dirty: false, message: "" };
   let supported = false;
+  let savedEntity = "";
   let revision = 0;
   let reading: Promise<void> | null = null;
   const listeners = new Set<() => void>();
@@ -50,7 +53,7 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
     if (settings.entity) await checkedWrite("entity", settings.entity);
   };
   const controller: ScreenNavigationController = {
-    view: () => ({ ...state, supported, draft: { ...state.draft, rows: state.draft.rows.map(row => ({ ...row })) } }),
+    view: () => ({ ...state, supported, savedEntity, draft: { ...state.draft, rows: state.draft.rows.map(row => ({ ...row })) } }),
     subscribe(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; },
     async load() {
       if (reading) return reading;
@@ -70,6 +73,7 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
           } else {
             // Deleted targets remain visible for correction, but cannot be saved.
             state.draft = { entity: saved.entity, rows: parseScreenNavigationRules(saved.rules), wake: saved.wake };
+            savedEntity = saved.entity;
             state.status = "ready";
           }
         } catch (error) {
@@ -107,6 +111,7 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
       notify();
       try {
         await writeSettings(saved);
+        savedEntity = saved.entity;
         if (savingRevision === revision) {
           state.dirty = false;
           state.status = "saved";
@@ -160,6 +165,7 @@ export function createScreenNavigationController(dependencies: ScreenNavigationD
       const restored = screenNavigationSettingsFromBackup(settings);
       parseScreenNavigationRules(restored.rules, dependencies.targets());
       await writeSettings(restored);
+      savedEntity = restored.entity;
       revision += 1;
       state = { status: "ready", draft: { entity: restored.entity, rows: parseScreenNavigationRules(restored.rules), wake: restored.wake }, dirty: false, message: "" };
       supported = true;

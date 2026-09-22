@@ -151,7 +151,7 @@ window.start = async (options = {}) => {
     assert.equal(await missing.locator('[data-screen-slot="4"]').count(), 0);
     await missing.getByRole("button", { name: "Remove unavailable mapping 1", exact: true }).click();
     await missing.getByRole("button", { name: "Save screen settings", exact: true }).click();
-    await missing.getByText("Screen navigation saved.", { exact: true }).waitFor();
+    await missing.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
     assert.equal(await missing.evaluate(() => window.saved.rules), "0\tHome");
     const locale = await fixture({ subpages: { 1: "@screen:Name\n" } });
     await locale.waitForFunction(() => !document.querySelector("#sp-screen-add").disabled);
@@ -209,7 +209,7 @@ window.start = async (options = {}) => {
     await page.locator(".sp-screen-active").getByRole("button", { name: "Rename", exact: true }).click();
     await page.locator(".sp-screen-active").getByLabel("State value 1", { exact: true }).selectOption("Music");
     await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-    await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+    await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
     assert.equal(await page.evaluate(() => window.saved.rules), "0\tHome\n2\tMedia\n2\tRadio draft\n1\tMusic");
     await page.evaluate(async () => { await window.navigation.load(); window.navigation.sync(); });
     const screen1 = page.locator('[data-screen-slot="1"]');

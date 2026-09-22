@@ -144,7 +144,7 @@ test("entity entry discovers exact choices without saving and stale responses ca
   assert.equal(await music.locator('select option[value="Music"]').textContent(), "Music (unavailable)");
   await music.locator(".sp-screen-state select").selectOption("  Exact, 'value'  ");
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome\n3\t  Exact, 'value'  ");
   assert.deepEqual(app.errors, []);
  } finally { if (releaseOld) releaseOld(); await page.close(); }
@@ -164,7 +164,7 @@ test("unavailable and empty choices preserve existing mappings and explicit retr
   assert.equal(await music.locator('option[value="Music"]').textContent(), "Music (unavailable)");
   await music.getByRole("button", { name: "Remove mapping 1", exact: true }).click();
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome");
  } finally { await page.close(); }
 });
@@ -207,7 +207,7 @@ test("a screen without a mapping keeps the value assigned to it", async () => {
   await weather.locator('select option[value="Weather"]').waitFor({ state: "attached" });
   await weather.locator(".sp-screen-state select").selectOption("Weather");
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome\n3\tMusic\n4\tWeather");
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
@@ -223,7 +223,7 @@ test("two screens without mappings each keep their own value", async () => {
   await rooms.locator(".sp-screen-state select").selectOption("Rooms");
   assert.equal(await weather.locator(".sp-screen-state select").inputValue(), "Weather", "the first screen keeps its value");
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome\n3\tMusic\n4\tWeather\n2\tRooms");
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
@@ -238,7 +238,7 @@ test("assigning a value that another screen already uses moves it instead of fai
   await weather.locator(".sp-screen-state select").selectOption("Music");
   assert.equal(await music.locator(".sp-screen-state select").inputValue(), "", "the value leaves the screen that held it");
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome\n4\tMusic");
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
@@ -250,7 +250,7 @@ test("an unfilled mapping row never blocks saving", async () => {
   const weather = page.locator('[data-screen-slot="4"]');
   await weather.getByRole("button", { name: "Add state value", exact: true }).click();
   await page.getByRole("button", { name: "Save screen settings", exact: true }).click();
-  await page.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  await page.locator("#sp-set-screen-navigation-status").getByText("Screen navigation saved.", { exact: true }).waitFor();
   assert.equal(app.settings.rules, "0\tHome\n3\tMusic");
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
@@ -269,6 +269,37 @@ test("two screens fit side by side and each preview is wider than the old layout
   assert.ok(preview.width <= home.width, "the preview stays inside its column");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   assert.equal(overflow, 0, "the gallery adds no horizontal overflow");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("choosing a value saves it without the distant save button", async () => {
+ const app = await mount({ discover: async () => ({ status: "ready", options: ["Home", "Music", "Weather"] }) }), { page } = app;
+ try {
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.locator('select option[value="Weather"]').waitFor({ state: "attached" });
+  await weather.locator(".sp-screen-state select").selectOption("Weather");
+  await weather.getByText("Screen navigation saved.", { exact: true }).waitFor();
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic\n4\tWeather");
+  assert.equal(app.settings.entity, "input_select.screen");
+  await weather.getByRole("button", { name: "Remove mapping 1", exact: true }).click();
+  await page.waitForFunction(() => !document.querySelector('[data-screen-slot="4"] .sp-screen-state select').value);
+  await page.waitForTimeout(800);
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic", "removing a mapping saves too");
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
+
+test("a half-typed entity is never saved by a mapping change", async () => {
+ const app = await mount(), { page } = app;
+ try {
+  await page.locator("#sp-set-screen-navigation-entity").fill("input_select.scr");
+  const weather = page.locator('[data-screen-slot="4"]');
+  await weather.locator('select option[value="Weather"]').waitFor({ state: "attached" });
+  await weather.locator(".sp-screen-state select").selectOption("Weather");
+  await page.waitForTimeout(800);
+  assert.equal(app.settings.entity, "input_select.screen", "entity untouched");
+  assert.equal(app.settings.rules, "0\tHome\n3\tMusic", "waits for the explicit save");
   assert.deepEqual(app.errors, []);
  } finally { await page.close(); }
 });

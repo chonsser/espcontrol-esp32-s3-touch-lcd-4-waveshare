@@ -4,7 +4,7 @@ import type { CardConfig } from "../contracts/types";
 import type { AppState } from "../state/types";
 import { firstFreeStandaloneScreenSlot, isStandaloneSubpage, standaloneScreenNameError } from "../model/standalone_screens";
 import { createScreenNavigationController, type ScreenNavigationController } from "../features/screen_navigation_controller";
-import type { ScreenNavigationSettings } from "../model/screen_navigation";
+import type { ScreenNavigationRule, ScreenNavigationSettings } from "../model/screen_navigation";
 import type { ApplicationApiFeature } from "./api";
 import type { EntityStateFeature } from "./entity_state";
 import type { ControlsFieldsFeature } from "./controls_fields";
@@ -168,6 +168,24 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
     } catch { screenMessage = failure("failed"); }
     finally { busy = false; sync(); deps.previews?.render(); }
   }
+  // Mapping edits persist on their own: the source card's save button sits far above
+  // the screens, and a choice that only lived in the draft was silently lost on reload.
+  let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+  let mappingSlot: number | null = null;
+  const scheduleAutosave = (delay = 300) => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(() => { void autosave(); }, delay); };
+  async function autosave() {
+    const view = controller.view();
+    // A differing entity is still being typed; saving now would persist half of it.
+    if (!view.dirty || view.draft.entity !== view.savedEntity) return;
+    if (view.status === "saving") { scheduleAutosave(); return; }
+    const saved = await controller.save();
+    if (saved && controller.view().dirty) scheduleAutosave(0);
+  }
+  function editMappings(slot: number, rows: ScreenNavigationRule[]) {
+    mappingSlot = slot;
+    controller.edit({ rows });
+    scheduleAutosave();
+  }
   const settingsDisabled = () => {
     const view = controller.view();
     return busy || !!deps.editor?.state.configLocked || !view.supported || ["idle", "loading", "saving", "unsupported"].includes(view.status);
@@ -184,7 +202,8 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
       }));
     const mappings = document.createElement("fieldset"); mappings.className = "sp-screen-settings";
     const rows = document.createElement("div");
-    mappings.append(rows, button(i18n("Add state value"), () => controller.edit({ rows: [...controller.view().draft.rows, { target: slot, state: "" }] })));
+    const mappingStatus = document.createElement("p"); mappingStatus.className = "sp-hint sp-screen-mapping-status"; mappingStatus.setAttribute("role", "status");
+    mappings.append(rows, button(i18n("Add state value"), () => controller.edit({ rows: [...controller.view().draft.rows, { target: slot, state: "" }] })), mappingStatus);
     body.append(metadata, mappings);
     let signature = "";
     const update = () => {
@@ -192,7 +211,9 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
       metadata.disabled = busy || !nativeReady || !!deps.editor?.state.configLocked;
       if (document.activeElement !== name) name.value = nameDrafts.get(slot) ?? deps.editor?.state.subpages[slot]?.screenLabel ?? "";
       mappings.disabled = settingsDisabled();
-      const draft = controller.view().draft;
+      const view = controller.view();
+      mappingStatus.textContent = mappingSlot !== slot ? "" : view.status === "saving" ? i18n("Saving screen navigation…") : view.message;
+      const draft = view.draft;
       const options = discovery.view();
       // All row indices are part of the signature: removing a row on another screen shifts them.
       const nextSignature = JSON.stringify([draft.rows, options]);
@@ -214,10 +235,10 @@ export function createScreenNavigationFeature(deps: ScreenNavigationFeatureDepen
           const next = controller.view().draft.rows;
           next[index] = { target: slot, state: input.value };
           // A value routes to exactly one screen, so assigning it here takes it off any other row.
-          controller.edit({ rows: next.filter((row, position) => position === index || !input.value || row.state !== input.value) });
+          editMappings(slot, next.filter((row, position) => position === index || !input.value || row.state !== input.value));
         });
         wrap.append(deps.fields.fieldLabel(i18n("State value {number}", { number: position + 1 }), input.id), input,
-          button(i18n("Remove mapping {number}", { number: position + 1 }), () => controller.edit({ rows: controller.view().draft.rows.filter((_, i) => i !== index) })));
+          button(i18n("Remove mapping {number}", { number: position + 1 }), () => editMappings(slot, controller.view().draft.rows.filter((_, i) => i !== index))));
         rows.append(wrap);
       });
     };
