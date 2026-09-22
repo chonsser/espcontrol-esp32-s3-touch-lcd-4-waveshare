@@ -242,6 +242,17 @@ async function installRoutes(context, slug, options = {}) {
       }
       return;
     }
+    const screenNavigationMatch = requestUrl.hostname === "espcontrol.test" &&
+      requestUrl.pathname.match(/^\/(?:text|switch)\/([^/]+)(?:\/(?:set|turn_on|turn_off))?$/);
+    if (screenNavigationMatch && /^screen_navigation_(entity|rules|wake)$/.test(
+      decodeURIComponent(screenNavigationMatch[1]).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),
+    )) {
+      // This shared fixture models firmware without entity-driven navigation.
+      // Missing JSON endpoints return 404, including the switch; a generic 204
+      // would instead simulate a corrupt response and correctly block restore.
+      await route.fulfill({ status: 404, body: "Not found" });
+      return;
+    }
     const legacyTextMatch = requestUrl.hostname === "espcontrol.test" &&
       requestUrl.pathname.match(/^\/text\/([^/]+)(?:\/set)?$/);
     if (legacyTextMatch) {
@@ -6347,6 +6358,16 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     await page.getByRole("tab", { name: "Ustawienia", exact: true }).click();
     assert.strictEqual(await page.locator('label[for="sp-set-language"]').textContent(), "Język");
     await assertPolishClockAppearance(page);
+    await page.getByText("Ekran z Home Assistant", { exact: true }).click();
+    await page.waitForFunction(() => {
+      const status = document.querySelector("#sp-set-screen-navigation-status")?.textContent;
+      return status && !status.startsWith("Wczytywanie");
+    });
+    assert.strictEqual(await page.locator("#sp-set-screen-navigation-status").textContent(),
+      "Zaktualizuj oprogramowanie panelu, aby korzystać z nawigacji ekranów przez Home Assistant.",
+      "older firmware explains that screen navigation is unavailable without blocking backups");
+    assert(await page.locator("#sp-set-screen-navigation-save").isDisabled(),
+      "older firmware cannot save unsupported screen navigation settings");
     await uploadPolishBackup("{", "polish-invalid-backup");
     await page.getByText("Nieprawidłowy plik – nie można odczytać JSON", { exact: true }).waitFor();
     const backup = backupFixture(testCase.slug, testCase.slots);
