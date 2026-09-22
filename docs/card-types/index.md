@@ -48,11 +48,11 @@ Use this page when you know what you want the panel to do but are not sure which
 
 Open a card's **Card Settings → Long Press** in the web editor to choose:
 
-- **Same as tap** (default): keep the existing action.
+- **Controls / details (default)**: open the card’s controls, such as brightness and color for a light. Cards without a control menu show read-only details.
 - **Show more info**: show the entity's name, ID, current state and unit on the panel. Set **Info Entity** to show a different Home Assistant entity, and optionally add your own **Additional Information** text. For cards without a Home Assistant entity, enter an info entity or a note.
 - **No action**: ignore a hold while keeping normal taps working.
 
-Save the card after editing. These settings work on the home screen and inside subpages, and are included in backups. A configured long press opens the information once without running the tap action. Closing the information returns to the current page.
+Save the card after editing. These settings work on the home screen and inside subpages, and are included in backups. A long press opens its menu once without running the tap action, including when you release the card. The next ordinary tap works normally. Closing the information returns to the current page.
 
 Long Press is available for button and information cards. Cards with a draggable slider (including cover position/tilt and media progress) keep their slider gestures and do not offer this setting. The information view requires updated firmware; updating only the web editor does not add it to older firmware.
 

@@ -30,6 +30,9 @@ int main() {
     config.sensor = mode;
     assert(!card_supports_long_press(config));
   }
+  auto legacy = parse_cfg("light.kitchen;Kitchen;Auto;Auto;;;;;");
+  assert(card_long_press_action(legacy) == "controls");
+  assert(cfg_option_value(legacy.options, "long_press").empty());
   ParsedCfg media;
   media.type = "media";
   media.sensor = "now_playing";
@@ -37,6 +40,7 @@ int main() {
   assert(!card_supports_long_press(media));
   media.sensor = "next";
   assert(card_supports_long_press(media));
+  assert(card_long_press_action(media) == "controls");
   for (const std::string &saved : {
       std::string("1|light.kitchen:Kitchen:Auto:Auto:::::long_press=more_info,long_press_text=Power%2C today"),
       std::string("~1|,light.kitchen,Kitchen,Auto,Auto,,,,long_press=more_info%2Clong_press_text=Power%252C today")}) {

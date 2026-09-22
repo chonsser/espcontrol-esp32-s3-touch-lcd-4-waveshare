@@ -245,6 +245,8 @@ inline void setup_slider_visual(BtnSlot &s, const ParsedCfg &p, uint32_t on_colo
                                 bool interactive = true);
 
 struct LightControlCtx {
+  // Temporary menus own this context; grid card contexts remain grid-owned.
+  bool modal_owned = false;
   std::string entity_id;
   std::string label;
   std::string friendly_name;
@@ -437,7 +439,7 @@ inline const char *light_control_icon_on(const ParsedCfg &p) {
 }
 
 inline void light_control_apply_card_visual(LightControlCtx *ctx) {
-  if (!ctx || !ctx->btn) return;
+  if (!ctx || !ctx->btn || ctx->modal_owned) return;
   set_card_checked_state(ctx->btn, ctx->on);
   if (ctx->icon_lbl) {
     const char *glyph = ctx->on && ctx->icon_on_glyph ? ctx->icon_on_glyph : ctx->icon_off_glyph;
@@ -970,8 +972,11 @@ inline void light_control_layout_modal(LightControlCtx *ctx) {
 inline void light_control_hide_modal() {
   LightControlModalUi &ui = light_control_modal_ui();
   lv_obj_t *overlay = ui.overlay;
+  LightControlCtx *owned = ui.active && ui.active->modal_owned ? ui.active : nullptr;
+  if (owned) ha_release_callbacks_for_owner(owned);
   ui = LightControlModalUi();
   control_modal_delete_overlay(ControlModalKind::LIGHT_CONTROL, overlay);
+  delete owned;
 }
 
 inline void light_control_open_modal(LightControlCtx *ctx) {

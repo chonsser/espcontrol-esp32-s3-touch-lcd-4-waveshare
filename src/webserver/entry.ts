@@ -323,6 +323,7 @@ function composeApplicationContext(): ApplicationContext {
     cancelSchedule: (handle) => { dom.window.clearTimeout(handle); },
     buildScreenToolbar: () => screenNavigation.buildToolbar(),
     buildScreenSettings: () => screenNavigation.buildCard(),
+    buildScreenOverview: home => screenNavigation.buildOverview(home),
     buildSettingsPage: (parent) => { settingsPage.buildSettingsPage(parent); },
     closeSettings: () => { selection.closeSettings(); },
     postButtonPress: (name) => requestApi.postButtonPress(name),
@@ -822,6 +823,17 @@ function composeApplicationContext(): ApplicationContext {
   const screenNavigation = createScreenNavigationFeature({
     document: dom.document, deviceApi, requestApi, entityState, fields,
     buttons: () => AppInstance.state.buttons,
+    previews: {
+      register: (slot, wrap) => {
+        const main = wrap.querySelector<HTMLElement>(".sp-main")!;
+        main.setAttribute("role", "grid"); main.setAttribute("aria-label", i18n("Button grid"));
+        runtime.els.screenPreviews ||= new Map<number, HTMLElement>();
+        runtime.els.screenPreviews.set(slot, main);
+        interactions.setup(main, slot);
+      },
+      remove: slot => runtime.els.screenPreviews?.delete(slot),
+      render: () => preview.render(),
+    },
     editor: createScreenNavigationEditor({
       state: AppInstance.state,
       maxSlots: () => layout.totalSlots,

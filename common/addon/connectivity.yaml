@@ -112,6 +112,7 @@ script:
           lv_label_set_text(
               id(wifi_setup_instructions),
               espcontrol_i18n("Trying to reconnect\nto your saved network"));
+      - lambda: 'entity_screen_navigation_capture_return(id(wifi_setup_page)->obj);'
       - lvgl.page.show: wifi_setup_page
       - script.execute: setup_screen_dim
 
@@ -136,6 +137,7 @@ script:
                             espcontrol_i18n_key("to_configure_your_network_settings");
           lv_label_set_text(id(wifi_setup_title), espcontrol_i18n("Configure your WiFi"));
           lv_label_set_display_text(id(wifi_setup_instructions), msg.c_str());
+      - lambda: 'entity_screen_navigation_capture_return(id(wifi_setup_page)->obj);'
       - lvgl.page.show: wifi_setup_page
       - script.execute:
           id: backlight_note_internal_brightness
@@ -179,9 +181,17 @@ script:
             - wait_until:
                 condition:
                   lambda: |-
-                    return id(espcontrol_app).display().target_mode_is(
-                        espcontrol::DisplayMode::ACTIVE);
-            - lvgl.page.show: main_page
+                    const auto &controller = id(espcontrol_app).display();
+                    return controller.target_mode_is(espcontrol::DisplayMode::ACTIVE) &&
+                        !id(connectivity_setup_display_active) &&
+                        !alarm_display_takeover_active() &&
+                        !controller.takeover_active(espcontrol::DisplayTakeoverKind::INTERACTIVE) &&
+                        !controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL);
+            - lambda: |-
+                if (!entity_screen_navigation_holds_screen() &&
+                    !entity_screen_navigation_restore_return()) {
+                  navigation_return_home(id(main_page)->obj);
+                }
             - script.execute: clock_bar_apply
             - script.execute: screensaver_idle_check
           else:

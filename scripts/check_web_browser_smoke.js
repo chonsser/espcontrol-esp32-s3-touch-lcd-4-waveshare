@@ -113,11 +113,11 @@ function nativeConfigState(slug) {
 }
 
 async function assertSubpageTitleTypography(page, label) {
-  await page.locator('.sp-main [data-slot="3"] .sp-subpage-badge').click();
-  await page.waitForSelector(".sp-clockbar-subpage-title");
+  await page.locator('.sp-screen-active .sp-main [data-slot="3"] .sp-subpage-badge').click();
+  await page.waitForSelector(".sp-screen-active .sp-clockbar-subpage-title");
   const typography = await page.evaluate(() => {
-    const title = document.querySelector(".sp-clockbar-subpage-title");
-    const cardLabel = document.querySelector(".sp-main .sp-btn-label");
+    const title = document.querySelector(".sp-screen-active .sp-clockbar-subpage-title");
+    const cardLabel = document.querySelector(".sp-screen-active .sp-main .sp-btn-label");
     const titleStyle = getComputedStyle(title);
     const cardStyle = getComputedStyle(cardLabel);
     return {
@@ -140,8 +140,8 @@ async function assertSubpageTitleTypography(page, label) {
     typography.card,
     `${label}: subpage title uses the device card-label typography`,
   );
-  await page.locator(".sp-back-btn .sp-back-hit").click();
-  await page.waitForSelector(".sp-clockbar-subpage-title", { state: "detached" });
+  await page.locator(".sp-screen-active .sp-back-btn .sp-back-hit").click();
+  await page.waitForSelector(".sp-screen-active .sp-clockbar-subpage-title", { state: "detached" });
 }
 
 function htmlFor(slug, embeddedFallback = false) {
@@ -667,7 +667,7 @@ function assertNoLayoutBreaks(result, label, options = {}) {
   const minVisibleCards = options.minVisibleCards || BUTTON_FIXTURES.length;
   assert(result.appVisible, `${label}: #sp-app should be visible`);
   assert(result.screenVisible, `${label}: .sp-screen should be visible`);
-  assert(result.mainVisible, `${label}: .sp-main should be visible`);
+  assert(result.mainVisible, `${label}: .sp-screen-active .sp-main should be visible`);
   assert(result.applyVisible, `${label}: apply controls should be visible`);
   assert(result.gridChildren > 0, `${label}: grid should render cells`);
   assert(
@@ -719,10 +719,10 @@ async function measureCoreLayout(page) {
 
     var app = document.querySelector("#sp-app");
     var screen = document.querySelector(".sp-screen");
-    var main = document.querySelector(".sp-main");
+    var main = document.querySelector(".sp-screen-active .sp-main");
     var apply = document.querySelector(".sp-apply-btn");
     var mainRect = rectFor(main);
-    var children = Array.from(document.querySelectorAll(".sp-main > *")).map(
+    var children = Array.from(document.querySelectorAll(".sp-screen-active .sp-main > *")).map(
       function (el, index) {
         return { index: index, className: el.className, rect: rectFor(el) };
       },
@@ -761,7 +761,7 @@ async function measureCoreLayout(page) {
       applyVisible: visible(rectFor(apply)),
       gridChildren: children.length,
       visibleGridChildren: visibleChildren.length,
-      visibleCards: document.querySelectorAll(".sp-main > .sp-btn").length,
+      visibleCards: document.querySelectorAll(".sp-screen-active .sp-main > .sp-btn").length,
       outsideGrid: outsideGrid,
       overlaps: overlaps,
       documentClientWidth: document.documentElement.clientWidth,
@@ -774,14 +774,14 @@ async function measureCoreLayout(page) {
 async function measureRotationStartupLayout(page) {
   return page.evaluate(() => {
     var screen = document.querySelector(".sp-screen");
-    var main = document.querySelector(".sp-main");
+    var main = document.querySelector(".sp-screen-active .sp-main");
     var screenRect = screen ? screen.getBoundingClientRect() : null;
     var style = main ? getComputedStyle(main) : null;
     return {
       loading: !!main && main.classList.contains("sp-grid-loading"),
       busy: main ? main.getAttribute("aria-busy") : null,
       gridHidden: !!style && style.visibility === "hidden",
-      visibleCards: document.querySelectorAll(".sp-main > .sp-btn").length,
+      visibleCards: document.querySelectorAll(".sp-screen-active .sp-main > .sp-btn").length,
       screenWidth: screenRect ? screenRect.width : 0,
       screenHeight: screenRect ? screenRect.height : 0,
       gridTemplateColumns: style ? style.gridTemplateColumns : "",
@@ -982,7 +982,7 @@ async function assertRotationStartupOrdering(browser) {
         },
       ]),
     );
-    await page.waitForSelector(".sp-main > .sp-btn");
+    await page.waitForSelector(".sp-screen-active .sp-main > .sp-btn");
     layout = await measureRotationStartupLayout(page);
     assertPortraitGridLayout(layout, "button_order before rotation", {
       minVisibleCards: 5,
@@ -1011,7 +1011,7 @@ async function assertRotationStartupOrdering(browser) {
         { id: "text-button_order", state: "1,2,3w,4,5" },
       ]),
     );
-    await reversePage.waitForSelector(".sp-main > .sp-btn");
+    await reversePage.waitForSelector(".sp-screen-active .sp-main > .sp-btn");
     assertPortraitGridLayout(
       await measureRotationStartupLayout(reversePage),
       "rotation before button_order",
@@ -1052,11 +1052,11 @@ async function assertRotationStartupOrdering(browser) {
     );
     await fallbackPage.waitForFunction(
       () => {
-        var main = document.querySelector(".sp-main");
+        var main = document.querySelector(".sp-screen-active .sp-main");
         return (
           main &&
           !main.classList.contains("sp-grid-loading") &&
-          document.querySelectorAll(".sp-main > .sp-btn").length >= 4
+          document.querySelectorAll(".sp-screen-active .sp-main > .sp-btn").length >= 4
         );
       },
       null,
@@ -1088,7 +1088,7 @@ async function assertRotationStartupOrdering(browser) {
       ]),
     );
     await fallbackPage.waitForFunction(() => {
-      var main = document.querySelector(".sp-main");
+      var main = document.querySelector(".sp-screen-active .sp-main");
       return main && getComputedStyle(main).gridTemplateColumns.split(" ").length === 3;
     });
     assertPortraitGridLayout(
@@ -1967,7 +1967,7 @@ async function assertVoiceClockBarPreview(page, label, supported) {
 
 async function assertClockBarTypographyAndIconLayout(page, label) {
   const metrics = await page.evaluate(() => {
-    const cardLabel = document.querySelector(".sp-main .sp-btn-label");
+    const cardLabel = document.querySelector(".sp-screen-active .sp-main .sp-btn-label");
     const clock = document.querySelector(".sp-clock");
     const temperature = document.querySelector(".sp-temp");
     const networkIcon = document.querySelector(".sp-network-preview");
@@ -2090,7 +2090,7 @@ async function assertMobileTabLayout(page, label, restoreViewport) {
     mobile.documentScrollWidth <= mobile.documentClientWidth + 1,
     `${label}: mobile screen tab has horizontal overflow`,
   );
-  await page.locator('.sp-main [data-slot="1"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="1"]').click();
   await page.waitForSelector(".sp-selection-bar.sp-visible");
   mobile = await page.evaluate(() => {
     var header = document.querySelector(".sp-header");
@@ -2246,7 +2246,7 @@ async function assertMobileDeviceViewport(browser, testCase) {
       (events) => window.__seedEspState(events),
       seededEvents(),
     );
-    await page.waitForSelector(".sp-main > .sp-btn");
+    await page.waitForSelector(".sp-screen-active .sp-main > .sp-btn");
     await page.getByRole("tab", { name: "Settings" }).click();
     await page.waitForSelector("#sp-settings.sp-page.active");
     const mobile = await page.evaluate(() => {
@@ -2447,10 +2447,10 @@ async function assertEmptyCellSettings(page, posts, label) {
     `${label}: closing a new card draft before choosing a type should not post`,
   );
   await page
-    .locator(`.sp-main [data-pos="${pos}"].sp-empty-cell`)
+    .locator(`.sp-screen-active .sp-main [data-pos="${pos}"].sp-empty-cell`)
     .waitFor({ state: "visible" });
 
-  await page.locator(`.sp-main [data-pos="${pos}"]`).click();
+  await page.locator(`.sp-screen-active .sp-main [data-pos="${pos}"]`).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   await page.getByRole("button", { name: "Action card type" }).click();
   await page.locator("#sp-inp-type").waitFor({ state: "visible" });
@@ -2621,10 +2621,10 @@ async function assertEmptyCellSettings(page, posts, label) {
     `${label}: closing a typed new card draft before Save should not post`,
   );
   await page
-    .locator(`.sp-main [data-pos="${pos}"].sp-empty-cell`)
+    .locator(`.sp-screen-active .sp-main [data-pos="${pos}"].sp-empty-cell`)
     .waitFor({ state: "visible" });
 
-  await page.locator(`.sp-main [data-pos="${pos}"]`).click();
+  await page.locator(`.sp-screen-active .sp-main [data-pos="${pos}"]`).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   await page.getByRole("button", { name: "Switch card type" }).click();
   await page
@@ -2637,10 +2637,10 @@ async function assertEmptyCellSettings(page, posts, label) {
   await page.locator("#sp-inp-entity").fill("switch.new_card");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .locator(`.sp-main [data-pos="${pos}"][data-slot]`)
+    .locator(`.sp-screen-active .sp-main [data-pos="${pos}"][data-slot]`)
     .waitFor({ state: "visible" });
   const slot = await page
-    .locator(`.sp-main [data-pos="${pos}"]`)
+    .locator(`.sp-screen-active .sp-main [data-pos="${pos}"]`)
     .getAttribute("data-slot");
   await waitForPost(
     posts,
@@ -2692,7 +2692,7 @@ async function assertNewMediaCardDefaults(page, posts, label, mediaCoverArtSuppo
     return overlay && !overlay.classList.contains("sp-visible");
   });
 
-  await page.locator(`.sp-main [data-pos="${pos}"].sp-empty-cell`).click();
+  await page.locator(`.sp-screen-active .sp-main [data-pos="${pos}"].sp-empty-cell`).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   await page.getByRole("button", { name: "Action card type" }).click();
   await page
@@ -3135,7 +3135,7 @@ async function assertWebhookSettingsPanel(page, posts, label) {
 async function assertCoverSettingsPanels(page, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
-  await page.locator('.sp-main [data-slot="5"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="5"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
 
@@ -3186,7 +3186,7 @@ async function assertCoverSettingsPanels(page, label) {
 async function assertMediaCoverArtSettingsPanels(page, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
-  await page.locator('.sp-main [data-slot="4"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="4"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   assert.strictEqual(
@@ -3300,7 +3300,7 @@ async function assertMediaCoverArtSettingsPanels(page, label) {
 async function assertAlarmSettingsPanels(page, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
-  await page.locator('.sp-main [data-slot="6"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="6"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
 
@@ -3390,7 +3390,7 @@ async function assertAlarmSettingsPanels(page, label) {
 async function assertPlaylistValidationOpensSourcePanel(page, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
-  await page.locator('.sp-main [data-slot="4"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="4"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   await page.locator("#sp-inp-media-mode").selectOption("playlist");
@@ -3493,7 +3493,7 @@ async function assertNumberActionRequiresValue(page, posts, label) {
 async function assertSpeakerGroupEditorAndPreview(page, posts, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
-  await page.locator('.sp-main [data-slot="4"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="4"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.waitForSelector(".sp-settings-overlay.sp-visible");
   await page.locator("#sp-inp-media-mode").selectOption("control_modal");
@@ -3514,7 +3514,7 @@ async function assertSpeakerGroupEditorAndPreview(page, posts, label) {
     }
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await page.waitForFunction(() => !document.querySelector(".sp-settings-overlay").classList.contains("sp-visible"));
-    await page.locator('.sp-main [data-slot="4"]').click();
+    await page.locator('.sp-screen-active .sp-main [data-slot="4"]').click();
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await page.waitForSelector(".sp-settings-overlay.sp-visible");
     assert.strictEqual(await page.getByLabel("Name", { exact: true }).inputValue(), name, `${label}: reopening All Controls must preserve ${name}`);
@@ -3549,14 +3549,14 @@ async function assertSpeakerGroupEditorAndPreview(page, posts, label) {
   const helper = page.locator("#sp-inp-speaker-group-entity");
   await helper.waitFor({ state: "visible" });
   assert(await page.getByText("Speaker Discovery Entity (optional)", { exact: true }).isVisible(), `${label}: speaker discovery field should render`);
-  await page.waitForSelector('.sp-main [data-slot="4"].sp-media-group-active');
-  assert(await page.locator('.sp-main [data-slot="4"].sp-media-group-active').count(), `${label}: speaker group preview should use active styling`);
-  assert.strictEqual(await page.locator('.sp-main [data-slot="4"] .sp-media-group-count').count(), 0, `${label}: speaker group preview should not invent a member count`);
+  await page.waitForSelector('.sp-screen-active .sp-main [data-slot="4"].sp-media-group-active');
+  assert(await page.locator('.sp-screen-active .sp-main [data-slot="4"].sp-media-group-active').count(), `${label}: speaker group preview should use active styling`);
+  assert.strictEqual(await page.locator('.sp-screen-active .sp-main [data-slot="4"] .sp-media-group-count').count(), 0, `${label}: speaker group preview should not invent a member count`);
   assert.strictEqual(await page.locator("#sp-inp-label").inputValue(), "Whole House", `${label}: speaker group should expose its preserved custom label`);
   await page.locator("#sp-inp-icon").fill("Home");
   await page.locator("#sp-inp-icon").press("Enter");
-  await page.waitForSelector('.sp-main [data-slot="4"] .mdi-home', { state: "attached" });
-  assert(await page.locator('.sp-main [data-slot="4"] .mdi-home').count(), `${label}: speaker group preview should use its selected icon`);
+  await page.waitForSelector('.sp-screen-active .sp-main [data-slot="4"] .mdi-home', { state: "attached" });
+  assert(await page.locator('.sp-screen-active .sp-main [data-slot="4"] .mdi-home').count(), `${label}: speaker group preview should use its selected icon`);
   await helper.fill("");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await waitForPost(
@@ -4252,7 +4252,7 @@ async function assertEditSmoke(page, posts, errors) {
   await page.getByRole("tab", { name: "Screen" }).click();
   await page.waitForSelector("#sp-screen.sp-page.active");
 
-  await page.locator('.sp-main [data-slot="1"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="1"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   const switchSuggestions = await entitySuggestionValues(
     page,
@@ -4293,7 +4293,7 @@ async function assertEditSmoke(page, posts, errors) {
     before,
   );
 
-  await page.locator('.sp-main [data-slot="2"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="2"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page
     .locator(".sp-settings-modal .sp-disclosure")
@@ -4315,7 +4315,7 @@ async function assertEditSmoke(page, posts, errors) {
     before,
   );
 
-  await page.locator('.sp-main [data-slot="4"]').click();
+  await page.locator('.sp-screen-active .sp-main [data-slot="4"]').click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page
     .locator(".sp-settings-modal .sp-disclosure")
@@ -4364,7 +4364,7 @@ async function assertApplySmoke(page, posts, errors) {
 }
 
 async function openPasteCardCodeDialog(page) {
-  const emptyCell = page.locator(".sp-main .sp-empty-cell").first();
+  const emptyCell = page.locator(".sp-screen-active .sp-main .sp-empty-cell").first();
   assert(await emptyCell.isVisible(), "card transfer test requires an empty destination cell");
   const pos = await emptyCell.getAttribute("data-pos");
   await emptyCell.click({ button: "right", force: true });
@@ -4412,7 +4412,7 @@ async function openPasteCardCodeDialog(page) {
 
 async function assertCardTransferSmoke(page, posts, label) {
   await page.getByRole("tab", { name: "Screen" }).click();
-  await page.locator('.sp-main [data-slot="1"]').click({ button: "right", force: true });
+  await page.locator('.sp-screen-active .sp-main [data-slot="1"]').click({ button: "right", force: true });
   await page.locator(".sp-ctx-menu").waitFor({ state: "visible" });
   assert(
     await page.locator(".sp-ctx-menu").getByText("Copy Code", { exact: true }).isVisible(),
@@ -4544,9 +4544,9 @@ async function assertCardTransferSmoke(page, posts, label) {
   const destination = await openPasteCardCodeDialog(page);
   await destination.dialog.locator("textarea").fill(code);
   await destination.dialog.getByRole("button", { name: "Paste", exact: true }).click();
-  await page.locator(`.sp-main [data-pos="${destination.pos}"][data-slot]`).waitFor({ state: "visible" });
+  await page.locator(`.sp-screen-active .sp-main [data-pos="${destination.pos}"][data-slot]`).waitFor({ state: "visible" });
   const pastedSlot = await page
-    .locator(`.sp-main [data-pos="${destination.pos}"]`)
+    .locator(`.sp-screen-active .sp-main [data-pos="${destination.pos}"]`)
     .getAttribute("data-slot");
   await waitForAnyPost(
     posts,
@@ -4646,7 +4646,7 @@ async function assertCardTransferSmoke(page, posts, label) {
   await subpageDialog.dialog.locator("textarea").fill(JSON.stringify(subpage));
   await subpageDialog.dialog.getByRole("button", { name: "Paste", exact: true }).click();
   const transferredSubpage = page
-    .locator(".sp-main [data-slot]")
+    .locator(".sp-screen-active .sp-main [data-slot]")
     .filter({ hasText: "Transferred Page" })
     .first();
   await transferredSubpage.waitFor({ state: "visible" });
@@ -5058,7 +5058,7 @@ async function assertClockBarEditorSmoke(page, posts, label) {
   const networkBox = await page
     .locator('[data-clockbar-item="network"][data-clockbar-section="right"]')
     .boundingBox();
-  const firstCardBox = await page.locator(".sp-main > *").first().boundingBox();
+  const firstCardBox = await page.locator(".sp-screen-active .sp-main > *").first().boundingBox();
   assert(
     topbarBox && networkBox,
     `${label}: network status has a visible bounded area`,
@@ -5410,7 +5410,7 @@ async function seedNativeDocument(page, nativeState) {
     (events) => window.__seedEspState(events),
     nativeDocumentEvents(nativeState.document),
   );
-  await page.waitForSelector('.sp-main [data-slot="2"]');
+  await page.waitForSelector('.sp-screen-active .sp-main [data-slot="2"]');
 }
 
 async function assertGuestWifiSettings(page, label) {
@@ -5468,7 +5468,7 @@ async function assertLongPressEditorJourney(browser, testCase) {
       }
     }
     async function open() {
-      await page.locator('.sp-main [data-slot="1"]').click();
+      await page.locator('.sp-screen-active .sp-main [data-slot="1"]').click();
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       await expand();
     }
@@ -5544,7 +5544,7 @@ async function assertNativeProfileJourney(browser, testCase) {
 
     await assertSubpageTitleTypography(page, testCase.name);
 
-    const sensor = page.locator('.sp-main [data-slot="2"]');
+    const sensor = page.locator('.sp-screen-active .sp-main [data-slot="2"]');
     assert(
       (await sensor.textContent()).includes("Energy"),
       `${testCase.name}: sensor preview renders before editing`,
@@ -5564,7 +5564,7 @@ async function assertNativeProfileJourney(browser, testCase) {
     const beforeSave = nativeState.puts.length;
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await page.waitForFunction(
-      (label) => document.querySelector('.sp-main [data-slot="2"]')?.textContent?.includes(label),
+      (label) => document.querySelector('.sp-screen-active .sp-main [data-slot="2"]')?.textContent?.includes(label),
       editedLabel,
     );
     await waitForNativeState(
@@ -5589,7 +5589,7 @@ async function assertNativeProfileJourney(browser, testCase) {
     );
     await seedNativeDocument(page, nativeState);
     assert(
-      (await page.locator('.sp-main [data-slot="2"]').textContent()).includes(editedLabel),
+      (await page.locator('.sp-screen-active .sp-main [data-slot="2"]').textContent()).includes(editedLabel),
       `${testCase.name}: reconnect reloads the saved sensor card`,
     );
 
@@ -5600,7 +5600,7 @@ async function assertNativeProfileJourney(browser, testCase) {
     );
     await seedNativeDocument(page, nativeState);
     assert(
-      (await page.locator('.sp-main [data-slot="2"]').textContent()).includes(editedLabel),
+      (await page.locator('.sp-screen-active .sp-main [data-slot="2"]').textContent()).includes(editedLabel),
       `${testCase.name}: reload retains the native sensor edit`,
     );
 
@@ -5654,7 +5654,7 @@ async function assertNativeProfileJourney(browser, testCase) {
     );
     await seedNativeDocument(page, nativeState);
     assert(
-      (await page.locator('.sp-main [data-slot="2"]').textContent()).includes(restoredLabel),
+      (await page.locator('.sp-screen-active .sp-main [data-slot="2"]').textContent()).includes(restoredLabel),
       `${testCase.name}: restored backup survives a reload`,
     );
     assert.deepStrictEqual(errors, [], `${testCase.name}: native journey has no browser errors`);
@@ -5684,8 +5684,8 @@ async function assertLegacyProfileFallback(browser, testCase) {
       () => window.__eventSources && window.__eventSources.length > 0,
     );
     await page.evaluate((events) => window.__seedEspState(events), seededEvents());
-    await page.waitForSelector('.sp-main [data-slot="2"]');
-    await page.locator('.sp-main [data-slot="2"]').click();
+    await page.waitForSelector('.sp-screen-active .sp-main [data-slot="2"]');
+    await page.locator('.sp-screen-active .sp-main [data-slot="2"]').click();
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     const cardSettings = page
       .locator(".sp-settings-modal .sp-disclosure")
@@ -5747,7 +5747,7 @@ async function assertOfflineProfileFallback(browser, testCase) {
       () => window.__eventSources && window.__eventSources.length > 0,
     );
     await page.evaluate((events) => window.__seedEspState(events), seededEvents());
-    await page.waitForSelector(".sp-main > .sp-btn");
+    await page.waitForSelector(".sp-screen-active .sp-main > .sp-btn");
     assert.strictEqual(
       await page.evaluate(() => globalThis.__ESPCONTROL_USING_EMBEDDED__),
       true,
@@ -5765,9 +5765,9 @@ async function assertOfflineProfileFallback(browser, testCase) {
 
 async function assertMediaCoverArtCompactPreview(page, label) {
   const layout = await page.evaluate(() => {
-    const card = document.querySelector('.sp-main [data-slot="4"]');
+    const card = document.querySelector('.sp-screen-active .sp-main [data-slot="4"]');
     const artist = card.querySelector(".sp-media-now-artist");
-    const standardLabel = document.querySelector('.sp-main [data-slot="1"] .sp-btn-label');
+    const standardLabel = document.querySelector('.sp-screen-active .sp-main [data-slot="1"] .sp-btn-label');
     const artistStyle = getComputedStyle(artist);
     const standardStyle = getComputedStyle(standardLabel);
     const largeCard = card.cloneNode(true);
@@ -5827,7 +5827,7 @@ async function assertMediaCoverArtCompactPreview(page, label) {
 async function assertCardIconsTopLeft(page, label) {
   const icons = await page.evaluate(() =>
     Array.from(document.querySelectorAll(
-      ".sp-main > .sp-btn .sp-btn-icon, .sp-main > .sp-btn .sp-image-preview-icon",
+      ".sp-screen-active .sp-main > .sp-btn .sp-btn-icon, .sp-screen-active .sp-main > .sp-btn .sp-image-preview-icon",
     )).map((icon) => {
       const card = icon.closest(".sp-btn");
       const cardRect = card.getBoundingClientRect();
@@ -5867,7 +5867,7 @@ async function assertCardIconsTopLeft(page, label) {
 }
 
 async function assertTimerEntityValidation(page) {
-  await page.locator(".sp-main .sp-empty-cell").first().click();
+  await page.locator(".sp-screen-active .sp-main .sp-empty-cell").first().click();
   await page.getByRole("button", { name: "Timer card type", exact: true }).click();
   const entity = page.locator("#sp-inp-entity");
   await entity.waitFor({ state: "visible" });
@@ -5936,7 +5936,7 @@ async function runCase(browser, testCase) {
       (events) => window.__seedEspState(events),
       seededEvents(),
     );
-    await page.waitForSelector(".sp-main > .sp-btn");
+    await page.waitForSelector(".sp-screen-active .sp-main > .sp-btn");
     await page.waitForTimeout(100);
 
     assert.deepStrictEqual(
@@ -6317,7 +6317,7 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     // Card SSE updates are rendered on the next animation frame. Existing
     // slot elements can still contain the initial "Configure" placeholder.
     await page.waitForFunction(() =>
-      document.querySelector('.sp-main [data-slot="2"] .sp-btn-label')?.textContent === "Energy");
+      document.querySelector('.sp-screen-active .sp-main [data-slot="2"] .sp-btn-label')?.textContent === "Energy");
   }
   async function waitForPausedPost(label, timeout = 10000) {
     const deadline = Date.now() + timeout;
@@ -6338,7 +6338,7 @@ async function assertPolishUi(browser, embeddedFallback = false) {
   try {
     await page.goto(`http://espcontrol.test/${testCase.slug}?events=1${embeddedFallback ? "&espcontrol_fallback=1" : ""}`, { waitUntil: "domcontentloaded" });
     await seed("en");
-    await page.locator('.sp-main [data-slot="1"]').click();
+    await page.locator('.sp-screen-active .sp-main [data-slot="1"]').click();
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await page.locator(".sp-settings-modal .sp-disclosure").filter({ hasText: "Card Settings" })
       .first().locator(".sp-disclosure-button").click();
@@ -6361,12 +6361,12 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     assert.strictEqual(navigations, beforeDraft + 1, "exactly one reload activates Polish");
     await seed("pl");
     assert.strictEqual(await page.locator(".sp-support-link").textContent(), "Postaw mi kawę");
-    assert.strictEqual(await page.locator('.sp-main [data-slot="2"] .sp-btn-label').textContent(), "Energy", "user labels are not translated");
+    assert.strictEqual(await page.locator('.sp-screen-active .sp-main [data-slot="2"] .sp-btn-label').textContent(), "Energy", "user labels are not translated");
     for (const [slot, expected] of [
       [1, "Wybrano 1 kartę"], [2, "Wybrano 2 karty"], [3, "Wybrano 3 karty"],
       [4, "Wybrano 4 karty"], [5, "Wybrano 5 kart"],
     ]) {
-      await page.locator(`.sp-main [data-slot="${slot}"]`).click({ modifiers: slot === 1 ? [] : ["ControlOrMeta"], position: { x: 8, y: 8 } });
+      await page.locator(`.sp-screen-active .sp-main [data-slot="${slot}"]`).click({ modifiers: slot === 1 ? [] : ["ControlOrMeta"], position: { x: 8, y: 8 } });
       await page.waitForFunction(expected => document.querySelector(".sp-selection-label")?.textContent === expected, expected);
       assert.strictEqual(await page.locator(".sp-selection-label").textContent(), expected, "Polish selection plural interpolates the count");
     }

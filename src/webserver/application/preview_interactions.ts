@@ -34,7 +34,7 @@ export interface PreviewInteractionsDependencies {
 }
 export interface PreviewInteractionsFeature {
     clearPlaceholder(): void;
-    setup(): void;
+    setup(container?: HTMLElement, screenSlot?: number): void;
     addSlot(position?: any): void;
     addSubpageSlot(position?: any): void;
     duplicateButton(slot?: any): void;
@@ -88,12 +88,48 @@ export function createPreviewInteractionsFeature(
         if (selection && selection.removeAllRanges)
             selection.removeAllRanges();
     }
-    function setupPreviewEvents(this: any) {
-        var container: any = els.previewMain;
+    const registered = new WeakSet<HTMLElement>();
+    let dragScreen: number | null = null;
+    let dragContainer: HTMLElement | null = null;
+    function clearDragOwnership() {
+        dragScreen = null;
+        dragContainer?.classList.remove("sp-drag-active");
+        dragContainer = null;
+    }
+    function setupPreviewEvents(this: any, previewContainer?: HTMLElement, screenSlot: number = 0) {
+        var container: any = previewContainer || els.previewMain;
+        if (registered.has(container)) return;
+        registered.add(container);
+        const activate = (event: Event) => {
+            if (isConfigLocked()) return;
+            if (dragScreen !== null && dragScreen !== screenSlot) {
+                event.preventDefault(); event.stopImmediatePropagation();
+                if (event.type === "drop") {
+                    clearDragOwnership();
+                    runtime.dragSrcPos = -1;
+                    runtime.previewDropIdx = -1;
+                    clearPlaceholder();
+                }
+                return;
+            }
+            if ((state.editingSubpage || 0) !== screenSlot) {
+                hideSettingsOverlay();
+                runtime.didDrag = false;
+                state.editingSubpage = screenSlot || null;
+                state.subpageSelectedSlots = [];
+                state.subpageLastClicked = -1;
+                state.selectedSlots = [];
+                state.lastClickedSlot = -1;
+                state.clockBarSelectedItem = "";
+                els.previewMain = container;
+            }
+        };
+        for (const type of ["mousedown", "click", "contextmenu", "dragstart", "dragenter", "dragover", "drop"]) container.addEventListener(type, activate, true);
         var pendingCellIdx: any = -1;
         state.clockBarDragItem = "";
-        if (els.topbar) {
-            els.topbar.addEventListener("click", function (this: any, e?: any) {
+        const topbar = container.parentElement?.querySelector(".sp-topbar") || els.topbar;
+        if (topbar) {
+            topbar.addEventListener("click", function (this: any, e?: any) {
                 if (isConfigLocked()) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -106,7 +142,7 @@ export function createPreviewInteractionsFeature(
                 e.stopPropagation();
                 selectClockBarItem(target.getAttribute("data-clockbar-item"));
             });
-            els.topbar.addEventListener("keydown", function (this: any, e?: any) {
+            topbar.addEventListener("keydown", function (this: any, e?: any) {
                 if (e.key !== "Enter" && e.key !== " ")
                     return;
                 var target: any = e.target.closest("[data-clockbar-item]");
@@ -115,7 +151,7 @@ export function createPreviewInteractionsFeature(
                 e.preventDefault();
                 selectClockBarItem(target.getAttribute("data-clockbar-item"));
             });
-            els.topbar.addEventListener("contextmenu", function (this: any, e?: any) {
+            topbar.addEventListener("contextmenu", function (this: any, e?: any) {
                 if (isConfigLocked()) {
                     e.preventDefault();
                     return;
@@ -227,6 +263,8 @@ export function createPreviewInteractionsFeature(
             if (!target)
                 return;
             var pos: any = parseInt(target.getAttribute("data-pos"), 10);
+            dragScreen = screenSlot;
+            dragContainer = container;
             runtime.dragSrcPos = pos;
             if (dependencies.layout.config.dragAnimation)
                 runtime.dragSrcEl = target;
@@ -240,6 +278,7 @@ export function createPreviewInteractionsFeature(
             }
         });
         container.addEventListener("dragend", function (this: any) {
+            clearDragOwnership();
             runtime.dragSrcPos = -1;
             runtime.previewDropIdx = -1;
             runtime.dragEnterCount = 0;
@@ -302,6 +341,8 @@ export function createPreviewInteractionsFeature(
             }
         });
         container.addEventListener("drop", function (this: any, e?: any) {
+            // Redrawing detaches the original source, so its dragend may never reach this grid.
+            clearDragOwnership();
             if (isConfigLocked()) {
                 e.preventDefault();
                 return;

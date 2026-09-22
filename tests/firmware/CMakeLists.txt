@@ -509,13 +509,13 @@ add_test(NAME camera_feedback_test COMMAND
 
 add_executable(long_press_config_test long_press_config_test.cpp)
 target_compile_features(long_press_config_test PRIVATE cxx_std_17)
-target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror)
+target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_include_directories(long_press_config_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME long_press_config_test COMMAND long_press_config_test)
 
 add_executable(long_press_runtime_test long_press_runtime_test.cpp)
 target_compile_features(long_press_runtime_test PRIVATE cxx_std_17)
-target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror)
+target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_include_directories(long_press_runtime_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME long_press_runtime_test COMMAND long_press_runtime_test)
 
@@ -536,6 +536,10 @@ target_compile_features(entity_screen_navigation_runtime_test PRIVATE cxx_std_17
 target_compile_options(entity_screen_navigation_runtime_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(entity_screen_navigation_runtime_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME entity_screen_navigation_runtime_test COMMAND entity_screen_navigation_runtime_test)
+add_test(NAME entity_screen_navigation_idle_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/entity_screen_navigation_idle_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME entity_screen_navigation_routing_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/entity_screen_navigation_routing_test.py ${CMAKE_CXX_COMPILER})
 
 add_executable(standalone_screen_config_test standalone_screen_config_test.cpp)
 target_compile_features(standalone_screen_config_test PRIVATE cxx_std_17)
@@ -546,3 +550,16 @@ add_test(NAME standalone_screen_runtime_test COMMAND ${Python3_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/standalone_screen_runtime_test.py)
 add_test(NAME standalone_alarm_parent_runtime_test COMMAND ${Python3_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/standalone_alarm_parent_runtime_test.py)
+
+foreach(test_name screen_navigation_options_test screen_navigation_options_runtime_test screen_navigation_options_coordinator_test)
+  add_executable(${test_name} ${test_name}.cpp)
+  target_compile_features(${test_name} PRIVATE cxx_std_17)
+  target_compile_options(${test_name} PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+  target_include_directories(${test_name} PRIVATE stubs ../../components/espcontrol)
+  add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach()
+
+add_test(NAME long_press_lifecycle_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/long_press_lifecycle_test.py)
+add_test(NAME long_press_yaml_routing_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/long_press_yaml_routing_test.py)

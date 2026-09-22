@@ -1069,6 +1069,7 @@ inline void grid_phase1(
   set_current_button_primary_color(palette.on_val);
 
   more_info_hide_modal();
+  light_control_hide_modal();
   bump_ha_subscription_generation();
   reset_calendar_cards();
   reset_timezone_cards();
@@ -1849,6 +1850,7 @@ inline void grid_phase2(
   memset(sensor_text_mode, 0, sizeof(sensor_text_mode));
   memset(has_icon_on, 0, sizeof(has_icon_on));
   more_info_hide_modal();
+  light_control_hide_modal();
   bump_ha_subscription_generation();
   weather_forecast_cancel_pending_requests();
   reset_climate_control_refs();

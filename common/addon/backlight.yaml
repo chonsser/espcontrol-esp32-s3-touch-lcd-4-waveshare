@@ -718,7 +718,8 @@ script:
             - lambda: |-
                 const auto &controller = id(espcontrol_app).display();
                 if (!controller.takeover_active(espcontrol::DisplayTakeoverKind::INTERACTIVE) &&
-                    !controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL)) {
+                    !controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL) &&
+                    !entity_screen_navigation_holds_screen()) {
                   navigation_return_home(id(main_page)->obj);
                 }
             - if:
@@ -947,6 +948,7 @@ script:
           }
       - script.execute: hide_clock_view
       - lvgl.widget.hide: dim_screensaver_touch_guard
+      - lambda: 'entity_screen_navigation_capture_return(id(screen_off_page)->obj);'
       - lvgl.page.show: screen_off_page
       - script.execute: clock_bar_hide
       - delay: 50ms
@@ -1047,6 +1049,7 @@ script:
             lambda: |-
               float val = id(home_screen_timeout).state;
               return !id(connectivity_setup_display_active) &&
+                     !entity_screen_navigation_holds_screen() &&
                      !id(button_order).state.empty() &&
                      !std::isnan(val) && val > 0;
           then:
@@ -1056,6 +1059,7 @@ script:
                 return (int)(val * 1000);
             - lambda: |-
                 if (!id(connectivity_setup_display_active) &&
+                    !entity_screen_navigation_holds_screen() &&
                     !id(button_order).state.empty() &&
                     !alarm_display_takeover_active()) {
                   navigation_return_home(id(main_page)->obj);
@@ -1069,12 +1073,13 @@ script:
             lambda: |-
               float val = id(home_screen_timeout).state;
               if (id(connectivity_setup_display_active) ||
+                  entity_screen_navigation_holds_screen() ||
                   id(button_order).state.empty() ||
                   std::isnan(val) || val <= 0) return false;
               return lv_disp_get_inactive_time(NULL) >= (uint32_t)(val * 1000);
           then:
             - lambda: |-
-                if (!alarm_display_takeover_active()) {
+                if (!alarm_display_takeover_active() && !entity_screen_navigation_holds_screen()) {
                   navigation_return_home(id(main_page)->obj);
                 }
           else:
@@ -1501,7 +1506,7 @@ script:
                   id(espcontrol_app).display().transition_is_current(
                       static_cast<uint32_t>(generation), espcontrol::DisplayMode::CLOCK);
           then:
-            - lambda: 'navigation_return_home(id(main_page)->obj);'
+            - lambda: 'if (!entity_screen_navigation_preserves_screen()) navigation_return_home(id(main_page)->obj);'
             - lvgl.widget.hide: dim_screensaver_touch_guard
             - script.execute: clock_screensaver_refresh_appearance
             - script.execute: clock_bar_hide

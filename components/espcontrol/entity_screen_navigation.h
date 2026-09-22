@@ -33,6 +33,7 @@ class EntityScreenNavigation {
     wake_ = wake;
     ++generation_;
     pending_target_.reset();
+    displayed_target_.reset();
     last_state_.reset();
     rules_.clear();
     valid_ = entity_valid(entity) && parse_rules(encoded_rules);
@@ -44,7 +45,13 @@ class EntityScreenNavigation {
   const std::string &entity() const { return entity_; }
   uint32_t generation() const { return generation_; }
   std::optional<int> pending_target() const { return pending_target_; }
-  void complete_navigation() { pending_target_.reset(); }
+  void complete_navigation() {
+    displayed_target_ = pending_target_;
+    pending_target_.reset();
+  }
+  bool holds_screen(int active_slot) const {
+    return enabled() && active_slot > 0 && displayed_target_ && *displayed_target_ == active_slot;
+  }
 
   void receive(uint32_t generation, const std::string &state) {
     if (generation != generation_ || !enabled()) return;
@@ -148,6 +155,7 @@ class EntityScreenNavigation {
   std::string encoded_rules_;
   std::optional<std::string> last_state_;
   std::optional<int> pending_target_;
+  std::optional<int> displayed_target_;
   std::vector<Rule> rules_;
 };
 

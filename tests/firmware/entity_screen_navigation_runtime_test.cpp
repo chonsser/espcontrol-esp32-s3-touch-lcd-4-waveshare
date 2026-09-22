@@ -27,6 +27,9 @@ inline NavigationSubpageEntry *navigation_find_slot(int slot) { return has_subpa
 inline bool navigation_restore_subpage_slot(int slot) { shown_page = slot; return navigation_find_slot(slot) != nullptr; }
 inline bool navigation_return_home(lv_obj_t *page) { shown_page = page->id; ++modal_closes; return true; }
 inline void navigation_hide_modals() { ++modal_closes; }
+inline uint32_t ha_subscription_generation() { return 1; }
+inline lv_obj_t *lv_scr_act() { return shown_page == 3 ? &subpage : &home; }
+inline int navigation_active_subpage_slot() { return shown_page > 0 ? shown_page : 0; }
 #include "button_grid_entity_screen_navigation.h"
 
 int main() {

@@ -143,6 +143,7 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
     }
     function updateClock(this: any) {
         updateClockText();
+        syncScreenClockBars();
         var now: any = webserverNow();
         var msToNext: any = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
         setTimeout(updateClock, msToNext + 50);
@@ -264,7 +265,7 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
             if (!container)
                 return;
             container.innerHTML = "";
-            if (section === "left" && state.editingSubpage != null) {
+            if (section === "left" && state.editingSubpage != null && !els.screenPreviews) {
                 const parent = state.buttons[state.editingSubpage - 1];
                 const screen = state.subpages[state.editingSubpage];
                 const title = document.createElement("span");
@@ -304,9 +305,27 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
         el.setAttribute("title", clockBarItemLabel(item));
         el.setAttribute("aria-pressed", state.clockBarSelectedItem === item ? "true" : "false");
     }
+    function syncScreenClockBars() {
+        if (!els.screenPreviews || !els.topbar) return;
+        for (const [slot, main] of els.screenPreviews as Map<number, HTMLElement>) {
+            if (!slot) continue;
+            const topbar = main.parentElement?.querySelector<HTMLElement>(".sp-topbar");
+            if (!topbar) continue;
+            topbar.className = els.topbar.className;
+            topbar.innerHTML = els.topbar.innerHTML;
+            const left = topbar.querySelector('[data-clockbar-section="left"]');
+            if (left) {
+                const title = document.createElement("span"); title.className = "sp-clockbar-subpage-title";
+                const screen = state.subpages[slot];
+                title.textContent = (screen?.standalone ? screen.screenLabel : state.buttons[slot - 1]?.label) || i18nDevice("Subpage");
+                left.replaceChildren(title);
+            }
+        }
+    }
     function updateClockBarItemUi(this: any) {
         renderClockBarLayout();
         clockBarItems().forEach(syncClockBarItemElement);
+        syncScreenClockBars();
     }
     function syncInput(this: any, el?: any, val?: any) {
         if (el && document.activeElement !== el)
@@ -380,6 +399,7 @@ export function createAppStatusPreviewFeature(runtime: UiRuntimeState, core: Cor
         els.networkPreview.className = "sp-network-preview mdi mdi-" +
             networkPreviewIconSlug(state.networkTransport, state.wifiStrengthPercent) +
             (show ? " sp-visible" : "");
+        syncScreenClockBars();
     }
     function updateVoicePreview(this: any) {
         if (!els.voicePreview)

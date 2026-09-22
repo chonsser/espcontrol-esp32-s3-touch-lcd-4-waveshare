@@ -106,17 +106,20 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
         const clockUpdates: (() => void)[] = [];
         let clockRefreshDelay = 60000;
         dependencies.updateClockBarItemUi();
-        var main: any = els.previewMain;
+        const activeSlot = state.editingSubpage || 0;
+        const previews: Map<number, HTMLElement> = els.screenPreviews || new Map([[activeSlot, els.previewMain]]);
+        els.previewMain = previews.get(activeSlot) || previews.get(0);
+        for (const [screenSlot, main] of previews) {
         main.innerHTML = "";
         main.className = "sp-main" + (state.subpageChevronsOn ? "" : " sp-hide-subpage-chevrons");
         if (gridPreviewBlockedByRotationStartup()) {
             main.className += " sp-grid-loading";
             main.setAttribute("aria-busy", "true");
-            return;
+            continue;
         }
         main.removeAttribute("aria-busy");
-        var c: any = ctx();
-        updatePreviewHint(c);
+        var c: any = ctx(screenSlot);
+        if (screenSlot === activeSlot) updatePreviewHint(c);
         for (var pos: any = 0; pos < c.maxSlots; pos++) {
             var slot: any = c.grid[pos];
             if (slot === -1)
@@ -124,7 +127,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
             if (slot === -2) {
                 var backBtn: any = document.createElement("div");
                 var bkSz: any = c.sizes[-2];
-                var backLabel: any = c.isSub ? (getSubpage(state.editingSubpage).backLabel || "Back") : "Back";
+                var backLabel: any = c.isSub ? (getSubpage(screenSlot).backLabel || "Back") : "Back";
                 if (backLabel === "Back")
                     backLabel = i18nDevice("Back");
                 backBtn.className = "sp-btn sp-back-btn" + sizeClass(bkSz) +
@@ -146,7 +149,7 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 if (state.settingsDraft &&
                     state.settingsDraft.slot === slot &&
                     state.settingsDraft.isSub === c.isSub &&
-                    (!c.isSub || state.settingsDraft.homeSlot === state.editingSubpage)) {
+                    (!c.isSub || state.settingsDraft.homeSlot === screenSlot)) {
                     b = state.settingsDraft.button;
                 }
                 if (!buttonTypeInfoOnlyVisible(b.type || "")) {
@@ -213,11 +216,12 @@ export function createPreviewRenderFeature(dependencies: PreviewRenderDependenci
                 main.appendChild(empty);
             }
         }
-        renderSelectionBar(c);
+        if (screenSlot === activeSlot) renderSelectionBar(c);
+        }
         if (clockUpdates.length && !document.hidden) {
             const refreshClocks = () => {
                 clockRefreshTimer = undefined;
-                if (!main.isConnected || document.hidden || !main.getClientRects().length) return;
+                if (!els.previewMain?.isConnected || document.hidden) return;
                 for (const update of clockUpdates) update();
                 clockRefreshTimer = setTimeout(refreshClocks, clockRefreshDelay);
             };

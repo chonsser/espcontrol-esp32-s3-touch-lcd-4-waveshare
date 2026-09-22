@@ -7,6 +7,25 @@ using espcontrol::ScreenNavigationAction;
 using espcontrol::ScreenNavigationConditions;
 
 int main() {
+  {
+    EntityScreenNavigation held;
+    held.configure("input_select.screen", "0\tHome\n3\tMusic\n4\tWork", true);
+    assert(!held.holds_screen(3));
+    held.receive(held.generation(), "Music");
+    assert(!held.holds_screen(3));
+    held.complete_navigation();
+    assert(held.holds_screen(3) && !held.holds_screen(4));
+    held.receive(held.generation(), "unavailable");
+    assert(held.holds_screen(3));
+    held.receive(held.generation(), "Work");
+    held.complete_navigation();
+    assert(held.holds_screen(4) && !held.holds_screen(3));
+    held.receive(held.generation(), "Home");
+    held.complete_navigation();
+    assert(!held.holds_screen(4) && !held.holds_screen(0));
+    held.configure("", "", true);
+    assert(!held.holds_screen(3));
+  }
   EntityScreenNavigation navigation;
   assert(navigation.configure("input_select.aktualny_ekran", "0\tDom\n3\tKuchnia\n7\tŁazienka", true));
   assert(navigation.enabled());
