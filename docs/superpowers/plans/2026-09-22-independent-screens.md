@@ -60,8 +60,20 @@
 
 ### Task 4: Integration, review and OTA
 
-- [ ] Regenerate entities/translations/web assets, snapshots and size baseline; update user docs and final PR description for Screen-tab UX.
-- [ ] Review Tasks 1–3 and fix concrete findings; run product, web unit/type, relevant browser and firmware host checks.
-- [ ] Commit and push the branch; keep PR #3 open for user device testing.
-- [ ] Compile pinned ESPHome 2026.9.0 using `dev-pr-navigation.yaml`, then upload to 192.168.11.59.
-- [ ] Verify reboot, uptime stability, capability, settings and embedded UI hash; report concise setup/testing instructions.
+- [x] Regenerate entities/translations/web assets, snapshots and size baseline; update user docs and final PR description for Screen-tab UX.
+- [x] Review Tasks 1–3 and fix concrete findings; run product, web unit/type, relevant browser and firmware host checks.
+- [x] Commit and push the branch; keep PR #3 open for user device testing.
+- [x] Compile pinned ESPHome 2026.9.0 using `dev-pr-navigation.yaml`, then upload to 192.168.11.59.
+- [x] Verify reboot, uptime stability, capability, settings and embedded UI hash; report concise setup/testing instructions.
+
+## Completion evidence
+
+Firmware commit `4005d6f32` compiled and uploaded successfully to the Waveshare ESP32-S3-Touch-LCD-4 at `192.168.11.59`. Product and fast-web checks passed, including 219 web unit tests and TypeScript; generated Waveshare browser smoke and 76 firmware host tests passed. Task and final reviews are clear, including the final clipboard metadata regression. GitHub CI passed for that firmware commit.
+
+After OTA, the panel reported standalone-screen capability v2, all three navigation settings endpoints responded, and embedded JavaScript matched the compiled asset byte-for-byte. A read-only live Chromium check confirmed the Polish Ekran tab, enabled + button, screen selector and entity settings, with no configuration writes. Uptime advanced from 5 to 65 seconds without another restart. PR #3 remains open for physical touch and Home Assistant state-switching confirmation.
+
+## Implementation decisions
+
+- Screens created with + are independent of home cards and have no Back tile. If ordinary subpages were intended, the creation flow would need adjustment.
+- Firmware implementation was coordinated by the root agent alongside a worker on disjoint web-model files. Ownership overlap would require reconciliation; independent reviews covered both tasks.
+- The + action immediately creates a screen with a translated default name; renaming is available afterwards. A custom initial name therefore requires one additional action.
