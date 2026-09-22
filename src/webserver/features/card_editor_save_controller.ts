@@ -1,5 +1,6 @@
 import type { CardConfig } from "../contracts/types";
 import type { SettingsDraft } from "../state/types";
+import { isProtectedSubpageStorage } from "../model/standalone_screens";
 
 export interface CardEditorSaveContext {
   readonly slot: number;
@@ -7,6 +8,7 @@ export interface CardEditorSaveContext {
   readonly isSubpage: boolean;
   readonly grid: number[];
   readonly buttons: CardConfig[];
+  readonly subpages?: Readonly<Record<string, unknown>>;
 }
 
 export interface CardEditorSaveResult {
@@ -32,6 +34,8 @@ export class CardEditorSaveController {
       accepted: false, isNew: false, button: null, saveGrid: false, saveButton: false, saveSubpage: false,
     });
     if (!draft || draft.slot !== context.slot || draft.isSub !== context.isSubpage) return rejected();
+    if (!context.isSubpage && draft.button.type === "subpage" &&
+        isProtectedSubpageStorage(context.subpages?.[String(context.slot)])) return rejected();
     if (draft.isNew) {
       const pos = draft.pos ?? -1;
       if (pos < 0 || pos >= context.maxSlots || context.grid[pos] !== 0) return rejected();

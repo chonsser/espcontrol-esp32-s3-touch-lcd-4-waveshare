@@ -813,8 +813,10 @@ export function createConfigCodecFeature(
         var parsed: any = EspControlModel.parseRawSubpageConfig(str, subpageTypeFromCode);
         if (raw)
             return parsed;
-        var compactButtonTokens: any = String(str || "").charAt(0) === "~"
-            ? String(str || "").split("|").slice(1)
+        var envelope: any = EspControlModel.parseStandaloneScreenEnvelope(str);
+        var payload: any = envelope ? envelope.payload : String(str || "");
+        var compactButtonTokens: any = payload.charAt(0) === "~"
+            ? payload.split("|").slice(1)
             : [];
         parsed.buttons = parsed.buttons.map(function (this: any, button?: any, index?: any) {
             var normalized: any = normalizeButtonConfig(button);
@@ -866,10 +868,15 @@ export function createConfigCodecFeature(
         return false;
     }
     function serializeSubpageConfig(this: any, sp?: any) {
+        if (EspControlModel.isQuarantinedStandaloneSubpage(sp))
+            return sp.rawConfig;
         var order: any = subpageSerializedOrder(sp);
         var legacy: any = legacySubpageConfigSafe(sp) ? serializeLegacySubpageConfig(sp) : "";
         var compact: any = serializeCompactSubpageConfig(sp);
-        return EspControlModel.chooseSerializedSubpageConfig(order, sp && sp.buttons ? sp.buttons.length : 0, legacy, compact);
+        var payload: any = EspControlModel.chooseSerializedSubpageConfig(order, sp && sp.buttons ? sp.buttons.length : 0, legacy, compact);
+        return sp && sp.standalone === true
+            ? EspControlModel.wrapStandaloneScreenConfig(sp.screenLabel || "", payload)
+            : payload;
     }
     function subpageLegacyButtonFields(this: any, b?: any) {
         var fields: any = buttonConfigFields(b || {});
@@ -926,7 +933,7 @@ export function createConfigCodecFeature(
             delete state.subpageSavePending[slot];
         }
         var local: any = state.subpages[slot];
-        var localHasData: any = local && ((local.buttons && local.buttons.length > 0) ||
+        var localHasData: any = local && (local.standalone === true || local.standaloneInvalid === true || (local.buttons && local.buttons.length > 0) ||
             (local.order && local.order.length > 0));
         if (state.editingSubpage === slot && localHasData) {
             var localSerialized: any = serializeSubpageConfig(local);
@@ -939,7 +946,9 @@ export function createConfigCodecFeature(
             var migrateConfig: any = subpageConfigNeedsMigration(combined);
             var sp: any = parseSubpageConfig(combined);
             sp.sizes = sp.sizes || {};
-            var layoutNormalized: any = buildSubpageGridAndNormalizeOrder(sp);
+            var layoutNormalized: any = sp.standaloneInvalid === true
+                ? (buildSubpageGrid(sp), false)
+                : buildSubpageGridAndNormalizeOrder(sp);
             state.subpages[slot] = sp;
             if (migrateConfig || layoutNormalized)
                 scheduleSliderSubpageMigration(slot);
@@ -969,13 +978,17 @@ export function createConfigCodecFeature(
         return sp.grid;
     }
     function buildSubpageGridAndNormalizeOrder(this: any, sp?: any) {
+        if (sp && sp.standaloneInvalid === true) {
+            buildSubpageGrid(sp);
+            return false;
+        }
         var previousOrder: any = JSON.stringify((sp && sp.order) || []);
         buildSubpageGrid(sp);
         sp.order = serializeSubpageGrid(sp);
         return JSON.stringify(sp.order) !== previousOrder;
     }
     function serializeSubpageGrid(this: any, sp?: any) {
-        return EspControlModel.serializeSubpageGrid(sp.grid, sp.sizes || {}, sp.backLabel || "Back");
+        return EspControlModel.serializeSubpageGrid(sp.grid, sp.sizes || {}, sp.backLabel || "Back", sp.standalone === true);
     }
     function enterSubpage(this: any, homeSlot?: any) {
         state.editingSubpage = homeSlot;

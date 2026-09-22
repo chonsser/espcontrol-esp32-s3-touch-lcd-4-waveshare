@@ -424,6 +424,18 @@ export function createPreviewInteractionsFeature(
         }
         return -1;
     }
+    function firstFreeOrdinarySubpageSlot(this: any) {
+        var used: any = {};
+        state.grid.forEach(function (this: any, s?: any) {
+            if (s > 0)
+                used[s] = true;
+        });
+        for (var i: any = 1; i <= dependencies.layout.numSlots; i++) {
+            if (!used[i] && !state.subpages[i])
+                return i;
+        }
+        return -1;
+    }
     function firstFreeCell(this: any, afterPos?: any) {
         var start: any = afterPos != null ? afterPos : 0;
         for (var i: any = 0; i < dependencies.layout.numSlots; i++) {
@@ -478,7 +490,7 @@ export function createPreviewInteractionsFeature(
         var c: any = ctx();
         if (c.isSub)
             return;
-        var slot: any = firstFreeSlot();
+        var slot: any = firstFreeOrdinarySubpageSlot();
         if (slot < 0)
             return;
         state.buttons[slot - 1] = emptyButtonConfig("subpage");
@@ -493,7 +505,10 @@ export function createPreviewInteractionsFeature(
     function duplicateButton(this: any, srcSlot?: any) {
         if (isConfigLocked())
             return;
-        var newSlot: any = firstFreeSlot();
+        var src: any = state.buttons[srcSlot - 1];
+        var copiesSubpage: any = src && src.type === "subpage" && state.subpages[srcSlot] &&
+            !EspControlModel.isProtectedSubpageStorage(state.subpages[srcSlot]);
+        var newSlot: any = copiesSubpage ? firstFreeOrdinarySubpageSlot() : firstFreeSlot();
         if (newSlot < 0)
             return;
         var srcSz: any = state.sizes[srcSlot] || 1;
@@ -501,9 +516,8 @@ export function createPreviewInteractionsFeature(
         var placement: any = findDuplicatePlacement(state.grid, srcPos + 1, srcSz, dependencies.layout.numSlots);
         if (placement.pos < 0)
             return;
-        var src: any = state.buttons[srcSlot - 1];
         var extraImageCards: any = isImageCard(src) ? 1 : 0;
-        if (state.subpages[srcSlot])
+        if (copiesSubpage)
             extraImageCards += imageCardCountInSubpage(state.subpages[srcSlot]);
         if (!canAddImageCards(extraImageCards)) {
             showImageCardLimitBanner();
@@ -520,7 +534,7 @@ export function createPreviewInteractionsFeature(
         else
             state.sizes[newSlot] = placement.size;
         placeSlotAt(state.grid, newSlot, placement.pos, placement.size);
-        if (state.subpages[srcSlot]) {
+        if (copiesSubpage) {
             var spJson: any = serializeSubpageConfig(state.subpages[srcSlot]);
             var spCopy: any = parseSubpageConfig(spJson);
             spCopy.sizes = {};
@@ -529,7 +543,8 @@ export function createPreviewInteractionsFeature(
         }
         dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
         configPersistence.saveButtonConfig(newSlot);
-        configPersistence.saveSubpageEntity(newSlot);
+        if (!EspControlModel.isProtectedSubpageStorage(state.subpages[newSlot]) || copiesSubpage)
+            configPersistence.saveSubpageEntity(newSlot);
         state.selectedSlots = [newSlot];
         state.lastClickedSlot = newSlot;
         renderPreview();
@@ -601,9 +616,12 @@ export function createPreviewInteractionsFeature(
         else {
             dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
             state.buttons[slot - 1] = emptyButtonConfig();
-            delete state.subpages[slot];
+            var protectedSubpage: any = EspControlModel.isProtectedSubpageStorage(state.subpages[slot]);
+            if (!protectedSubpage)
+                delete state.subpages[slot];
             configPersistence.saveButtonConfig(slot);
-            configPersistence.saveSubpageEntity(slot);
+            if (!protectedSubpage)
+                configPersistence.saveSubpageEntity(slot);
         }
         renderPreview();
         renderButtonSettings();
@@ -638,9 +656,12 @@ export function createPreviewInteractionsFeature(
         else {
             slots.forEach(function (this: any, slot?: any) {
                 state.buttons[slot - 1] = emptyButtonConfig();
-                delete state.subpages[slot];
+                var protectedSubpage: any = EspControlModel.isProtectedSubpageStorage(state.subpages[slot]);
+                if (!protectedSubpage)
+                    delete state.subpages[slot];
                 configPersistence.saveButtonConfig(slot);
-                configPersistence.saveSubpageEntity(slot);
+                if (!protectedSubpage)
+                    configPersistence.saveSubpageEntity(slot);
             });
             dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
         }

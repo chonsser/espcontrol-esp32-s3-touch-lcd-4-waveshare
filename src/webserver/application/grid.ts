@@ -79,7 +79,7 @@ export function createGridFeature(codec: ConfigCodecFeature, runtime: UiRuntimeS
             renderQueue.schedule();
     }
     function serializeGrid(this: any, grid?: any) {
-        return EspControlModel.serializeGridOrder(grid, state.sizes);
+        return EspControlModel.serializeHomeGridOrder(grid, state.sizes, state.subpages);
     }
     function applyImportedButtonOrder(this: any, orderStr?: any, importedSizes?: any) {
         state.sizes = importedSizes || {};

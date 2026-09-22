@@ -18,6 +18,7 @@ export interface ConfigPersistenceFeature {
     saveButtonConfig(slot: number): Promise<any>;
     saveButtonConfigAndOrder(slot: number, order: string): Promise<any>;
     saveSubpageEntity(slot: number): unknown;
+    createStandaloneScreen(slot: number): Promise<any>;
     subpageChunkShouldPost(slot?: any, keys?: any, chunks?: any, index?: any, previousPendingChunks?: any): boolean;
     scheduleSliderSubpageMigration(slot?: any): void;
 }
@@ -175,6 +176,44 @@ export function createConfigPersistenceFeature(
             return Promise.resolve(rejectLegacyWifiSharingSave(requests()));
         saveSubpageEntityLegacy(slot, full);
     }
+    function createStandaloneScreen(this: any, slot?: any) {
+        var sp: any = state.subpages[slot];
+        function rollbackCandidate() {
+            if (state.subpages[slot] === sp)
+                delete state.subpages[slot];
+        }
+        if (!EspControlModel.isStandaloneSubpage(sp))
+            return Promise.resolve("failed");
+        var full: any = serializeSubpageConfig(sp);
+        var keys: any = subpageEntityKeys();
+        if (!EspControlModel.splitSubpageConfigChunks(full, keys.length, 255)) {
+            showBanner(i18n("Subpage is too large to save. Shorten labels or entity IDs."), "error");
+            rollbackCandidate();
+            return Promise.resolve("failed");
+        }
+        var nativeSave: any = nativePanelConfig
+            ? nativePanelConfig.createStandaloneScreen(Number.parseInt(String(slot), 10), full)
+            : null;
+        if (!nativeSave) {
+            showBanner(i18n("Independent screens require current device firmware."), "error");
+            rollbackCandidate();
+            return Promise.resolve("unsupported");
+        }
+        state.subpageSavePending[slot] = full;
+        var api: any = requests();
+        api.postQueue = api.postQueue.then(function () { return nativeSave; }).then(function (result: any) {
+            if (result === "mirror-failed") {
+                api.postQueueError = true;
+            }
+            else if (result !== "saved") {
+                delete state.subpageSavePending[slot];
+                rollbackCandidate();
+                api.postQueueError = true;
+            }
+            return result;
+        });
+        return api.postQueue;
+    }
     function scheduleSliderSubpageMigration(this: any, slot?: any) {
         runtime.pendingSliderSubpageMigrations[slot] = true;
         clearTimeout(runtime.sliderMigrationTimer as any);
@@ -194,6 +233,7 @@ export function createConfigPersistenceFeature(
         saveButtonConfig: (slot) => saveButtonConfig(slot),
         saveButtonConfigAndOrder: (slot, order) => saveButtonConfigAndOrder(slot, order),
         saveSubpageEntity: (slot) => saveSubpageEntity(slot),
+        createStandaloneScreen: (slot) => createStandaloneScreen(slot),
         subpageChunkShouldPost,
         scheduleSliderSubpageMigration,
     };

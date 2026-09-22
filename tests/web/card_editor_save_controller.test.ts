@@ -20,4 +20,10 @@ export function runCardEditorSaveControllerTests(): void {
   result = controller.apply({ key: "sub:4:1", slot: 1, homeSlot: 4, isSub: true, dirty: true, button: { ...empty(), label: "Updated" } }, { slot: 1, maxSlots: 2, isSubpage: true, grid: [1, 0], buttons: [empty()] });
   equal(result.saveSubpage, true, "subpage edits use their subpage persistence route");
   equal(result.saveButton, false, "subpage edits do not post the main button entity");
+
+  result = controller.apply(
+    { key: "main:new:1:2", slot: 2, homeSlot: null, isSub: false, isNew: true, pos: 1, dirty: true, button: { ...empty(), type: "subpage" } },
+    { slot: 2, maxSlots: 2, isSubpage: false, grid: [1, 0], buttons: [empty(), empty()], subpages: { "2": { standalone: true } } },
+  );
+  equal(result.accepted, false, "a card cannot become an ordinary subpage over an independent screen");
 }

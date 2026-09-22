@@ -1,12 +1,13 @@
 import {
   createNativePanelConfigClient,
+  NativePanelConfigConflictError,
   updateNativePanelConfigDocument,
   type NativePanelConfigClient,
   type NativePanelConfigFetch,
   type NativePanelConfigSaveResult,
 } from "../features/native_panel_config";
 import { i18n } from "../i18n";
-import type { PanelConfigDocument } from "../model";
+import { parseRawButtonConfig, type PanelConfigDocument } from "../model";
 
 export type NativePanelConfigUpdate = (document: PanelConfigDocument) => PanelConfigDocument;
 export type NativePanelConfigSaveOutcome = NativePanelConfigSaveResult | "legacy-fallback";
@@ -151,6 +152,25 @@ export class NativePanelConfigController {
       );
       return updateNativePanelConfigDocument(
         withButton, this.dependencies.deviceProfile(), "settings", "button_order", order,
+      );
+    });
+  }
+
+  createStandaloneScreen(slot: number, value: string): Promise<NativePanelConfigSaveOutcome> | null | false {
+    if (!Number.isInteger(slot) || slot < 1 || slot > this.dependencies.slotCount()) return false;
+    return this.schedule((current) => {
+      if (current.subpages[slot] || parseRawButtonConfig(current.buttons[slot]).type === "subpage") {
+        throw new NativePanelConfigConflictError("The selected screen storage slot is already in use.");
+      }
+      const withScreen = updateNativePanelConfigDocument(
+        current, this.dependencies.deviceProfile(), "subpages", slot, value,
+      );
+      return updateNativePanelConfigDocument(
+        withScreen,
+        this.dependencies.deviceProfile(),
+        "settings",
+        "button_order",
+        String(current.settings.button_order || "") || "0",
       );
     });
   }

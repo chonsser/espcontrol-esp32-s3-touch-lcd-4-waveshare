@@ -37,6 +37,8 @@ interface Capabilities {
   };
 }
 
+export class NativePanelConfigConflictError extends Error {}
+
 /** Replaces one native record without discarding cards that have not loaded yet. */
 export function updateNativePanelConfigDocument(
   current: PanelConfigDocument,
@@ -155,7 +157,8 @@ export class NativePanelConfigClient {
           return "unsupported";
         }
         if (next.status !== 409) return "failed";
-      } catch {
+      } catch (error) {
+        if (error instanceof NativePanelConfigConflictError) return "conflict";
         return "failed";
       }
     }

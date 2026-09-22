@@ -389,9 +389,10 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                     controllers.layout.numSlots,
                     importedGridCols,
                     {});
-                nativeDocument.settings.button_order = EspControlModel.serializeGridOrder(
+                nativeDocument.settings.button_order = EspControlModel.serializeHomeGridOrder(
                     parsedButtonOrder.grid,
-                    parsedButtonOrder.sizes);
+                    parsedButtonOrder.sizes,
+                    nativeDocument.subpages);
 
                 function readLegacyText(name: string) {
                     return requestApi.getJsonFirst(requestApi.entityDetailPaths("text", [name], "state"));

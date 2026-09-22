@@ -11,7 +11,7 @@ import {
   normalizeBackupEnvelope,
   planBackupButtonLayout,
   parseStructuredSubpageConfig,
-  serializeGridOrder,
+  serializeHomeGridOrder,
   structuredSubpageFromParsed,
   validateBackupEnvelope,
   type NormalizedBackupEnvelope,
@@ -19,6 +19,11 @@ import {
   type ParsedSubpageConfig,
   type SlotSizeMap,
 } from "../model";
+import {
+  firstFreeStandaloneScreenSlot,
+  isQuarantinedStandaloneSubpage,
+  isStandaloneSubpage,
+} from "../model/standalone_screens";
 
 export interface FeatureSubpage extends ParsedSubpageConfig {
   grid?: number[];
@@ -90,7 +95,9 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       if (!subpage) continue;
       const hasButtons = !!subpage.buttons?.length;
       const hasOrder = !!subpage.order?.length || !!subpage.grid?.length;
-      if (hasButtons || hasOrder) output[key] = dependencies.serializeSubpageConfig(subpage);
+      if (subpage.standalone === true || subpage.standaloneInvalid === true || hasButtons || hasOrder) {
+        output[key] = dependencies.serializeSubpageConfig(subpage);
+      }
     }
     return output;
   };
@@ -103,7 +110,8 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       if (!subpage) continue;
       const hasButtons = !!subpage.buttons?.length;
       const hasOrder = !!subpage.order?.length || !!subpage.grid?.length;
-      if (!hasButtons && !hasOrder) continue;
+      if (subpage.standaloneInvalid === true ||
+          (subpage.standalone !== true && !hasButtons && !hasOrder)) continue;
       const parsed = dependencies.parseSubpageConfig(dependencies.serializeSubpageConfig(subpage));
       output[key] = structuredSubpageFromParsed(parsed);
     }
@@ -118,7 +126,7 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       subpage_objects: serializeSubpageObjects(snapshot.subpages),
       button_order: snapshot.button_order != null
         ? String(snapshot.button_order)
-        : serializeGridOrder(snapshot.grid || [], snapshot.sizes || {}),
+        : serializeHomeGridOrder(snapshot.grid || [], snapshot.sizes || {}, snapshot.subpages || {}),
     });
   };
 
@@ -134,7 +142,10 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
         const parsed = parseStructuredSubpageConfig(value);
         const serialized = dependencies.serializeSubpageConfig(parsed);
         subpages[key] = serialized;
-        subpageObjects[key] = structuredSubpageFromParsed(dependencies.parseSubpageConfig(serialized));
+        const reparsed = dependencies.parseSubpageConfig(serialized);
+        if (!isQuarantinedStandaloneSubpage(reparsed)) {
+          subpageObjects[key] = structuredSubpageFromParsed(reparsed);
+        }
       }
     }
     if (input.subpages && typeof input.subpages === "object") {
@@ -143,7 +154,10 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
         const parsed = dependencies.parseSubpageConfig(String(value || ""));
         const serialized = dependencies.serializeSubpageConfig(parsed);
         subpages[key] = serialized;
-        subpageObjects[key] = structuredSubpageFromParsed(dependencies.parseSubpageConfig(serialized));
+        const reparsed = dependencies.parseSubpageConfig(serialized);
+        if (!isQuarantinedStandaloneSubpage(reparsed)) {
+          subpageObjects[key] = structuredSubpageFromParsed(reparsed);
+        }
       }
     }
 
@@ -187,13 +201,39 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       dependencies.gridCols,
     );
     const subpages: Record<string, FeatureSubpage> = {};
+    const parsedSubpages: Record<string, FeatureSubpage> = {};
+    const standaloneSlotMap: Record<string, number> = {};
     for (const [sourceKey, value] of Object.entries(config.subpages)) {
+      parsedSubpages[sourceKey] = dependencies.parseSubpageConfig(value);
+    }
+    for (const [sourceKey, subpage] of Object.entries(parsedSubpages)) {
+      if (isStandaloneSubpage(subpage) || isQuarantinedStandaloneSubpage(subpage)) continue;
       const mappedKey = layoutPlan.slotMap[sourceKey];
       if (!mappedKey) continue;
-      const subpage = dependencies.parseSubpageConfig(value);
       subpage.sizes = {};
       subpage.grid = dependencies.buildSubpageGrid(subpage);
       subpages[String(mappedKey)] = subpage;
+    }
+    let skippedStandaloneScreens = 0;
+    for (const [sourceKey, subpage] of Object.entries(parsedSubpages)) {
+      if (!isStandaloneSubpage(subpage) && !isQuarantinedStandaloneSubpage(subpage)) continue;
+      const target = firstFreeStandaloneScreenSlot(
+        subpages,
+        layoutPlan.buttons,
+        targetSlots,
+        parseInt(sourceKey, 10),
+      );
+      if (target == null) {
+        skippedStandaloneScreens += 1;
+        continue;
+      }
+      subpage.sizes = {};
+      subpage.grid = dependencies.buildSubpageGrid(subpage);
+      subpages[String(target)] = subpage;
+      if (isStandaloneSubpage(subpage)) standaloneSlotMap[sourceKey] = target;
+    }
+    if (skippedStandaloneScreens > 0) {
+      warnings.push(i18n("Some independent screens were omitted because this panel has no free screen storage."));
     }
 
     let settings = config.settings;
@@ -203,6 +243,11 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
         const rows = parseScreenNavigationRules(navigation.rules);
         const remapped = rows.flatMap(row => {
           if (row.target === 0) return [row];
+          if (isStandaloneSubpage(parsedSubpages[String(row.target)])) {
+            const target = standaloneSlotMap[String(row.target)];
+            return target ? [{ ...row, target }] : [];
+          }
+          if (isQuarantinedStandaloneSubpage(parsedSubpages[String(row.target)])) return [];
           const target = layoutPlan.slotMap[String(row.target)];
           // A stored slot is valid only while its parent remains a subpage card.
           if (!target || config.buttons[row.target - 1]?.type !== "subpage" ||
@@ -222,7 +267,8 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       warnings,
       importedCount,
       buttons: layoutPlan.buttons.map(normalizeButton),
-      button_order: layoutPlan.button_order,
+      button_order: layoutPlan.button_order ||
+        (Object.values(subpages).some(isStandaloneSubpage) ? "0" : ""),
       importedSizes: layoutPlan.importedSizes,
       subpages,
       settings,

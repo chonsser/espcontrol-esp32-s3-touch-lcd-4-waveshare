@@ -420,7 +420,7 @@ export function createButtonSettingsFeature(
             }
             var saved: any = cardEditorSaveController.apply(draft, {
                 slot: slot, maxSlots: c.maxSlots, isSubpage: c.isSub,
-                grid: c.grid, buttons: c.buttons,
+                grid: c.grid, buttons: c.buttons, subpages: state.subpages,
             });
             if (!saved.accepted) {
                 if (draft.isNew)

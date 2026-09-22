@@ -85,6 +85,10 @@ export interface RuntimeSubpage {
   grid: number[];
   sizes: SlotSizeMap;
   backLabel?: string;
+  standalone?: true;
+  screenLabel?: string;
+  standaloneInvalid?: true;
+  rawConfig?: string;
 }
 
 export interface AppClipboard {
