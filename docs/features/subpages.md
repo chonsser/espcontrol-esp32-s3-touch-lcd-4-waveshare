@@ -27,6 +27,35 @@ You can also right-click an empty space on the home screen and choose **Create S
 
 Subpages can contain Switch, Lights, Action, Local Action, Option Select, Webhook, Trigger, Sensor, Local Sensor, Doors & Windows, Presence, Slider, Fans, Vacuum, Lawn Mower, Cover, Garage Door, Lock, Alarm, Date & Time, Clock, World Clock, Weather, Camera, Media, Climate, Internal Switches, and Screen Lock cards. Subpages cannot contain another Subpage card.
 
+## Choose a Screen From an Entity
+
+In the web page, open **Settings > Display > Screen from Home Assistant** and enter a Home Assistant
+entity, for example `input_select.aktualny_ekran`. Add a rule for each value you
+want to use, select **Home** or an existing subpage, then save. For example,
+`Salon` can open your living-room subpage and `Start` can return home. The panel
+must be connected to Home Assistant through its ESPHome integration.
+
+Values match exactly, including capital letters and spaces. Use the entity's
+actual state from Home Assistant's Developer Tools. `unknown`, `unavailable`,
+and values without a matching rule leave the current screen unchanged. Rules
+can only open screens; they do not press cards or run their actions. This feature
+also works on ESP32-S3 panels.
+
+The current matching value applies when the setting is enabled or the panel
+restarts. After that, each changed value opens its screen once. You can then
+navigate manually without the same value repeatedly pulling you back. The normal
+home-screen timeout and screensaver still apply.
+
+**Wake the screen when the state changes** is enabled by default. Turn it off to wait until the display
+is awake. A screen lock, setup screen, alarm takeover, or active interactive
+control temporarily holds the latest selection; it applies once the panel is
+available. An unmatched value cancels a waiting selection.
+
+Clear the entity and save to disable this feature. The form shows the available
+rule storage and rejects rules that exceed it. Backups include these settings;
+when importing onto another panel, rules follow subpages that fit the new layout.
+Rules for subpages that cannot be restored are omitted with a notice.
+
 ## Open or Activate a Target From Home Assistant
 
 You can ask Home Assistant to wake the panel and open or activate something on the home screen. This is useful in automations, scripts, dashboards, or voice routines where you want the panel to jump to a relevant page or open a card's normal control popup.

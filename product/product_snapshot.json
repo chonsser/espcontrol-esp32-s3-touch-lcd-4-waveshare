@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 9,
     "cardTypes": 43,
-    "entityNames": 106,
+    "entityNames": 109,
     "icons": 357,
     "structuralIcons": 22,
     "compatibilityFixtureGroups": 2
@@ -6768,6 +6768,33 @@
         "objectIds": [
           "screen__wake",
           "screen_wake"
+        ]
+      },
+      {
+        "key": "screen_navigation_entity",
+        "domain": "text",
+        "name": "Screen Navigation: Entity",
+        "objectIds": [
+          "screen_navigation__entity",
+          "screen_navigation_entity"
+        ]
+      },
+      {
+        "key": "screen_navigation_rules",
+        "domain": "text",
+        "name": "Screen Navigation: Rules",
+        "objectIds": [
+          "screen_navigation__rules",
+          "screen_navigation_rules"
+        ]
+      },
+      {
+        "key": "screen_navigation_wake",
+        "domain": "switch",
+        "name": "Screen Navigation: Wake",
+        "objectIds": [
+          "screen_navigation__wake",
+          "screen_navigation_wake"
         ]
       },
       {

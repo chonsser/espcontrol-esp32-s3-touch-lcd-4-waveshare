@@ -13,6 +13,11 @@ You can save your entire panel configuration as a file and restore it later. You
 
 Restored presence and screen-schedule sensors reconnect automatically without restarting the display.
 
+[Entity-based screen navigation](/features/subpages#choose-a-screen-from-an-entity)
+is also included. During import it pauses until the new layout is ready, then
+reconnects with targets mapped to the restored subpages. If a subpage cannot fit,
+its navigation rules are omitted and the import reports this.
+
 Backup files are versioned so newer EspControl releases can keep importing older backups safely. Older version 1 backups still import, and new exports use version 2 while keeping the same readable layout fields for compatibility.
 
 ## Compatibility Notes

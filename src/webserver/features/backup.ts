@@ -1,4 +1,5 @@
 import { i18n } from "../i18n";
+import { parseScreenNavigationRules, serializeScreenNavigationRules, screenNavigationSettingsFromBackup, screenNavigationBackupSettings } from "../model/screen_navigation";
 import type { PanelIdentityBackup } from "../model/panel_identity";
 import type { CardConfig } from "../contracts/types";
 import {
@@ -195,6 +196,27 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       subpages[String(mappedKey)] = subpage;
     }
 
+    let settings = config.settings;
+    if (settings && Object.keys(settings).some(key => key.startsWith("screen_navigation_"))) {
+      try {
+        const navigation = screenNavigationSettingsFromBackup(settings);
+        const rows = parseScreenNavigationRules(navigation.rules);
+        const remapped = rows.flatMap(row => {
+          if (row.target === 0) return [row];
+          const target = layoutPlan.slotMap[String(row.target)];
+          // A stored slot is valid only while its parent remains a subpage card.
+          if (!target || config.buttons[row.target - 1]?.type !== "subpage" ||
+              layoutPlan.buttons[target - 1]?.type !== "subpage") return [];
+          return [{ ...row, target }];
+        });
+        if (remapped.length !== rows.length) warnings.push(i18n("Some screen mappings were removed because their subpages are unavailable on this panel."));
+        navigation.rules = serializeScreenNavigationRules(remapped);
+        settings = { ...settings, ...screenNavigationBackupSettings(navigation) };
+      } catch (error) {
+        throw Object.assign(error as Error, { backupMessage: (error as Error).message });
+      }
+    }
+
     return {
       config,
       warnings,
@@ -203,7 +225,7 @@ export function createBackupFeature(dependencies: BackupFeatureDependencies): Ba
       button_order: layoutPlan.button_order,
       importedSizes: layoutPlan.importedSizes,
       subpages,
-      settings: config.settings,
+      settings,
       screen: config.screen,
     };
   };

@@ -93,6 +93,7 @@ import { createBackupContractFeature } from "./application/backup_contract";
 import { createAppBackupFeature } from "./application/app_backup";
 import { createAppStatusPreviewFeature, type AppStatusPreviewFeature } from "./application/app_status_preview";
 import { createPanelIdentityFeature } from "./application/panel_identity";
+import { createScreenNavigationFeature } from "./application/screen_navigation";
 import { createAppTitleFeature } from "./application/app_title";
 import { createAppConfigEventsFeature } from "./application/app_config_events";
 import { createAppStateEventHandlersFeature } from "./application/app_state_event_handlers";
@@ -814,8 +815,13 @@ function composeApplicationContext(): ApplicationContext {
     },
     showBanner: shell.showBanner,
   });
+  const screenNavigation = createScreenNavigationFeature({
+    document: dom.document, deviceApi, requestApi, entityState, fields,
+    buttons: () => AppInstance.state.buttons,
+  });
   const backupApplication = createAppBackupFeature({
     identity,
+    screenNavigation,
     layout,
     backupExport,
     backupImport,
@@ -906,7 +912,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout, screenRotation, appearance, clockBarState, entityState,
     shell, requestApi, statusPreview, artworkPostApi, schedulePostApi,
     clockBarPostApi, fields, settingsHelpers, scheduleSection, coverArtSection,
-    systemSection, preview, screensaverClockFont, screensaverClockFormat,
+    systemSection, preview, screensaverClockFont, screensaverClockFormat, screenNavigation,
   );
   requestApi.connectReconnect(appEvents.connect);
   // Start after composition; the service retries on a later Settings visit if offline.

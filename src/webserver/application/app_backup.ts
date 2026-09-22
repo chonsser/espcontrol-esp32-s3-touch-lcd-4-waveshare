@@ -1,5 +1,6 @@
 import type { PanelIdentityBackup } from "../model/panel_identity";
 import type { PanelIdentityFeature } from "./panel_identity";
+import type { ScreenNavigationController } from "../features/screen_navigation_controller";
 import { state } from "../state/app_instance";
 import { i18n, i18nDynamic, i18nMark } from "../i18n";
 import * as EspControlModel from "../model";
@@ -64,6 +65,7 @@ import { panelConfigDocumentContainsWifiSharing } from "../features/wifi_sharing
 
 export interface AppBackupControllers {
     readonly identity?: PanelIdentityFeature;
+    readonly screenNavigation?: ScreenNavigationController;
     readonly layout: ApplicationLayoutState;
     readonly backupExport: BackupExportController;
     readonly backupImport: BackupImportController<any, any, any>;
@@ -240,6 +242,12 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
             await controllers.identity?.load();
             identity = controllers.identity?.backup();
         } catch { identityUnavailable = true; }
+        let navigationSettings: Record<string, unknown> = {};
+        try { navigationSettings = await controllers.screenNavigation?.backup() || {}; }
+        catch {
+            controllers.shell.showBanner?.(i18n("Could not export screen navigation. Check the connection and export again."), "error");
+            return;
+        }
         var data: any = createBackupConfig({
             device: controllers.layout.deviceId,
             slots: controllers.layout.numSlots,
@@ -251,6 +259,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
             buttons: state.buttons,
             subpages: state.subpages,
             settings: {
+                ...navigationSettings,
                 indoor_temp_enable: state._indoorOn,
                 outdoor_temp_enable: state._outdoorOn,
                 clock_bar_temperature_entities: serializeClockBarTemperatureEntities(clockBarTemperatureEntities()),
@@ -422,6 +431,9 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 if (nativeAvailability === "failed") {
                     rejectBackup(i18nMark("Could not confirm that this device can safely restore the layout. Check the connection and try again."));
                 }
+                // Suspend the old binding before any slot can be reused by the
+                // imported layout. Restore the remapped binding only afterward.
+                await controllers.screenNavigation?.suspendForRestore(backupPlan.settings || {});
                 var layoutRestoreResult: any;
                 if (nativeAvailability === "legacy-fallback") {
                     layoutRestoreResult = await queueLegacyLayoutRestore();
@@ -438,7 +450,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                         requestApi.postQueueError = true;
                     }
                     else if (layoutRestoreResult !== "saved") {
-                        rejectBackup(i18nMark("The layout could not be restored. No other backup settings were changed."));
+                        rejectBackup(i18nMark("The layout could not be restored. Screen navigation may be disabled; check its settings before retrying."));
                     }
                 }
 
@@ -464,6 +476,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 finally {
                     controllers.layout.gridCols = activeGridCols;
                 }
+                await controllers.screenNavigation?.restore(backupPlan.settings || {});
                 state.onColor = nativeDocument.settings.button_on_color;
                 if (els.setOnColor && els.setOnColor._syncColor)
                     els.setOnColor._syncColor(state.onColor);

@@ -25,10 +25,11 @@ screen_dimmed_screensaver_is_not_available_on_this_firmware_upda=Wygaszacz z prz
 buy_me_a_coffee=Postaw mi kawę
 
 # src/webserver/application/app_backup.ts
+could_not_export_screen_navigation_check_the_connection_and_expo=Nie udało się wyeksportować nawigacji ekranów. Sprawdź połączenie i wyeksportuj ponownie.
 backup_exported_without_the_panel_name_because_naming_is_unavail=Kopia zapasowa została wyeksportowana bez nazwy panelu, ponieważ nadawanie nazwy jest niedostępne.
 this_backup_contains_wifi_sharing_cards_which_require_current_de=Ta kopia zapasowa zawiera karty udostępniania Wi-Fi, które wymagają aktualnej wersji firmware urządzenia. Zaktualizuj panel przed przywróceniem tej kopii zapasowej.
 could_not_confirm_that_this_device_can_safely_restore_the_layout=Nie można potwierdzić, że to urządzenie może bezpiecznie przywrócić układ. Sprawdź połączenie i spróbuj ponownie.
-the_layout_could_not_be_restored_no_other_backup_settings_were_c=Nie można przywrócić układu. Pozostałe ustawienia kopii zapasowej nie zostały zmienione.
+the_layout_could_not_be_restored_screen_navigation_may_be_disabl=Nie udało się przywrócić układu. Nawigacja ekranów może być wyłączona; sprawdź jej ustawienia przed ponowną próbą.
 configuration_restored_but_panel_naming_or_restart_failed_reason=Konfiguracja została przywrócona, ale nadawanie nazwy panelu lub ponowne uruchomienie nie powiodło się: {reason}
 could_not_restore_backup=Nie można przywrócić kopii zapasowej
 
@@ -430,6 +431,22 @@ firmware_file_is_not_available_yet=Plik firmware nie jest jeszcze dostępny.
 device_reported_that_the_firmware_upload_failed=Urządzenie zgłosiło, że przesyłanie firmware nie powiodło się.
 firmware_uploaded_waiting_for_device_to_restart=Przesłano firmware. Oczekiwanie na ponowne uruchomienie urządzenia…
 could_not_upload_firmware_update=Nie można przesłać aktualizacji firmware.
+
+# src/webserver/application/screen_navigation.ts
+could_not_load_screen_navigation_check_the_connection_and_try_ag=Nie udało się wczytać nawigacji ekranów. Sprawdź połączenie i spróbuj ponownie.
+match_exact_home_assistant_state_values_to_the_home_screen_or_a=Przypisz dokładne wartości stanu z Home Assistant do ekranu głównego lub podstrony. Pozostaw pole encji puste, aby wyłączyć automatyczną nawigację.
+add_mapping=Dodaj przypisanie
+wake_the_screen_when_the_state_changes=Wybudzaj ekran przy zmianie stanu
+reload_settings=Wczytaj ustawienia ponownie
+state_value_number=Wartość stanu {number}
+screen_number=Ekran {number}
+home_screen=Ekran główny
+subpage_number=Podstrona {number}
+removed_subpage_choose_another_screen=Usunięta podstrona — wybierz inny ekran
+remove_mapping_number=Usuń przypisanie {number}
+loading_screen_navigation=Wczytywanie nawigacji ekranów…
+saving_screen_navigation=Zapisywanie nawigacji ekranów…
+screen_from_home_assistant=Ekran z Home Assistant
 
 # src/webserver/application/screen_rotation_state.ts
 degrees_deg={degrees}°
@@ -927,6 +944,7 @@ the_device_was_reset_reload_this_page_before_making_changes=Urządzenie zostało
 this_backup_was_taken_from_source_this_device_is_target_layout_w=Ta kopia zapasowa pochodzi z urządzenia {source}, a to urządzenie to {target}. Układ zostanie przywrócony, ale konfiguracja natywna zostanie pominięta.
 config_was_exported_from_a_different_panel_device_layout_may_loo=Konfiguracja została wyeksportowana z innego panelu ({device}) – układ może wyglądać inaczej
 backup_has_imported_slots_current_config_has_current_adapting=Liczba pól w kopii zapasowej: {imported}, w bieżącej konfiguracji: {current} – dostosowywanie
+some_screen_mappings_were_removed_because_their_subpages_are_una=Niektóre przypisania ekranów usunięto, ponieważ ich podstrony są niedostępne na tym panelu.
 
 # src/webserver/features/backup_file_controller.ts
 invalid_file_could_not_parse_json=Nieprawidłowy plik – nie można odczytać JSON
@@ -977,6 +995,11 @@ configure_a_label_card=Skonfiguruj kartę typu {label}.
 configure_a_card=Skonfiguruj kartę.
 label_not_available={label} (niedostępne)
 
+# src/webserver/features/screen_navigation_controller.ts
+screen_navigation_could_not_be_saved_and_may_be_disabled_check_t=Nie udało się zapisać nawigacji ekranów; może być wyłączona. Sprawdź połączenie i zapisz ponownie.
+update_the_panel_firmware_to_use_screen_navigation_from_home_ass=Zaktualizuj oprogramowanie panelu, aby korzystać z nawigacji ekranów przez Home Assistant.
+screen_navigation_saved=Zapisano nawigację ekranów.
+
 # src/webserver/features/settings.ts
 on_2=WŁ.
 
@@ -1026,6 +1049,15 @@ panelconfig_backup_device_profile_does_not_match_its_document=profil urządzenia
 panel_name_must_be_text=Nazwa panelu musi być tekstem.
 use_up_to_120_utf_8_bytes_with_no_control_characters=Użyj maksymalnie 120 bajtów UTF-8 bez znaków sterujących.
 invalid_panel_identity_in_backup=Nieprawidłowe dane identyfikacyjne panelu w kopii zapasowej.
+
+# src/webserver/model/screen_navigation.ts
+the_entity_name_is_too_long_use_a_shorter_entity_id=Nazwa encji jest za długa. Użyj krótszego identyfikatora encji.
+enter_a_valid_home_assistant_entity_id_such_as_input_select_scre=Wpisz prawidłowy identyfikator encji Home Assistant, np. input_select.screen.
+enter_a_state_value_other_than_unknown_or_unavailable=Wpisz wartość stanu inną niż unknown lub unavailable.
+each_state_value_can_only_be_mapped_once=Każdą wartość stanu można przypisać tylko raz.
+choose_the_home_screen_or_an_existing_subpage_for_every_mapping=Dla każdego przypisania wybierz ekran główny lub istniejącą podstronę.
+the_screen_mappings_are_too_long_shorten_the_values_or_remove_a=Przypisania ekranów są za długie. Skróć wartości lub usuń przypisanie.
+the_saved_screen_mappings_are_invalid_remove_or_correct_them_bef=Zapisane przypisania ekranów są nieprawidłowe. Usuń je lub popraw przed zapisaniem.
 
 # product/v2/card_contract.json
 timer=Minutnik
