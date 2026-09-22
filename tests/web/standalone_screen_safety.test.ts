@@ -18,13 +18,16 @@ function standalone(label: string) {
 }
 
 function commonDependencies() {
-  const codec = {
+  const savedSubpagePayloads: string[] = [];
+  const codec: any = {
     parseSubpageConfig: (value: string) => JSON.parse(value),
     serializeSubpageConfig: (value: unknown) => JSON.stringify(value),
     getSubpage: (slot: number) => state.subpages[slot],
     buildSubpageGrid: () => {},
     serializeSubpageGrid: () => [],
-    saveSubpageConfig: () => {},
+    saveSubpageConfig: (slot: number) => {
+      savedSubpagePayloads.push(codec.serializeSubpageConfig(state.subpages[slot]));
+    },
     subpageFirstFreeSlot: () => 1,
     normalizeButtonConfig: (button: unknown) => ({ ...empty(), ...(button as object) }),
     normalizeCardSizeForConfig: (_button: unknown, size: number) => size,
@@ -46,7 +49,7 @@ function commonDependencies() {
     placeSlotAt: (grid: number[], slot: number, pos: number) => { grid[pos] = slot; },
     placeOrderedGridEntries: () => ({ grid: [], sizes: {}, placed: [] }),
   };
-  return { codec, ctx, placement };
+  return { codec, ctx, placement, savedSubpagePayloads };
 }
 
 export async function runStandaloneScreenSafetyTests(): Promise<void> {
@@ -57,7 +60,7 @@ export async function runStandaloneScreenSafetyTests(): Promise<void> {
   });
   await initializeDeviceConfig();
   initializeAppState();
-  const { codec, ctx, placement } = commonDependencies();
+  const { codec, ctx, placement, savedSubpagePayloads } = commonDependencies();
   const interactions = createPreviewInteractionsFeature({
     cardEditorDraft: { newDraft: () => ({ key: "draft" }) },
     configPersistence: { saveButtonConfig: () => Promise.resolve(), saveSubpageEntity: () => {}, subpageEntityKeys: () => ["subpage"] },
@@ -93,6 +96,19 @@ export async function runStandaloneScreenSafetyTests(): Promise<void> {
   equal(state.grid[1], 3, "ordinary subpage creation skips an independent screen slot");
   equal(state.subpages["2"], creationCollision, "ordinary subpage creation never replaces an independent screen");
 
+  const migrations: number[] = [];
+  const realCodec = createConfigCodecFeature(
+    { definitions: {} } as any,
+    { sensorCardLocalSource: "local", sensorCardIsLocal: () => false, cardLargeNumbersSupported: () => false } as any,
+    {} as any, { connectSubpageParser: () => {} } as any,
+    {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
+    { actionCardIsOptionSelect: () => false } as any,
+    { numSlots: 3, gridCols: 3 } as any,
+    { saveSubpageEntity: () => {}, scheduleSliderSubpageMigration: (slot: number) => migrations.push(slot) },
+    { schedule: () => {} } as any,
+    { renderPreview: () => {}, renderButtonSettings: () => {} },
+  );
+  codec.serializeSubpageConfig = realCodec.serializeSubpageConfig;
   const clipboard = createPreviewClipboardFeature({
     configPersistence: { saveButtonConfig: () => Promise.resolve(), saveSubpageEntity: () => {}, subpageEntityKeys: () => ["subpage"] },
     document: {}, layout: { numSlots: 3, gridCols: 3, deviceId: "test" }, cards: { definitions: { static: {} } },
@@ -113,6 +129,20 @@ export async function runStandaloneScreenSafetyTests(): Promise<void> {
   clipboard.pasteButton(1);
   equal(state.subpages["2"], pastedOverScreen, "pasting a normal card preserves its same-ID screen");
 
+  state.editingSubpage = 2;
+  state.subpages = { "2": standalone("Kitchen screen") };
+  state.clipboard = { buttons: [{ ...empty("static"), label: "Pasted card", size: 1, subpageConfig: null }] };
+  const pastedIntoScreen: any = (clipboard as any).pasteSubpageButton(0);
+  const savedScreen: any = state.subpages["2"];
+  equal(pastedIntoScreen.ok, true, "pasting into an independent screen completes");
+  equal(savedScreen.standalone, true,
+    "pasting into an independent screen retains its standalone registration");
+  equal(savedScreen.screenLabel, "Kitchen screen",
+    "pasting into an independent screen retains its name");
+  equal(String(savedSubpagePayloads[savedSubpagePayloads.length - 1]).startsWith("@screen:Kitchen screen\n"), true,
+    "pasting into an independent screen saves the standalone envelope");
+  state.editingSubpage = null;
+
   state.grid = [1, 0, 0];
   state.buttons = [empty("static"), empty(), empty()];
   const protectedScreen = standalone("Subpage paste-safe");
@@ -125,15 +155,6 @@ export async function runStandaloneScreenSafetyTests(): Promise<void> {
   equal(state.grid[1], 3, "pasting an ordinary subpage skips an independent screen slot");
   equal(state.subpages["2"], protectedScreen, "pasting an ordinary subpage never replaces an independent screen");
 
-  const migrations: number[] = [];
-  const realCodec = createConfigCodecFeature(
-    { definitions: {} } as any, {} as any, {} as any, { connectSubpageParser: () => {} } as any,
-    {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
-    { numSlots: 3, gridCols: 3 } as any,
-    { saveSubpageEntity: () => {}, scheduleSliderSubpageMigration: (slot: number) => migrations.push(slot) },
-    { schedule: () => {} } as any,
-    { renderPreview: () => {}, renderButtonSettings: () => {} },
-  );
   const malformed = [
     "@screen:Missing separator",
     "@screen:\n",

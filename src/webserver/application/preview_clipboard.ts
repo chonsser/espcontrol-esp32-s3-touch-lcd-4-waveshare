@@ -407,7 +407,7 @@ export function createPreviewClipboardFeature(
         };
     }
     function cloneSubpageForClipboard(sp: any) {
-        return {
+        var clone: any = {
             order: (sp.order || []).slice(),
             buttons: (sp.buttons || []).map(function (button: any) {
                 return EspControlModel.cloneCardConfig(button);
@@ -416,6 +416,11 @@ export function createPreviewClipboardFeature(
             sizes: cloneSizeMap(sp.sizes),
             backLabel: sp.backLabel || "Back",
         };
+        if (sp.standalone === true) {
+            clone.standalone = true;
+            clone.screenLabel = sp.screenLabel;
+        }
+        return clone;
     }
     function planSubpageClipboardPaste(entries: any, pos: any) {
         var homeSlot: any = state.editingSubpage;
