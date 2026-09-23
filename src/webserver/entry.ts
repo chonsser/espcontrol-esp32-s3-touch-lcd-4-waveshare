@@ -28,6 +28,7 @@ import { createFirmwareUpdateFeature, type FirmwareUpdateFeature } from "./appli
 import { createScreensaverTimeoutFeature } from "./application/screensaver_timeout";
 import { createScreensaverClockFontFeature } from "./application/screensaver_clock_font";
 import { createScreensaverClockFormatFeature } from "./application/screensaver_clock_format";
+import { createScreensaverHlsFeature } from "./application/screensaver_hls";
 import { createC6FirmwareFeature, type C6FirmwareFeature } from "./application/c6_firmware_ui";
 import { createGridFeature } from "./application/grid";
 import {
@@ -495,6 +496,11 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout,
     shell,
   );
+  const screensaverHls = createScreensaverHlsFeature(runtime, requestApi, entityState, shell,
+    () => {
+      if (runtime.els.setClockSelect) settingsHelpers.syncClockScreensaverControls();
+    });
+  void screensaverHls.load();
   const screensaverClockFont = createScreensaverClockFontFeature(runtime, requestApi, entityState, shell);
   void screensaverClockFont.load();
   const screensaverClockFormat = createScreensaverClockFormatFeature(runtime, requestApi, entityState, shell);
@@ -578,6 +584,7 @@ function composeApplicationContext(): ApplicationContext {
     settingsUiFeature: settingsUi,
     alarmDelayAudio,
     screensaver,
+    screensaverHls,
     coverArtScreensaver,
     mediaPlayback,
     codec: configurationCodec,
@@ -708,6 +715,7 @@ function composeApplicationContext(): ApplicationContext {
     preview,
     screensaverClockFont,
     screensaverClockFormat,
+    screensaverHls,
   );
   const backupModel = createBackupFeature({
     deviceId: layout.deviceId,
@@ -833,6 +841,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout,
     screensaverClockFont,
     screensaverClockFormat,
+    screensaverHls,
     firmwareUpdate,
     clockBar: clockBarState,
     entityState,
@@ -852,6 +861,7 @@ function composeApplicationContext(): ApplicationContext {
     loadInitialState: (handleState, markConnected) => {
       void screensaverClockFont.load();
       void screensaverClockFormat.load();
+      void screensaverHls.load();
       return stateLoader.loadInitialState(handleState, markConnected);
     },
     createEventSource: dom.createEventSource,
@@ -906,7 +916,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout, screenRotation, appearance, clockBarState, entityState,
     shell, requestApi, statusPreview, artworkPostApi, schedulePostApi,
     clockBarPostApi, fields, settingsHelpers, scheduleSection, coverArtSection,
-    systemSection, preview, screensaverClockFont, screensaverClockFormat,
+    systemSection, preview, screensaverClockFont, screensaverClockFormat, screensaverHls,
   );
   requestApi.connectReconnect(appEvents.connect);
   // Start after composition; the service retries on a later Settings visit if offline.

@@ -16,6 +16,9 @@ class PlaybackClock {
       due_ += ticks / 90;
       remainder_ = ticks % 90;
       previous_ = pts;
+      // Decode reference frames even when late, then rebase presentation rather
+      // than dropping every future frame forever after a network stall.
+      if (now_ms > due_ && now_ms - due_ > 500) due_ = now_ms;
     }
     due_ms = due_;
     return true;

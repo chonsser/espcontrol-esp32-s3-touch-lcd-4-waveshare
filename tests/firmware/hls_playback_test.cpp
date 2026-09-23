@@ -13,6 +13,11 @@ int main() {
   assert(clock.schedule((uint64_t(1) << 33) - 4500, 2000, due));
   assert(clock.schedule(4500, 2001, due) && due == 2100);
 
+  clock.reset();
+  assert(clock.schedule(0, 1000, due) && due == 1000);
+  assert(clock.schedule(9000, 2000, due) && due == 2000);  // recover after network/decode stall
+  assert(clock.schedule(18000, 2001, due) && due == 2100);
+
   PlaybackPolicy policy;
   auto a = policy.request(true, 1, 10);
   assert(a == PlaybackPolicy::Action::START);

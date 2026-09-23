@@ -48,6 +48,7 @@ export function createInitialState(deviceConfig: DeviceConfig): AppState {
     coverArtHideExternalInputOn: true, homeAssistantArtworkProtocol: "http", coverArtHomeAssistantPort: 8123,
     homeAssistantArtworkEndpointMode: "Automatic", homeAssistantArtworkEndpointStatus: "Discovering",
     screensaverMode: "disabled", _screensaverModeReceived: false, screensaverAction: "off",
+    screensaverActionOptions: [], screensaverHlsUrl: "", screensaverHlsUrlAvailable: false, screensaverHlsStatus: "",
     screensaverClockFont: "Roboto Thin", screensaverClockFontOptions: [], screensaverClockFontLoaded: false,
     screensaverClockTimeFormat: "", screensaverClockDateFormat: "", screensaverClockTimeSize: "Auto", screensaverClockDateSize: "Auto",
     _screensaverActionReceived: false, clockScreensaverOn: false, clockBrightnessDay: 35,

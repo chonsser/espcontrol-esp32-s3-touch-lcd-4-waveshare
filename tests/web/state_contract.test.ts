@@ -105,6 +105,9 @@ export function runStateContractTests(): void {
     alarmDelayFinalCountdown: "number-alarm_delay__final_countdown",
     temperatureDegreeSymbol: "switch-screen__temperature_degree_symbol",
     subpageChevron: "switch-screen__subpage_chevron",
+    screensaverAction: "select-screen_saver__action",
+    screensaverHlsUrl: "text-screen_saver_hls_url",
+    screensaverHlsStatus: "text_sensor-screen_saver_hls_status",
     screensaverClockFont: "select-screen_saver_clock_font",
     screensaverClockTimeFormat: "text-screen_saver_clock_time_format",
     screensaverClockDateFormat: "text-screen_saver_clock_date_format",
@@ -148,6 +151,10 @@ export function runStateContractTests(): void {
   handlers["switch-clock_bar_enabled"]?.("ON", {}, "switch-clock_bar_enabled");
   handlers["text-ntp_server_1"]?.("time.example", {}, "text-ntp_server_1");
   equal(calls.join(","), "clockBar,ntpServer1", "legacy aliases dispatch to their canonical handlers");
+  handlers["select-screensaver_action"]?.("HLS Stream", {}, "select-screensaver_action");
+  handlers["text-screensaver_hls_url"]?.("http://host/live.m3u8", {}, "text-screensaver_hls_url");
+  handlers["text_sensor-screensaver_hls_status"]?.("Playing", {}, "text_sensor-screensaver_hls_status");
+  equal(calls.slice(-3).join(","), "screensaverAction,screensaverHlsUrl,screensaverHlsStatus", "HLS aliases reach canonical handlers");
 
   for (const [id, state, group] of [
     ["select/Home Assistant Artwork Connection", "Automatic", "homeAssistantArtworkEndpointMode"],

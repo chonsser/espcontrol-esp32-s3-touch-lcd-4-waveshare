@@ -12,6 +12,12 @@ foreach(hls_suite video playlist transport playback)
   target_include_directories(hls_${hls_suite}_test PRIVATE ../../components/hls_screensaver)
   add_test(NAME hls_${hls_suite}_test COMMAND hls_${hls_suite}_test)
 endforeach()
+find_program(HLS_FFMPEG ffmpeg)
+find_program(HLS_FFPROBE ffprobe)
+if(HLS_FFMPEG AND HLS_FFPROBE)
+  add_test(NAME hls_fixture_test COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/hls_fixture_test.py $<TARGET_FILE:hls_transport_test>)
+endif()
 
 add_executable(foundation_test foundation_test.cpp)
 target_compile_features(foundation_test PRIVATE cxx_std_17)

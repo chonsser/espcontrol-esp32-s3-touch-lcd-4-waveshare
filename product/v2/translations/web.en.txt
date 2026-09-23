@@ -30,6 +30,7 @@ backup_exported_without_the_panel_name_because_naming_is_unavail=Backup exported
 this_backup_contains_wifi_sharing_cards_which_require_current_de=This backup contains Wifi Sharing cards, which require current device firmware. Update the panel before restoring this backup.
 could_not_confirm_that_this_device_can_safely_restore_the_layout=Could not confirm that this device can safely restore the layout. Check the connection and try again.
 the_layout_could_not_be_restored_no_other_backup_settings_were_c=The layout could not be restored. No other backup settings were changed.
+could_not_restore_the_hls_screensaver_action=Could not restore the HLS screensaver action.
 configuration_restored_but_panel_naming_or_restart_failed_reason=Configuration restored, but panel naming or restart failed: {reason}
 could_not_restore_backup=Could not restore backup
 
@@ -446,6 +447,18 @@ clock_format_or_text_size_was_skipped_because_this_firmware_does=Clock format or
 could_not_restore_the_clock_format_or_text_size=Could not restore the clock format or text size.
 time_text_size=Time Text Size
 larger_text_is_reduced_automatically_when_needed_to_fit_the_scre=Larger text is reduced automatically when needed to fit the screen without clipping.
+
+# src/webserver/application/screensaver_hls.ts
+hls_stream=HLS Stream
+not_playing=Not playing
+save_a_valid_hls_url_before_enabling_the_video_screensaver=Save a valid HLS URL before enabling the video screensaver.
+hls_was_skipped_because_this_firmware_does_not_support_video_scr=HLS was skipped because this firmware does not support video screensavers.
+invalid_hls_url_in_backup=Invalid HLS URL in backup.
+could_not_restore_the_hls_url=Could not restore the HLS URL.
+hls_stream_url=HLS Stream URL
+save_the_url_first_then_select_hls_stream_unencrypted_mpeg_ts_h=Save the URL first, then select HLS Stream. Unencrypted MPEG-TS, H.264 constrained baseline, up to 320×192 and 15 fps, one reference frame, no B-frames or audio. Maximum URL length: 255 characters. Playback errors fall back to the clock.
+enter_an_http_or_https_url_without_credentials_spaces_or_a_fragm=Enter an HTTP or HTTPS URL without credentials, spaces or a fragment.
+could_not_save_the_hls_url_your_draft_has_been_kept=Could not save the HLS URL. Your draft has been kept.
 
 # src/webserver/application/settings_cover_art_section.ts
 show_cover_art=Show Cover Art

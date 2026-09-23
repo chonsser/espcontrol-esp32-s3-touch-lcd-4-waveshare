@@ -3,20 +3,22 @@ hls_screensaver:
   id: hls_player
   status:
     id: screensaver_hls_status
-    name: "Screen Saver HLS Status"
+    name: "${entity_screen_saver_hls_status}"
     internal: true
     entity_category: diagnostic
 
 text:
   - platform: template
     id: screensaver_hls_url
-    name: "Screen Saver HLS URL"
+    name: "${entity_screen_saver_hls_url}"
     internal: true
     optimistic: true
     restore_value: true
     initial_value: ""
     min_length: 0
-    max_length: 2048
+    # ESPHome's persistent template text supports at most 255 bytes. Redirects
+    # and playlist-resolved URLs retain the transport's separate 2048-byte cap.
+    max_length: 255
     mode: text
     entity_category: config
     update_interval: never

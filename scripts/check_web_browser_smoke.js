@@ -1477,7 +1477,30 @@ async function assertSettingsPage(page, label, options = {}, posts = []) {
   await screensaverCard.locator(".card-header").click();
   await screensaverCard.getByRole("button", { name: "Timer", exact: true }).click();
   const dimmedAction = screensaverCard.locator("#sp-set-clock-mode");
+  const hlsUrl = screensaverCard.locator("#sp-set-hls-url");
+  assert.strictEqual(await hlsUrl.isVisible(), false, `${label}: old firmware hides HLS settings`);
+  assert.strictEqual(await dimmedAction.locator('option[value="hls"]').count(), 0, `${label}: old firmware has no HLS action`);
+  await page.evaluate(() => window.__seedEspState([
+    { id: "select-screen_saver__action", value: "Display Off", option: ["Display Off", "Screen Dimmed", "Clock", "HLS Stream"] },
+    { id: "text-screen_saver_hls_url", value: "http://video.test/old.m3u8" },
+  ]));
+  assert(await hlsUrl.isVisible(), `${label}: supported firmware exposes the URL before activation`);
+  const hlsStart = posts.length;
+  await hlsUrl.fill("http://video.test/live.m3u8");
+  await hlsUrl.blur();
+  assert.strictEqual(posts.length, hlsStart, `${label}: typing or blur never saves an HLS draft`);
+  const hlsSave = hlsUrl.locator("..").getByRole("button", { name: "Save", exact: true });
+  await hlsSave.click();
+  await waitForPost(posts, { domain: "text", name: "screen_saver_hls_url", action: "set", value: "http://video.test/live.m3u8" }, `${label}: explicit HLS save`, hlsStart);
+  await page.waitForFunction(() => !document.querySelector('#sp-set-hls-url').parentElement.querySelector('button').disabled);
+  await dimmedAction.selectOption("hls");
+  await waitForPost(posts, { domain: "select", name: "screen_saver__action", action: "set", option: "HLS Stream" }, `${label}: HLS action follows URL save`, hlsStart);
+  await page.waitForFunction(() => document.querySelector('#sp-set-sensor-clock-mode').value === 'hls');
+  assert(await screensaverCard.locator('.sp-clock-brightness-field').first().isVisible(), `${label}: HLS shares day/night brightness controls`);
+  await page.evaluate(() => window.__seedEspState([{ id: "select-screen_saver__action", value: "HLS Stream" }]));
+  assert.strictEqual(await dimmedAction.locator('option[value="hls"]').count(), 1, `${label}: state-only events preserve HLS capability`);
   await dimmedAction.selectOption("dim");
+  await page.waitForFunction(() => document.querySelector('#sp-set-sensor-clock-mode').value === 'dim');
   const manualDimmedBrightness = screensaverCard.locator("#sp-set-dimmed-brightness");
   const daytimeDimmedBrightness = screensaverCard.locator("#sp-set-daytime-dimmed-brightness");
   const nighttimeDimmedBrightness = screensaverCard.locator("#sp-set-nighttime-dimmed-brightness");
@@ -3810,6 +3833,8 @@ async function assertBackupImportSmoke(page, posts, testCase) {
   const appearanceBackup = backupFixture(testCase.slug, testCase.slots);
   appearanceBackup.screen.schedule_clock_text_color = "123ABC";
   Object.assign(appearanceBackup.settings, {
+    screensaver_action: "hls",
+    screensaver_hls_url: "http://video.test/restored.m3u8",
     screensaver_clock_font: "Roboto Mono",
     screensaver_clock_time_format: "%I:%M:%S",
     screensaver_clock_date_format: "%d.%m.%Y",
@@ -3840,8 +3865,12 @@ async function assertBackupImportSmoke(page, posts, testCase) {
   await page.getByRole("button", { name: "Export", exact: true }).click();
   const appearanceExport = JSON.parse(fs.readFileSync(await (await appearanceDownload).path(), "utf8"));
   assert.strictEqual(appearanceExport.version, 2, "clock appearance does not bump backup version");
-  for (const key of ["screensaver_clock_font", "screensaver_clock_time_format", "screensaver_clock_date_format", "screensaver_clock_time_size", "screensaver_clock_date_size"])
+  for (const key of ["screensaver_action", "screensaver_hls_url", "screensaver_clock_font", "screensaver_clock_time_format", "screensaver_clock_date_format", "screensaver_clock_time_size", "screensaver_clock_date_size"])
     assert.strictEqual(appearanceExport.settings[key], appearanceBackup.settings[key], `backup roundtrips ${key}`);
+  const restorePosts = posts.slice(before);
+  const urlIndex = restorePosts.findIndex(post => post.domain === "text" && post.name === "screen_saver_hls_url" && post.value === "http://video.test/restored.m3u8");
+  const actionIndex = restorePosts.findIndex(post => post.domain === "select" && post.name === "screen_saver__action" && post.option === "HLS Stream");
+  assert(urlIndex >= 0 && actionIndex > urlIndex, "backup saves HLS URL before activating video");
   assert.strictEqual(appearanceExport.screen.schedule_clock_text_color, appearanceBackup.screen.schedule_clock_text_color || "FFFFFF", "global clock color retains existing backup location");
   await page.getByRole("tab", { name: "Screen", exact: true }).click();
   await waitForPost(
@@ -4019,7 +4048,7 @@ async function assertBackupImportSmoke(page, posts, testCase) {
         domain: "select",
         name: "screen_saver__action",
         action: "set",
-        option: "Screen Dimmed",
+        option: "HLS Stream",
       },
       "backup screensaver action import",
     ],
@@ -6385,6 +6414,7 @@ async function assertPolishUi(browser, embeddedFallback = false) {
     "--test",
     path.join(ROOT, "tests/web/date_time_text_size_browser.test.js"),
     path.join(ROOT, "tests/web/screensaver_clock_format_browser.test.js"),
+    path.join(ROOT, "tests/web/screensaver_hls_browser.test.js"),
     path.join(ROOT, "tests/web/clock_card_appearance_browser.test.js"),
   ], { cwd: ROOT, stdio: "inherit" });
   const browser = await chromium.launch();

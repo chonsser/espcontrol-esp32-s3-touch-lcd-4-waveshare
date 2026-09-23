@@ -44,6 +44,7 @@ import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
 import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
 import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
+import type { ScreensaverHlsFeature } from "./screensaver_hls";
 import type { FirmwareUpdateFeature } from "./firmware_update_state";
 import type { ClockBarFeature } from "./clock_bar_state";
 import type { EntityStateFeature } from "./entity_state";
@@ -81,6 +82,7 @@ export interface AppBackupControllers {
     readonly screensaverTimeout: ScreensaverTimeoutFeature;
     readonly screensaverClockFont: ScreensaverClockFontFeature;
     readonly screensaverClockFormat: ScreensaverClockFormatFeature;
+    readonly screensaverHls: ScreensaverHlsFeature;
     readonly firmwareUpdate: FirmwareUpdateFeature;
     readonly clockBar: ClockBarFeature;
     readonly entityState: Pick<EntityStateFeature, "entityName" | "entityNameForSlot">;
@@ -296,6 +298,7 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                 firmware_auto_update: !!state.autoUpdate,
                 firmware_update_frequency: state.updateFrequency,
                 screensaver_action: normalizeScreensaverAction(state.screensaverAction),
+                screensaver_hls_url: state.screensaverHlsUrl,
                 screensaver_clock_font: normalizeScreensaverClockFont(state.screensaverClockFont),
                 screensaver_clock_time_format: normalizeScreensaverClockFormat(state.screensaverClockTimeFormat),
                 screensaver_clock_date_format: normalizeScreensaverClockFormat(state.screensaverClockDateFormat),
@@ -547,7 +550,15 @@ export function createAppBackupFeature(controllers: AppBackupControllers): AppBa
                     var importedClockBrightnessNight: any = importedSettings.clockBrightnessNight;
                     await controllers.screensaverClockFont.restore(importedSettings.screensaverClockFont);
                     await controllers.screensaverClockFormat.restore(importedSettings);
-                    postScreensaverAction(importedScreensaverAction);
+                    importedScreensaverAction = await controllers.screensaverHls.restoreUrl(
+                        importedSettings.screensaverHlsUrl, importedScreensaverAction);
+                    if (importedScreensaverAction === "hls") {
+                        if (!await controllers.screensaverHls.setAction("hls")) {
+                            throw new Error(i18n("Could not restore the HLS screensaver action."));
+                        }
+                    } else {
+                        postScreensaverAction(importedScreensaverAction);
+                    }
                     postClockScreensaver(importedScreensaverAction === "clock");
                     postClockBrightnessDay(importedClockBrightnessDay);
                     postClockBrightnessNight(importedClockBrightnessNight);
