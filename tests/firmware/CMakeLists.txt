@@ -5,7 +5,7 @@ enable_testing()
 include(CheckCXXSourceCompiles)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-foreach(hls_suite video playlist transport)
+foreach(hls_suite video playlist transport playback)
   add_executable(hls_${hls_suite}_test hls_${hls_suite}_test.cpp)
   target_compile_features(hls_${hls_suite}_test PRIVATE cxx_std_17)
   target_compile_options(hls_${hls_suite}_test PRIVATE -Wall -Wextra -Werror)

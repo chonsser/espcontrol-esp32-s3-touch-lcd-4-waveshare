@@ -1,0 +1,148 @@
+# Optional native video screensaver, currently enabled only on the Waveshare S3.
+hls_screensaver:
+  id: hls_player
+  status:
+    id: screensaver_hls_status
+    name: "Screen Saver HLS Status"
+    internal: true
+    entity_category: diagnostic
+
+text:
+  - platform: template
+    id: screensaver_hls_url
+    name: "Screen Saver HLS URL"
+    internal: true
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 2048
+    mode: text
+    entity_category: config
+    update_interval: never
+    on_value:
+      - lambda: |-
+          id(hls_player).clear_failure();
+      - script.execute: hls_settings_changed
+
+select:
+  - id: !extend screensaver_action
+    options:
+      - "HLS Stream"
+    on_value:
+      - script.execute: hls_settings_changed
+
+lvgl:
+  top_layer:
+    widgets:
+      - obj:
+          id: hls_screensaver_view
+          x: 0
+          y: 0
+          width: 100%
+          height: 100%
+          bg_color: 0x000000
+          bg_opa: 100%
+          radius: 0
+          border_width: 0
+          pad_all: 0
+          scrollable: false
+          scrollbar_mode: "off"
+          clickable: true
+          hidden: true
+          on_press:
+            - script.execute: screensaver_wake
+
+script:
+  - id: show_hls_view
+    mode: restart
+    parameters:
+      generation: int
+    then:
+      - lambda: |-
+          if (!id(espcontrol_app).display().transition_is_current(
+                static_cast<uint32_t>(generation), espcontrol::DisplayMode::HLS)) {
+            id(show_hls_view).stop();
+          }
+      - lvgl.resume:
+      - script.execute: clock_screensaver_refresh_brightness
+      - script.wait: clock_screensaver_refresh_brightness
+      - script.execute: clock_bar_hide
+      - script.wait: clock_bar_hide
+      - lambda: |-
+          auto &controller = id(espcontrol_app).display();
+          if (!controller.transition_is_current(static_cast<uint32_t>(generation),
+                                                espcontrol::DisplayMode::HLS)) return;
+          lv_obj_add_flag(id(clock_screensaver), LV_OBJ_FLAG_HIDDEN);
+          lv_obj_add_flag(id(dim_screensaver_touch_guard), LV_OBJ_FLAG_HIDDEN);
+          network_status_hide_modal();
+          lv_obj_remove_flag(id(hls_screensaver_view), LV_OBJ_FLAG_HIDDEN);
+          lv_obj_move_foreground(id(hls_screensaver_view));
+          lv_refr_now(nullptr);
+          espcontrol::apply_backlight_fade_level(id(display_backlight), id(gpio_backlight_pwm),
+                                                id(screensaver_clock_target_level));
+          id(backlight_note_internal_brightness).execute(id(screensaver_clock_target_level));
+          controller.complete_transition(static_cast<uint32_t>(generation),
+                                         espcontrol::DisplayMode::HLS, millis());
+          id(hls_sync).execute();
+
+  # Editing settings changes only an existing automatic screensaver, never the
+  # active controls or a higher-priority schedule, alarm or media overlay.
+  - id: hls_settings_changed
+    mode: restart
+    then:
+      - lambda: |-
+          if (!id(hls_screensaver_view)) return;
+          auto &controller = id(espcontrol_app).display();
+          const auto decision = controller.resolve();
+          if (!espcontrol::presence_can_wake_display(decision)) return;
+          const auto action = id(screensaver_action).current_option();
+          const auto mode = action == "HLS Stream" ? espcontrol::DisplayMode::HLS :
+              (screensaver_action_clock_mode(action) ? espcontrol::DisplayMode::CLOCK :
+               (screensaver_action_dimmed_mode(action) ? espcontrol::DisplayMode::DIMMED :
+                espcontrol::DisplayMode::DISPLAY_OFF));
+          controller.request(*decision.winning_source, mode);
+          id(display_mode_reconcile).execute();
+          id(hls_sync).execute();
+
+  - id: hls_sync
+    mode: restart
+    then:
+      - lambda: |-
+          auto &controller = id(espcontrol_app).display();
+          const auto decision = controller.resolve();
+          const bool wanted = decision.target_mode == espcontrol::DisplayMode::HLS &&
+              controller.current_mode_is(espcontrol::DisplayMode::HLS) &&
+              !controller.has_transition_in_progress() && !id(screensaver_wake).is_running();
+          if (!controller.request_active(espcontrol::DisplayRequestSource::IDLE_TIMER) &&
+              !controller.request_active(espcontrol::DisplayRequestSource::PRESENCE_SENSOR)) {
+            id(hls_player).clear_failure();
+          }
+          id(hls_player).reconcile(wanted, decision.generation,
+                                  id(screensaver_hls_url).state, id(hls_screensaver_view));
+          if (wanted && id(hls_player).failed() && decision.winning_source.has_value()) {
+            // Keep the action and diagnostic; retry only after a URL edit or a
+            // new idle episode, not on each reconciliation tick.
+            controller.request(*decision.winning_source, espcontrol::DisplayMode::CLOCK);
+            id(display_mode_reconcile).execute();
+          }
+
+interval:
+  - interval: 100ms
+    then:
+      - script.execute: hls_sync
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            lambda: 'return id(espcontrol_app).display().current_mode_is(espcontrol::DisplayMode::HLS);'
+          then:
+            - script.execute: clock_screensaver_refresh_brightness
+            - script.wait: clock_screensaver_refresh_brightness
+            - script.execute:
+                id: backlight_note_internal_brightness
+                brightness: !lambda 'return id(screensaver_clock_target_level);'
+            - light.turn_on:
+                id: display_backlight
+                brightness: !lambda 'return id(screensaver_clock_target_level);'
+                transition_length: 0s
