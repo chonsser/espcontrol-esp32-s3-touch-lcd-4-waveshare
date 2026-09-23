@@ -115,7 +115,8 @@ script:
           const auto decision = controller.resolve();
           const bool wanted = decision.target_mode == espcontrol::DisplayMode::HLS &&
               controller.current_mode_is(espcontrol::DisplayMode::HLS) &&
-              !controller.has_transition_in_progress() && !id(screensaver_wake).is_running();
+              !controller.has_transition_in_progress() && !id(screensaver_wake).is_running() &&
+              !espcontrol::reset::update_busy();
           if (!controller.request_active(espcontrol::DisplayRequestSource::IDLE_TIMER) &&
               !controller.request_active(espcontrol::DisplayRequestSource::PRESENCE_SENSOR)) {
             id(hls_player).clear_failure();

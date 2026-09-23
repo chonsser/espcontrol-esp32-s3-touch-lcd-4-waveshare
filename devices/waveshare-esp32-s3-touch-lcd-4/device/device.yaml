@@ -199,6 +199,7 @@ ota:
   - platform: esphome
     on_begin:
       then:
+        - lambda: 'id(hls_player).stop();'
         - script.execute: show_update_writing
         - script.wait: show_update_writing
     on_end:
@@ -216,6 +217,7 @@ ota:
   - platform: http_request
     on_begin:
       then:
+        - lambda: 'id(hls_player).stop();'
         - script.execute: show_update_writing
         - script.wait: show_update_writing
     on_end:

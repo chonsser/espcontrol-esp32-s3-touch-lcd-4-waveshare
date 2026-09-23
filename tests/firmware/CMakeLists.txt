@@ -12,6 +12,9 @@ foreach(hls_suite video playlist transport playback)
   target_include_directories(hls_${hls_suite}_test PRIVATE ../../components/hls_screensaver)
   add_test(NAME hls_${hls_suite}_test COMMAND hls_${hls_suite}_test)
 endforeach()
+add_test(NAME hls_ota_gate_test COMMAND
+  ${CMAKE_COMMAND} -E env "CXX=${CMAKE_CXX_COMPILER}"
+  ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/hls_ota_gate_test.py)
 find_program(HLS_FFMPEG ffmpeg)
 find_program(HLS_FFPROBE ffprobe)
 if(HLS_FFMPEG AND HLS_FFPROBE)
