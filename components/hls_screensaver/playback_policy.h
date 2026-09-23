@@ -4,6 +4,43 @@
 
 namespace esphome::hls_screensaver {
 
+class PictureTimestamps {
+ public:
+  void reset() { ready_ = have_anchor_ = have_picture_ = false; remainder_ = 0; }
+  bool begin_slice(const uint8_t *nal, size_t size, const PesTimestamp &stamp) {
+    if (size < 2) return false;
+    BitReader bits(nal + 1, size - 1);
+    const auto first_mb = bits.ue();
+    if (!bits.valid()) return false;
+    if (first_mb == 0) { picture_ = stamp; have_picture_ = true; }
+    return have_picture_;
+  }
+  bool resolve_picture(const VideoParameters &parameters, uint64_t &pts) {
+    return have_picture_ && resolve(picture_, parameters, pts);
+  }
+  bool resolve(const PesTimestamp &stamp, const VideoParameters &parameters, uint64_t &pts) {
+    if (stamp.present && (!have_anchor_ || stamp.sequence != anchor_sequence_)) {
+      previous_ = stamp.value; remainder_ = 0;
+      anchor_sequence_ = stamp.sequence; have_anchor_ = ready_ = true;
+    } else {
+      if (!ready_ || !parameters.fixed_frame_rate || !parameters.num_units_in_tick || !parameters.time_scale)
+        return false;
+      const uint64_t duration = uint64_t(parameters.num_units_in_tick) * 180000;
+      if (duration < uint64_t(parameters.time_scale) * 6000 ||
+          duration > uint64_t(parameters.time_scale) * 900000) return false;
+      const uint64_t ticks = duration + remainder_;
+      previous_ = (previous_ + ticks / parameters.time_scale) & ((uint64_t(1) << 33) - 1);
+      remainder_ = ticks % parameters.time_scale;
+    }
+    pts = previous_;
+    return true;
+  }
+ private:
+  uint64_t previous_{0}, remainder_{0}, anchor_sequence_{0};
+  PesTimestamp picture_;
+  bool ready_{false}, have_anchor_{false}, have_picture_{false};
+};
+
 class PlaybackClock {
  public:
   void reset() { ready_ = false; }
@@ -32,12 +69,12 @@ class PlaybackPolicy {
  public:
   enum class Action { NONE, START, STOP };
   Action request(bool wanted, uint32_t generation, uint32_t revision) {
-    generation_ = generation;
-    if (running_ && (!wanted || revision != revision_)) {
+    if (running_ && (!wanted || generation != generation_ || revision != revision_)) {
       running_ = false; ++token_; return Action::STOP;
     }
     if (wanted && !occupied_) {
-      revision_ = revision; ++token_; occupied_ = true; return Action::START;
+      generation_ = generation; revision_ = revision;
+      ++token_; occupied_ = true; return Action::START;
     }
     return Action::NONE;
   }

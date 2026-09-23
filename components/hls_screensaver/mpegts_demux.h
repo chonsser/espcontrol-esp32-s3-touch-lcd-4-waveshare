@@ -6,6 +6,7 @@
 #include <cstring>
 #include <functional>
 #include <algorithm>
+#include "elementary_timestamp.h"
 
 namespace esphome::hls_screensaver {
 
@@ -16,14 +17,14 @@ inline int64_t pts_delta(uint64_t next, uint64_t previous) {
 
 class MpegTsDemux {
  public:
-  using Consumer = std::function<bool(const uint8_t *, size_t, uint64_t)>;
+  using Consumer = std::function<bool(const uint8_t *, size_t, const PesTimestamp &)>;
   explicit MpegTsDemux(Consumer consume) : consume_(std::move(consume)) {}
   void reset() {
     packet_size_ = 0; pmt_pid_ = video_pid_ = 0x1fff;
     pat_ = {}; pmt_ = {}; last_video_cc_ = -1;
     pes_header_size_ = pes_header_target_ = 0;
     pes_remaining_ = 0; pes_bounded_ = false; pes_active_ = false;
-    have_pts_ = seen_video_ = false; pts_ = 0;
+    timestamp_parsed_ = seen_video_ = false; pts_ = {}; sequence_ = 0;
   }
   bool feed(const uint8_t *data, size_t size) {
     while (size) {
@@ -104,7 +105,8 @@ class MpegTsDemux {
     if (start) {
       if (pes_active_ && pes_bounded_ && pes_remaining_) return false;
       pes_active_ = true; pes_header_size_ = 0; pes_header_target_ = 9;
-      pes_bounded_ = false; pes_remaining_ = 0; have_pts_ = false;
+      pes_bounded_ = false; pes_remaining_ = 0; timestamp_parsed_ = false;
+      pts_ = {0, ++sequence_, false};
     }
     if (!pes_active_) return true;
     while (size && pes_header_size_ < pes_header_target_) {
@@ -112,7 +114,9 @@ class MpegTsDemux {
       if (pes_header_size_ == 9) {
         if (header_[0] || header_[1] || header_[2] != 1 || (header_[3] & 0xf0) != 0xe0 || (header_[6] & 0xc0) != 0x80) return false;
         pes_header_target_ = 9 + header_[8];
-        if (pes_header_target_ > header_.size() || header_[8] < 5 || !(header_[7] & 0x80)) return false;
+        const unsigned stamps = header_[7] & 0xc0;
+        const unsigned minimum = stamps == 0xc0 ? 10 : stamps == 0x80 ? 5 : 0;
+        if (pes_header_target_ > header_.size() || stamps == 0x40 || header_[8] < minimum) return false;
         const size_t length = (size_t(header_[4]) << 8) | header_[5];
         pes_bounded_ = length != 0;
         if (pes_bounded_ && length < 3U + header_[8]) return false;
@@ -120,13 +124,16 @@ class MpegTsDemux {
       }
     }
     if (pes_header_size_ < pes_header_target_) return true;
-    if (!have_pts_) {
-      const auto *p = header_.data() + 9;
-      const auto expected = (header_[7] & 0xc0) == 0xc0 ? 0x30 : 0x20;
-      if ((p[0] & 0xf1) != (expected | 1) || !(p[2] & 1) || !(p[4] & 1)) return false;
-      pts_ = (uint64_t((p[0] >> 1) & 7) << 30) | (uint64_t(p[1]) << 22) |
-             (uint64_t(p[2] >> 1) << 15) | (uint64_t(p[3]) << 7) | (p[4] >> 1);
-      have_pts_ = true;
+    if (!timestamp_parsed_) {
+      if (header_[7] & 0x80) {
+        const auto *p = header_.data() + 9;
+        const auto expected = (header_[7] & 0xc0) == 0xc0 ? 0x30 : 0x20;
+        if ((p[0] & 0xf1) != (expected | 1) || !(p[2] & 1) || !(p[4] & 1)) return false;
+        pts_.value = (uint64_t((p[0] >> 1) & 7) << 30) | (uint64_t(p[1]) << 22) |
+                     (uint64_t(p[2] >> 1) << 15) | (uint64_t(p[3]) << 7) | (p[4] >> 1);
+        pts_.present = true;
+      }
+      timestamp_parsed_ = true;
     }
     if (pes_bounded_) size = std::min(size, pes_remaining_);
     if (size) {
@@ -172,8 +179,9 @@ class MpegTsDemux {
   Section pat_, pmt_;
   uint16_t pmt_pid_{0x1fff}, video_pid_{0x1fff};
   int last_video_cc_{-1};
-  bool pes_active_{false}, pes_bounded_{false}, have_pts_{false}, seen_video_{false};
-  uint64_t pts_{0};
+  bool pes_active_{false}, pes_bounded_{false}, timestamp_parsed_{false}, seen_video_{false};
+  uint64_t sequence_{0};
+  PesTimestamp pts_;
 };
 
 }  // namespace esphome::hls_screensaver

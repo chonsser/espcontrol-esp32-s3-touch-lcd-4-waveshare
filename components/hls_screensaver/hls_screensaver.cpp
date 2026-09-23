@@ -1,5 +1,6 @@
 #include "hls_screensaver.h"
 #include "hls_playlist.h"
+#include "bounded_transport.h"
 #include "esphome/core/log.h"
 #include "esp_crt_bundle.h"
 #include "esp_http_client.h"
@@ -103,7 +104,10 @@ static bool fetch(PlaybackSession &session, const std::string &requested, ByteBu
   for (unsigned redirect = 0; redirect <= 3 && !session.cancelled.load(); ++redirect) {
     if (!valid_url(url)) return false;
     ResponseHeaders headers;
+    DeadlineTransport transport(session.cancelled, deadline, now_ms);
+    if (!transport.init(url.compare(0, 6, "https:") == 0)) return false;
     esp_http_client_config_t config{};
+    config.transport = transport.handle();
     config.url = url.c_str(); config.timeout_ms = 1000;
     config.disable_auto_redirect = true;
     config.crt_bundle_attach = esp_crt_bundle_attach;
@@ -211,11 +215,13 @@ class VideoDecoder {
  public:
   explicit VideoDecoder(PlaybackSession &session) : session_(session) {}
   ~VideoDecoder() { close_(); }
-  void reset() { close_(); gate_.reset(); clock_.reset(); }
-  bool nal(const uint8_t *data, size_t size, uint64_t pts) {
+  void reset() { close_(); gate_.reset(); clock_.reset(); timestamps_.reset(); }
+  bool nal(const uint8_t *data, size_t size, const PesTimestamp &pts) {
     const auto decision = gate_.accept(data, size);
     if (decision == VideoGate::Result::REJECT) { session_.fail("Unsupported H.264; maximum 320x192, constrained baseline, one reference frame"); return false; }
     if (decision == VideoGate::Result::SKIP) return true;
+    const unsigned type = data[0] & 31;
+    if ((type == 1 || type == 5) && !timestamps_.begin_slice(data, size, pts)) return false;
     if (decision == VideoGate::Result::RESET) {
       close_();
       esp_h264_dec_cfg_sw_t config{};
@@ -230,13 +236,13 @@ class VideoDecoder {
     if (!packet_.append(prefix, sizeof(prefix)) || !packet_.append(data, size)) return false;
     esp_h264_dec_in_frame_t input{};
     input.raw_data.buffer = packet_.data(); input.raw_data.len = packet_.size();
-    input.pts = uint32_t(pts); input.dts = input.pts;
+    input.pts = uint32_t(pts.value); input.dts = input.pts;
     unsigned empty_steps = 0;
     while (input.raw_data.len && !session_.cancelled.load()) {
       esp_h264_dec_out_frame_t output{};
       input.consume = 0;
       if (esp_h264_dec_process(handle_, &input, &output) != ESP_H264_ERR_OK || input.consume > input.raw_data.len) return false;
-      if (output.out_size && !frame_(output, pts)) return false;
+      if (output.out_size && !frame_(output)) return false;
       if (!input.consume) { if (++empty_steps > 1) return false; }
       else empty_steps = 0;
       input.raw_data.buffer += input.consume; input.raw_data.len -= input.consume;
@@ -247,15 +253,18 @@ class VideoDecoder {
   void close_() {
     if (handle_) { esp_h264_dec_close(handle_); esp_h264_dec_del(handle_); handle_ = nullptr; }
   }
-  bool frame_(const esp_h264_dec_out_frame_t &output, uint64_t pts) {
+  bool frame_(const esp_h264_dec_out_frame_t &output) {
     esp_h264_dec_param_sw_handle_t param = nullptr;
     esp_h264_resolution_t resolution{};
     if (esp_h264_dec_sw_get_param_hd(handle_, &param) != ESP_H264_ERR_OK ||
         esp_h264_dec_get_resolution(param, &resolution) != ESP_H264_ERR_OK) return false;
     const auto &expected = gate_.parameters();
     if (resolution.width != expected.coded_width || resolution.height != expected.coded_height) return false;
-    uint64_t due;
-    if (!clock_.schedule(pts, now_ms(), due)) { session_.fail("Unsupported frame timing; maximum 15 fps"); return false; }
+    uint64_t due, picture_pts;
+    if (!timestamps_.resolve_picture(expected, picture_pts)) {
+      session_.fail("Missing picture timestamps; fixed H.264 timing is required"); return false;
+    }
+    if (!clock_.schedule(picture_pts, now_ms(), due)) { session_.fail("Unsupported frame timing; maximum 15 fps"); return false; }
     int index;
     if (!session_.receive(session_.free_frames, index)) return false;
     auto &frame = session_.frames[index];
@@ -268,6 +277,7 @@ class VideoDecoder {
   PlaybackSession &session_;
   VideoGate gate_;
   PlaybackClock clock_;
+  PictureTimestamps timestamps_;
   ByteBuffer packet_;
   esp_h264_dec_handle_t handle_{nullptr};
 };
@@ -277,8 +287,8 @@ static void decoder_task(void *argument) {
   {
     VideoDecoder decoder(session);
     AnnexBParser annex;
-    auto nal = [&](const uint8_t *data, size_t size, uint64_t pts) { return decoder.nal(data, size, pts); };
-    MpegTsDemux demux([&](const uint8_t *data, size_t size, uint64_t pts) { return annex.feed_timed(data, size, pts, nal); });
+    auto nal = [&](const uint8_t *data, size_t size, const PesTimestamp &pts) { return decoder.nal(data, size, pts); };
+    MpegTsDemux demux([&](const uint8_t *data, size_t size, const PesTimestamp &pts) { return annex.feed_timed(data, size, pts, nal); });
     int index;
     while (session.receive(session.ready_segments, index)) {
       auto &segment = session.segments[index];
@@ -352,8 +362,12 @@ void HlsScreensaver::loop() {
   if (!session_) return;
   if (const char *error = session_->error.load(); error && !failed_) fail_(error);
   if (session_->cancelled.load()) {
+    // Failure may have arrived after the first error read. Cancellation is
+    // published after the error; observe it again before cleanup or restart.
+    if (const char *error = session_->error.load(); error && !failed_) fail_(error);
+    else stop_();
     if (session_->transport_done.load() && session_->decoder_done.load()) {
-      // stop_ detached the LVGL source before either session or frames can die.
+      // Every cancellation path has now detached LVGL before the pool dies.
       delete session_; session_ = nullptr; policy_.cleaned();
     }
     return;

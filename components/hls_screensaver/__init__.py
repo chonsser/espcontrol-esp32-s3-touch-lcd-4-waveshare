@@ -18,7 +18,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional("status"): text_sensor.text_sensor_schema(),
         }
     ).extend(cv.COMPONENT_SCHEMA),
-    cv.only_with_esp_idf,
+    cv.only_with_framework("esp-idf"),
     socket.consume_sockets(1, "hls_screensaver"),
 )
 
@@ -30,7 +30,9 @@ async def to_code(config):
         cg.add(var.set_status_sensor(status))
     esp32.add_idf_component(name="espressif/esp_h264", ref="1.4.0")
     esp32.include_builtin_idf_component("esp_http_client")
+    esp32.include_builtin_idf_component("tcp_transport")
     esp32.include_builtin_idf_component("esp-tls")
     esp32.add_idf_sdkconfig_option("CONFIG_MBEDTLS_CERTIFICATE_BUNDLE", True)
+    esp32.add_idf_sdkconfig_option("CONFIG_ESP_HTTP_CLIENT_ENABLE_CUSTOM_TRANSPORT", True)
     esp32.add_idf_sdkconfig_option("CONFIG_ESP_H264_DUAL_TASK", False)
     cg.add_define("USE_HLS_SCREENSAVER")

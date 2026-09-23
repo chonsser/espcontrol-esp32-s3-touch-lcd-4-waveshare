@@ -57,9 +57,9 @@ int main() {
   assert(!parser.feed(oversized.data(), oversized.size(), consume));
   parser.reset();
   std::vector<uint64_t> stamps;
-  auto timed = [&](const uint8_t *, size_t, uint64_t pts) { stamps.push_back(pts); return true; };
-  assert(parser.feed_timed(stream, 6, 90000, timed));
-  assert(parser.feed_timed(stream + 6, sizeof(stream) - 6, 99000, timed));
+  auto timed = [&](const uint8_t *, size_t, const PesTimestamp &pts) { stamps.push_back(pts.value); return true; };
+  assert(parser.feed_timed(stream, 6, {90000, 1, true}, timed));
+  assert(parser.feed_timed(stream + 6, sizeof(stream) - 6, {99000, 2, true}, timed));
   assert(parser.finish_timed(timed));
   assert((stamps == std::vector<uint64_t>{90000, 99000}));
   return 0;

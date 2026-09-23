@@ -24,18 +24,22 @@ int main() {
   const auto token = policy.token();
   policy.started();
   assert(policy.accepts(token));
-  assert(policy.request(true, 2, 10) == PlaybackPolicy::Action::NONE);
-  assert(policy.accepts(token));  // same mode, newer display generation
-  assert(policy.request(false, 3, 10) == PlaybackPolicy::Action::STOP);
+  assert(policy.request(true, 1, 10) == PlaybackPolicy::Action::NONE);
+  assert(policy.accepts(token));
+  assert(policy.request(true, 2, 10) == PlaybackPolicy::Action::STOP);  // new generation, same mode
   assert(!policy.accepts(token));
-  assert(policy.request(true, 4, 11) == PlaybackPolicy::Action::NONE);  // old workers still exiting
+  assert(policy.request(true, 2, 10) == PlaybackPolicy::Action::NONE);  // old workers still exiting
   policy.cleaned();
-  assert(policy.request(true, 4, 11) == PlaybackPolicy::Action::START);
+  assert(policy.request(true, 2, 10) == PlaybackPolicy::Action::START);
   policy.started();
   const auto next = policy.token();
   assert(next != token && policy.accepts(next));
-  assert(policy.request(true, 5, 12) == PlaybackPolicy::Action::STOP);  // URL changed
+  assert(policy.request(true, 2, 11) == PlaybackPolicy::Action::STOP);  // URL changed
   assert(!policy.accepts(next));
+  policy.cleaned();
+  assert(policy.request(true, 3, 11) == PlaybackPolicy::Action::START);
+  policy.started();
+  assert(policy.request(false, 3, 11) == PlaybackPolicy::Action::STOP);
 
   VideoGate gate;
   const uint8_t sps[] = {0x67,0x42,0xc0,0x0d,0xda,0x05,0x06,0x6c,0x04,0x40,0,0,3,0,0x40,0,0,5,3,0xc5,0x0a,0xa8};

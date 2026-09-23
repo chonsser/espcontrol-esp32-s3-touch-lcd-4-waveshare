@@ -32,7 +32,8 @@ select:
     options:
       - "HLS Stream"
     on_value:
-      - script.execute: hls_settings_changed
+      then:
+        - script.execute: hls_settings_changed
 
 lvgl:
   top_layer:

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include "byte_buffer.h"
+#include "elementary_timestamp.h"
 
 namespace esphome::hls_screensaver {
 
@@ -14,6 +15,8 @@ struct VideoParameters {
   uint16_t coded_width{0};
   uint16_t coded_height{0};
   uint32_t sps_id{0};
+  uint32_t num_units_in_tick{0}, time_scale{0};
+  bool fixed_frame_rate{false};
 };
 
 // A bounded RBSP reader also removes emulation-prevention bytes.
@@ -81,8 +84,21 @@ inline bool parse_sps(const uint8_t *nal, size_t size, VideoParameters &out) {
   if (b.bits(1)) { left = b.ue(); right = b.ue(); top = b.ue(); bottom = b.ue(); }
   const uint32_t width = (width_mbs + 1) * 16, height = (height_mbs + 1) * 16;
   if (!b.valid() || left || top || right >= width / 2 || bottom >= height / 2) return false;
+  uint32_t units = 0, scale = 0;
+  bool fixed = false;
+  if (b.bits(1)) {  // VUI: skip optional fields before timing_info
+    if (b.bits(1) && b.bits(8) == 255) { b.bits(16); b.bits(16); }
+    if (b.bits(1)) b.bits(1);
+    if (b.bits(1)) { b.bits(3); b.bits(1); if (b.bits(1)) b.bits(24); }
+    if (b.bits(1)) { b.ue(); b.ue(); }
+    if (b.bits(1)) {
+      units = b.bits(32); scale = b.bits(32); fixed = b.bits(1);
+      if (!units || !scale) return false;
+    }
+  }
+  if (!b.valid()) return false;
   out = {static_cast<uint16_t>(width - right * 2), static_cast<uint16_t>(height - bottom * 2),
-         static_cast<uint16_t>(width), static_cast<uint16_t>(height), id};
+         static_cast<uint16_t>(width), static_cast<uint16_t>(height), id, units, scale, fixed};
   return true;
 }
 
@@ -123,12 +139,12 @@ inline bool i420_to_rgb565(const uint8_t *input, size_t size, unsigned width, un
 class AnnexBParser {
  public:
   using Consumer = std::function<bool(const uint8_t *, size_t)>;
-  using TimedConsumer = std::function<bool(const uint8_t *, size_t, uint64_t)>;
+  using TimedConsumer = std::function<bool(const uint8_t *, size_t, const PesTimestamp &)>;
   static constexpr size_t MAX_NAL = 128 * 1024;
   bool feed(const uint8_t *data, size_t size, const Consumer &consume) {
-    return feed_timed(data, size, 0, [&](const uint8_t *p, size_t n, uint64_t) { return consume(p, n); });
+    return feed_timed(data, size, {}, [&](const uint8_t *p, size_t n, const PesTimestamp &) { return consume(p, n); });
   }
-  bool feed_timed(const uint8_t *data, size_t size, uint64_t pts, const TimedConsumer &consume) {
+  bool feed_timed(const uint8_t *data, size_t size, const PesTimestamp &pts, const TimedConsumer &consume) {
     if (!nal_.allocate(MAX_NAL)) return false;
     for (size_t i = 0; i < size; ++i) {
       const auto byte = data[i];
@@ -150,7 +166,7 @@ class AnnexBParser {
     return true;
   }
   bool finish(const Consumer &consume) {
-    return finish_timed([&](const uint8_t *p, size_t n, uint64_t) { return consume(p, n); });
+    return finish_timed([&](const uint8_t *p, size_t n, const PesTimestamp &) { return consume(p, n); });
   }
   bool finish_timed(const TimedConsumer &consume) {
     // trailing_zero_8bits are not part of an RBSP.
@@ -158,11 +174,11 @@ class AnnexBParser {
     reset();
     return ok;
   }
-  void reset() { nal_.clear(); zeros_ = 0; started_ = false; pts_ = 0; }
+  void reset() { nal_.clear(); zeros_ = 0; started_ = false; pts_ = {}; }
  private:
   ByteBuffer nal_;
   size_t zeros_{0};
-  uint64_t pts_{0};
+  PesTimestamp pts_;
   bool started_{false};
 };
 

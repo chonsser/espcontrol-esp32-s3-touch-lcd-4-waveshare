@@ -10,6 +10,7 @@ In **Settings → Screensaver**, save the **HLS Stream URL**, then select **HLS 
 
 - Entry URL: HTTP/HTTPS, at most **255 ASCII characters**. No embedded username/password, spaces or fragment. Query strings are supported; avoid sharing backups containing private URL tokens.
 - Unencrypted HLS with MPEG-TS segments and H.264 **constrained baseline**, progressive YUV420, at most **320×192**, **15 fps**, one reference frame and no B frames. Use a video-only source; audio is not played.
+- The first picture needs a PES timestamp. Later pictures may share a PES or continue through a PES without a timestamp: missing picture times are reconstructed only when H.264 VUI declares a fixed frame rate. Without that timing declaration, each picture needs an explicit timestamp; the player will not guess its cadence.
 - AES/DRM, H.265, fMP4/CMAF, byte ranges, I-frame-only playlists and low-latency HLS extensions are unsupported.
 - Each segment must fit **256 KiB** and last at most **10 seconds**. Playlists are limited to **16 KiB / 64 segments**. Redirect and resolved segment URLs may be up to 2048 bytes; redirects are limited to three.
 - A supported master-playlist variant is chosen at low bandwidth (at most 512 kbit/s). These limits do not guarantee real-time performance on the panel.
@@ -27,7 +28,7 @@ Generate a six-second test pattern in an empty test directory:
 ffmpeg -f lavfi -i testsrc2=size=320x192:rate=10 -t 6 -an \
   -c:v libx264 -profile:v baseline -level:v 1.3 -pix_fmt yuv420p \
   -b:v 180k -maxrate 240k -bufsize 480k -bf 0 -refs 1 \
-  -g 20 -keyint_min 20 -sc_threshold 0 -x264-params repeat-headers=1:aud=1 \
+  -g 20 -keyint_min 20 -sc_threshold 0 -x264-params repeat-headers=1:aud=1:force-cfr=1 \
   -f hls -hls_time 2 -hls_list_size 0 -hls_flags independent_segments fixture.m3u8
 python3 -m http.server 8080 --bind 0.0.0.0
 ```
@@ -45,7 +46,9 @@ ESPCONTROL_BROWSER_PROFILE=waveshare-esp32-s3-touch-lcd-4 node scripts/check_web
 ctest --test-dir build/tests/firmware -R '^(hls_.*|display_mode_controller_test)$' --output-on-failure
 ```
 
-Configure and build the normal host CMake harness first. When FFmpeg and ffprobe are installed, CMake also registers `hls_fixture_test`: it generates real segments, checks their codec parameters and feeds all three through the transport parser. It does **not** execute the ESP-IDF decoder or render through LVGL.
+Configure and build the normal host CMake harness first. When FFmpeg and ffprobe are installed, CMake also registers `hls_fixture_test`: it generates real segments, checks their codec parameters and feeds all three through the transport parser. It also repacketizes the same elementary video across different PES boundaries and checks reconstructed picture times. It does **not** execute the ESP-IDF decoder or render through LVGL.
+
+`hls_config_test` loads the Python component and checks the merged select action chain using installed ESPHome APIs; it is explicitly skipped if ESPHome is unavailable. `hls_lifecycle_test` exercises the actual main-loop methods with simulated worker completion and LVGL ownership. `hls_http_deadline_test` runs the actual download function and bounded transport adapter against a simulated slow-header peer and cancellation. These are host simulations, not evidence of SDK network, decoder or physical display behavior.
 
 ## Device acceptance checklist
 

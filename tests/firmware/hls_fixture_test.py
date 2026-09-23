@@ -20,7 +20,7 @@ def main():
             "-pix_fmt", "yuv420p", "-b:v", "180k", "-maxrate", "240k",
             "-bufsize", "480k", "-bf", "0", "-refs", "1", "-g", "20",
             "-keyint_min", "20", "-sc_threshold", "0", "-x264-params",
-            "repeat-headers=1:aud=1", "-f", "hls", "-hls_time", "2",
+            "repeat-headers=1:aud=1:force-cfr=1", "-f", "hls", "-hls_time", "2",
             "-hls_list_size", "0", "-hls_flags", "independent_segments",
             str(playlist),
         ], check=True, timeout=60)
