@@ -2,6 +2,7 @@
 #include "hls_playlist.h"
 #include "bounded_transport.h"
 #include "esphome/core/log.h"
+#include "src/misc/cache/instance/lv_image_cache.h"
 #include "esp_crt_bundle.h"
 #include "esp_http_client.h"
 #include "esp_h264_dec_sw.h"
