@@ -42,8 +42,6 @@
     { "key": "outdoor_temp_entity", "domain": "text", "name": "Outdoor Temp Entity", "groups": ["settings"] },
     { "key": "screensaver_mode", "domain": "text", "name": "Screensaver Mode", "objectIds": ["screensaver_mode"], "groups": ["settings"] },
     { "key": "screen_saver_action", "domain": "select", "name": "Screen Saver: Action", "objectIds": ["screen_saver__action", "screen_saver_action", "screensaver_action"], "groups": ["settings"] },
-    { "key": "screen_saver_hls_url", "domain": "text", "name": "Screen Saver HLS URL", "objectIds": ["screen_saver_hls_url", "screensaver_hls_url"], "groups": ["settings"] },
-    { "key": "screen_saver_hls_status", "domain": "text_sensor", "name": "Screen Saver HLS Status", "objectIds": ["screen_saver_hls_status", "screensaver_hls_status"], "groups": ["settings"] },
     { "key": "screen_saver_clock_font", "domain": "select", "name": "Screen Saver Clock Font", "objectIds": ["screen_saver_clock_font", "screensaver_clock_font"], "groups": ["settings"] },
     { "key": "screen_saver_clock_time_format", "domain": "text", "name": "Screen Saver Clock Time Format", "objectIds": ["screen_saver_clock_time_format", "screensaver_clock_time_format"], "groups": ["settings"] },
     { "key": "screen_saver_clock_date_format", "domain": "text", "name": "Screen Saver Clock Date Format", "objectIds": ["screen_saver_clock_date_format", "screensaver_clock_date_format"], "groups": ["settings"] },

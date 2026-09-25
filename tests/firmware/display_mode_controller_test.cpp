@@ -47,20 +47,11 @@ int main() {
   CHECK(!presence_can_wake_display(controller.resolve()));
 
   for (DisplayMode mode : {DisplayMode::DISPLAY_OFF, DisplayMode::DIMMED,
-                           DisplayMode::CLOCK, DisplayMode::HLS}) {
+                           DisplayMode::CLOCK}) {
     DisplayModeController presence_wake;
     CHECK(presence_wake.request(DisplayRequestSource::PRESENCE_SENSOR, mode));
     CHECK(presence_can_wake_display(presence_wake.resolve()));
   }
-  for (int priority = 1; priority <= 7; ++priority) {
-    DisplayModeController video;
-    CHECK(video.request(DisplayRequestSource::IDLE_TIMER, DisplayMode::HLS));
-    CHECK(decision_is(video, DisplayMode::HLS, DisplayRequestSource::IDLE_TIMER));
-    activate_priority(video, priority);
-    CHECK(video.resolve().target_mode == expected_mode_for_priority(priority));
-  }
-  CHECK(!DisplayModeController::request_is_valid(DisplayRequestSource::SCREEN_SCHEDULE, DisplayMode::HLS));
-  CHECK(!DisplayModeController::request_is_valid(DisplayRequestSource::MANUAL_SLEEP, DisplayMode::HLS));
   DisplayModeController idle_wake;
   CHECK(idle_wake.request(DisplayRequestSource::IDLE_TIMER, DisplayMode::DIMMED));
   CHECK(presence_can_wake_display(idle_wake.resolve()));

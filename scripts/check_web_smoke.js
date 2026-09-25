@@ -1733,8 +1733,6 @@ async function verifyLocalFirmwareProfileSelection() {
   assert.deepStrictEqual(requested, [
     "/espcontrol/version.json",
     "/api/v1/capabilities",
-    "/select/Screen%20Saver%3A%20Action?detail=all",
-    "/text/Screen%20Saver%20HLS%20URL?detail=all",
     "/select/Screen%20Saver%20Clock%20Font?detail=all",
     "/text/Screen%20Saver%20Clock%20Time%20Format?detail=all",
     "/text/Screen%20Saver%20Clock%20Date%20Format?detail=all",

@@ -190,7 +190,6 @@ export function normalizeScreensaverAction(value: unknown): string {
   const action = String(value || "").toLowerCase().replace(/[\s-]+/g, "_");
   if (action === "screen_dimmed" || action === "dimmed" || action === "dim") return "dim";
   if (action === "clock") return "clock";
-  if (action === "hls" || action === "hls_stream") return "hls";
   return "off";
 }
 
@@ -198,7 +197,6 @@ export function screensaverActionOption(value: unknown): string {
   const action = normalizeScreensaverAction(value);
   if (action === "dim") return "Screen Dimmed";
   if (action === "clock") return "Clock";
-  if (action === "hls") return "HLS Stream";
   return "Display Off";
 }
 
@@ -410,7 +408,6 @@ export interface BackupPanelSettingsState {
   autoUpdate: boolean;
   updateFrequency: string;
   screensaverAction: string;
-  screensaverHlsUrl: string;
   screensaverClockFont: ScreensaverClockFont;
   screensaverClockTimeFormat: string;
   screensaverClockDateFormat: string;
@@ -577,7 +574,6 @@ export function normalizeBackupPanelSettings(
       )
       : current.updateFrequency,
     screensaverAction,
-    screensaverHlsUrl: typeof settings.screensaver_hls_url === "string" ? settings.screensaver_hls_url : "",
     screensaverClockFont: normalizeScreensaverClockFont(settings.screensaver_clock_font),
     screensaverClockTimeFormat: normalizeScreensaverClockFormat(settings.screensaver_clock_time_format),
     screensaverClockDateFormat: normalizeScreensaverClockFormat(settings.screensaver_clock_date_format),

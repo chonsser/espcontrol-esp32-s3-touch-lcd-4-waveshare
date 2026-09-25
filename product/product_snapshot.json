@@ -11,7 +11,7 @@
   "summary": {
     "deviceProfiles": 9,
     "cardTypes": 43,
-    "entityNames": 111,
+    "entityNames": 109,
     "icons": 357,
     "structuralIcons": 22,
     "compatibilityFixtureGroups": 2
@@ -7053,30 +7053,6 @@
           "screen_saver__action",
           "screen_saver_action",
           "screensaver_action"
-        ],
-        "groups": [
-          "settings"
-        ]
-      },
-      {
-        "key": "screen_saver_hls_url",
-        "domain": "text",
-        "name": "Screen Saver HLS URL",
-        "objectIds": [
-          "screen_saver_hls_url",
-          "screensaver_hls_url"
-        ],
-        "groups": [
-          "settings"
-        ]
-      },
-      {
-        "key": "screen_saver_hls_status",
-        "domain": "text_sensor",
-        "name": "Screen Saver HLS Status",
-        "objectIds": [
-          "screen_saver_hls_status",
-          "screensaver_hls_status"
         ],
         "groups": [
           "settings"

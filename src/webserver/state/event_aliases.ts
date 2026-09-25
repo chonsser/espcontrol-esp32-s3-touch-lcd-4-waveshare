@@ -20,8 +20,6 @@ export const SSE_ALIAS_GROUPS = {
   temperatureDegreeSymbol: ["switch-screen__temperature_degree_symbol", "switch-screen_temperature_degree_symbol", "switch-temperature_degree_symbol_enabled"],
   subpageChevron: ["switch-screen__subpage_chevron", "switch-screen_subpage_chevron", "switch-subpage_chevrons_enabled"],
   screensaverAction: ["select-screen_saver__action", "select-screen_saver_action", "select-screensaver_action"],
-  screensaverHlsUrl: ["text-screen_saver_hls_url", "text-screensaver_hls_url"],
-  screensaverHlsStatus: ["text_sensor-screen_saver_hls_status", "text_sensor-screensaver_hls_status"],
   screensaverClockFont: ["select-screen_saver_clock_font", "select-screensaver_clock_font"],
   screensaverClockTimeFormat: ["text-screen_saver_clock_time_format", "text-screensaver_clock_time_format"],
   screensaverClockDateFormat: ["text-screen_saver_clock_date_format", "text-screensaver_clock_date_format"],
@@ -82,8 +80,6 @@ export function applySseHandlerAliases(handlers: SseHandlers): void {
   addSseAliases(handlers, SSE_ALIAS_GROUPS.temperatureDegreeSymbol, "switch-screen__temperature_degree_symbol");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.subpageChevron, "switch-screen__subpage_chevron");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverAction, "select-screen_saver__action");
-  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverHlsUrl, "text-screen_saver_hls_url");
-  addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverHlsStatus, "text_sensor-screen_saver_hls_status");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockFont, "select-screen_saver_clock_font");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockTimeFormat, "text-screen_saver_clock_time_format");
   addSseAliases(handlers, SSE_ALIAS_GROUPS.screensaverClockDateFormat, "text-screen_saver_clock_date_format");

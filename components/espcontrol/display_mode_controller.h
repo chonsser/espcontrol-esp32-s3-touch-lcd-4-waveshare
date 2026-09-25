@@ -14,7 +14,6 @@ enum class DisplayMode : uint8_t {
   CLOCK,
   COVER_ART,
   DISPLAY_OFF,
-  HLS,
 };
 
 enum class DisplayRequestSource : uint8_t {
@@ -51,8 +50,7 @@ inline bool presence_can_wake_display(const DisplayTransition &transition) {
   if (!automatic_screensaver) return false;
   return transition.target_mode == DisplayMode::DISPLAY_OFF ||
          transition.target_mode == DisplayMode::DIMMED ||
-         transition.target_mode == DisplayMode::CLOCK ||
-         transition.target_mode == DisplayMode::HLS;
+         transition.target_mode == DisplayMode::CLOCK;
 }
 
 class DisplayModeController {
@@ -318,7 +316,7 @@ class DisplayModeController {
       case DisplayRequestSource::IDLE_TIMER:
       case DisplayRequestSource::PRESENCE_SENSOR:
         return mode == DisplayMode::DIMMED || mode == DisplayMode::CLOCK ||
-               mode == DisplayMode::DISPLAY_OFF || mode == DisplayMode::HLS;
+               mode == DisplayMode::DISPLAY_OFF;
     }
     return false;
   }
@@ -401,7 +399,6 @@ inline const char *display_mode_name(DisplayMode mode) {
     case DisplayMode::CLOCK: return "clock";
     case DisplayMode::COVER_ART: return "cover_art";
     case DisplayMode::DISPLAY_OFF: return "display_off";
-    case DisplayMode::HLS: return "hls";
   }
   return "unknown";
 }

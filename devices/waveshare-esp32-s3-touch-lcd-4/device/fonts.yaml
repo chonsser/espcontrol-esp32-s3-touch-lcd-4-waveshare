@@ -61,7 +61,7 @@ font:
   - file: "gfonts://Roboto@Light"
     id: font_cover_art_title
     size: 70
-    # Large media bitmaps use four coverage levels to leave PSRAM for HLS.
+    # Large media bitmaps use four coverage levels to reduce PSRAM usage.
     bpp: 2
     glyphs: !include ../../../common/assets/text_glyphs.yaml
     extras:

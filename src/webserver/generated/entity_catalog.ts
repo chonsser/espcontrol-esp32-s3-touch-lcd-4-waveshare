@@ -253,22 +253,6 @@ export const ENTITY_CATALOG = {
         "screensaver_action"
       ]
     },
-    "screen_saver_hls_url": {
-      "domain": "text",
-      "name": "Screen Saver HLS URL",
-      "objectIds": [
-        "screen_saver_hls_url",
-        "screensaver_hls_url"
-      ]
-    },
-    "screen_saver_hls_status": {
-      "domain": "text_sensor",
-      "name": "Screen Saver HLS Status",
-      "objectIds": [
-        "screen_saver_hls_status",
-        "screensaver_hls_status"
-      ]
-    },
     "screen_saver_clock_font": {
       "domain": "select",
       "name": "Screen Saver Clock Font",
@@ -822,8 +806,6 @@ export const ENTITY_CATALOG = {
       "outdoor_temp_entity",
       "screensaver_mode",
       "screen_saver_action",
-      "screen_saver_hls_url",
-      "screen_saver_hls_status",
       "screen_saver_clock_font",
       "screen_saver_clock_time_format",
       "screen_saver_clock_date_format",

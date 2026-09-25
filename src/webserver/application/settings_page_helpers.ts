@@ -1,5 +1,4 @@
 import { state } from "../state/app_instance";
-import type { ScreensaverHlsFeature } from "./screensaver_hls";
 import {
     DEFAULT_ALARM_DELAY_ENTRY_ANNOUNCEMENT,
     DEFAULT_ALARM_DELAY_EXIT_ANNOUNCEMENT,
@@ -32,7 +31,6 @@ export interface SettingsPageHelpersControllers {
     readonly settingsUiFeature: SettingsUiFeature;
     readonly alarmDelayAudio: AlarmDelayAudioController;
     readonly screensaver: ScreensaverController;
-    readonly screensaverHls: ScreensaverHlsFeature;
     readonly coverArtScreensaver: CoverArtScreensaverController;
     readonly mediaPlayback: MediaPlaybackController;
     readonly codec: Pick<ConfigCodecFeature, "bindTextPost">;
@@ -354,8 +352,7 @@ export function createSettingsPageHelpersFeature(
     function syncClockScreensaverControls(this: any) {
         var controlState: any = _screensaverController.uiState(screensaverState());
         var mode: any = controlState.mode;
-        var clockDisplay: any = controlState.clockVisible || mode === "hls" ? "" : "none";
-        controllers.screensaverHls.syncUi();
+        var clockDisplay: any = controlState.clockVisible ? "" : "none";
         var dimDisplay: any = controlState.dimVisible ? "" : "none";
         var automaticBrightness: any = normalizeBrightnessMode(state.brightnessMode) !== "manual";
         state.clockScreensaverOn = mode === "clock";
@@ -515,10 +512,6 @@ export function createSettingsPageHelpersFeature(
         });
         clockSelect.value = _screensaverController.uiState(screensaverState()).mode;
         clockSelect.addEventListener("change", function (this: any) {
-            if (this.value === "hls" || state.screensaverAction === "hls") {
-                void controllers.screensaverHls.setAction(this.value);
-                return;
-            }
             applyScreensaverState(_screensaverController.setAction(screensaverState(), this.value));
             syncClockScreensaverControls();
             postScreensaverAction(state.screensaverAction);
