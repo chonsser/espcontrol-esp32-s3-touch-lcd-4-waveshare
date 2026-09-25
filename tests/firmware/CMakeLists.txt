@@ -12,7 +12,7 @@ foreach(hls_suite video playlist transport playback timing)
   target_include_directories(hls_${hls_suite}_test PRIVATE ../../components/hls_screensaver)
   add_test(NAME hls_${hls_suite}_test COMMAND hls_${hls_suite}_test)
 endforeach()
-foreach(hls_suite ota_gate lifecycle http_deadline)
+foreach(hls_suite ota_gate lifecycle http_deadline display_transition)
   add_test(NAME hls_${hls_suite}_test COMMAND
     ${CMAKE_COMMAND} -E env "CXX=${CMAKE_CXX_COMPILER}"
     ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/hls_${hls_suite}_test.py)

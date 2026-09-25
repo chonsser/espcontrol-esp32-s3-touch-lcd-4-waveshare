@@ -508,6 +508,7 @@ script:
               transition.target_mode == espcontrol::DisplayMode::DIMMED ||
               transition.target_mode == espcontrol::DisplayMode::CLOCK ||
               transition.target_mode == espcontrol::DisplayMode::COVER_ART ||
+              transition.target_mode == espcontrol::DisplayMode::HLS ||
               transition.target_mode == espcontrol::DisplayMode::DISPLAY_OFF;
 
           if (controller.transition_in_progress(transition)) {
