@@ -23,7 +23,22 @@ The installed combined image copies instructions and read-only data into PSRAM (
 - LVGL draw and software-rotation scratch use quarter-frames instead of full frames: 921,600 → 230,400 bytes, saving 691,200 bytes. Both full RGB scanout buffers, software rotation and atomic `begin_frame`/`end_frame` presentation remain intact. Chunked redraw performance at 90°/270° requires physical testing.
 - HLS segment/frame/decoder limits are unchanged. These are build-time resource reductions, not destructive runtime UI teardown or an internal-heap fallback.
 
-Fresh optimization checks: all 96 host tests ran using ESPHome Python, with **93 passing** and the same three Apple Clang scaffold failures (`web_ota_guard_test`, `reset_ota_wrapper_test`, `cover_art_activation_test`). Bare `npm test` fails eight tests because system Python additionally lacks PyYAML; it skips `hls_config_test` and the new profile test. The actual font raster comparison passes separately with ESPHome tooling. Font subsetting is deterministic and verifies all saved outlines/advances. The built overview suite passes 12/12, and the HLS browser suite passes 1/1. Compilation, linker reservation measurements and a separately authorized device test are needed before judging playback headroom.
+Fresh optimization checks: all 96 host tests ran using ESPHome Python, with **93 passing** and the same three Apple Clang scaffold failures (`web_ota_guard_test`, `reset_ota_wrapper_test`, `cover_art_activation_test`). Bare `npm test` fails eight tests because system Python additionally lacks PyYAML; it skips `hls_config_test` and the new profile test. The actual font raster comparison passes separately with ESPHome tooling. Font subsetting is deterministic and verifies all saved outlines/advances. The built overview suite passes 12/12, and the HLS browser suite passes 1/1. Fresh uncached fast-web and product checks also pass, including 223 web unit tests, backup/state/API contracts and the intentional smaller-bundle compatibility baseline. Sanitized RGB regressions pass all seven variants, including chunk batching, repair and refresh retries. The separate task-registry self-test still reports the pre-existing `translations` legacy-product-coverage mismatch; the registry was not changed by this optimization.
+
+Factory compilation from **`08907e6cc`** succeeds with ESPHome 2026.9.0 / ESP-IDF 5.5.5. Compared with the installed combined build:
+
+| Measurement | Before | Optimized |
+| --- | ---: | ---: |
+| Linked image | 5,965,975 B | 4,841,487 B |
+| Flash usage | 82.0% | 66.6% |
+| `.flash.rodata` | 3,160,256 B | 2,035,760 B |
+| Linker PSRAM reservation (`.ext_ram.dummy`) | 5,898,208 B | 4,784,096 B |
+| Configured LVGL draw + rotation scratch | 921,600 B | 230,400 B |
+| Reported static internal RAM | 252,475 B | 252,475 B |
+
+The measured linker reservation saving is **1,114,112 B**. Adding the configured scratch reduction gives **1,805,312 B (~1.72 MiB)** more PSRAM headroom in the memory budget. This is not a live heap measurement: decoder peaks, fragmentation, HTTP/TLS and sustained playback must still be tested on the panel. XIP remains enabled. The build has an existing generated-navigation `-Waddress` warning; compilation is successful, not warning-free.
+
+The unflashed factory-profile OTA image is 4,841,616 bytes; SHA-256 `db76cb1c89586cbe3fba3a7f0395c47cf8cee172fcec707afa3581e9d5bf5501`. Compiled HLS/RGB sources match the committed sources, and generated firmware retains both HLS and independent-screen navigation. No follow-up flash has been performed. Test all rotations, media text appearance, touch wake and HLS stability before accepting the optimization.
 
 Automated integration evidence:
 
