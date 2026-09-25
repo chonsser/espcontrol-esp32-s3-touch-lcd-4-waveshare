@@ -18,6 +18,22 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class HlsConfigurationTest(unittest.TestCase):
+    def test_package_regeneration_preserves_hls_only_on_waveshare(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from generate_device_slots import package_file_text
+        from product_schema import slot_devices
+        for device in slot_devices():
+            with self.subTest(device=device["slug"]):
+                generated = package_file_text(device)
+                if device["slug"] == "waveshare-esp32-s3-touch-lcd-4":
+                    self.assertIn("  screen_hls:", generated)
+                    for hook in ("hls_stop_code", "hls_apply_code", "hls_request_mode_code"):
+                        self.assertIn(f"  {hook}: |-", generated)
+                    self.assertEqual(generated, (ROOT / "devices" / device["slug"] / "packages.yaml").read_text())
+                else:
+                    self.assertNotIn("screen_hls.yaml", generated)
+                    self.assertNotIn("id(hls_player)", generated)
+
     def test_component_imports_with_installed_esphome(self):
         spec = importlib.util.spec_from_file_location(
             "hls_screensaver_config", ROOT / "components/hls_screensaver/__init__.py")

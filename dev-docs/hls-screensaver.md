@@ -2,7 +2,27 @@
 
 The Waveshare ESP32-S3-Touch-LCD-4 profile includes a native video screensaver. The web UI configures it; video decoding runs on the panel, not in the browser. Other device profiles do not include the decoder.
 
-**Validation status (2026-09-24):** the Waveshare factory firmware compiled successfully with ESPHome 2026.9.0, ESP-IDF 5.5.5 and `espressif/esp_h264` 1.4.0. All 11 HLS/display host tests, 198 web unit tests and Waveshare-specific browser checks pass. The full host suite is not green: 77/81 pass with the local compiler compatibility flag; four other test scaffolds still fail compilation. The all-profile browser suite also reported a Guition P4 Screen Lock assertion failure. Shared non-HLS S3/P4 configurations passed validation, not full firmware compilation. On 2026-09-25, the user authorized OTA installation on the provisioned Waveshare. Upload succeeded; the panel returned to HTTP and advertised the HLS action and player status. Its previous screensaver action was left unchanged. Physical playback/touch verification is still pending. A successful build and OTA do not establish working panel playback, runtime memory headroom or a guaranteed frame rate.
+## Integration and device status (2026-09-25)
+
+The shared branch **`integrate-hls-screens`** includes both the complete HLS branch (`c53104e82`) and independent-screen/navigation branch (`0e527673c`). Neither source branch nor stable `main` was discarded or replaced. The combined web application retains independent grids, Home Assistant screen mappings and HLS settings together.
+
+The reported **`Stopped`** status had a firmware cause: `display_mode_reconcile` omitted HLS from its presentation-effect allowlist. The controller could request HLS but never open its view, so the player correctly refused to start before presentation. Commit **`589dcd597`** includes HLS in that allowlist without relaxing priority, wake or OTA guards. A regression executes the actual YAML reconciliation tail and reproduces the missing dispatch before the fix.
+
+The combined Waveshare **factory** firmware compiled successfully from **`589dcd597`**, using ESPHome 2026.9.0, ESP-IDF 5.5.5 and `espressif/esp_h264` 1.4.0. Linked image: 5,965,975 bytes (82.0% flash); reported static RAM: 252,475/341,760 bytes (73.9%). Subsequent integration work adds tests, generator preservation and compatibility snapshots; it does not change the compiled runtime sources or generated device YAML. Those numbers do not measure runtime PSRAM headroom or frame rate.
+
+**Not yet installed:** the provisioned panel still runs the HLS-only `359316718` firmware uploaded with permission on 2026-09-25. That installed version lacks both multi-screen integration and the HLS dispatch correction. No combined OTA or physical playback/touch verification has occurred. A successful build is not device acceptance.
+
+Automated integration evidence:
+
+- 26/26 targeted native HLS, display, independent-screen, navigation and hold-control tests pass.
+- 223/223 web unit tests pass. The independent navigation browser script passes, and the screen overview suite passes 12/12, including one built app editing a screen and then saving an HLS URL/action without changing its grids or mappings.
+- TypeScript, generated web outputs, backup/state/device API contracts and translations pass. Device regeneration now retains all HLS hooks and its package on Waveshare only, with a regression against the actual generator output.
+- Shared non-HLS Guition S3/P4 configurations pass ESPHome validation, not full firmware builds.
+- Fast web and product domain checks pass, including browserless smoke, migration baseline, product snapshot and device regeneration (the task runner reuses valid cached passes where reported).
+- Full host suite with the ESPHome Python environment: **92/95 pass**. `web_ota_guard_test` and `reset_ota_wrapper_test` fail on unused test-scaffold constants under Apple Clang `-Werror`; `cover_art_activation_test` fails on a non-virtual-destructor warning in its scaffold. Bare `npm test` selects system Python, adding missing-PyYAML failures in `screensaver_appearance_wiring_test`, `presence_transition_test`, `clock_card_wiring_test`, `entity_screen_navigation_idle_test` and `entity_screen_navigation_routing_test`, and skipping `hls_config_test`. It stops before downstream checks; those were run separately above.
+- Full browser-suite limitations remain: the Waveshare browser smoke run stopped on a Polish UI click intercepted by a sticky header; its cause has not been established. Do not treat the targeted browser passes as a green complete browser suite.
+
+Before deployment, compile the shared branch, verify both feature tips remain ancestors, and use only the factory YAML below. Keep the source PRs and integration PR open until the user confirms device testing.
 
 ## Configuration and compatibility
 
