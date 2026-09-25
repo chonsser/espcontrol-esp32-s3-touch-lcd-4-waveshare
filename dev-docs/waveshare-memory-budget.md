@@ -47,7 +47,7 @@ panel. Flash only the factory configuration and only with explicit permission.
 
 ## Removal verification (2026-09-25)
 
-Source revision: `9d2df00f1`, integrated on the fork's `main` history.
+Initial removal revision: `9d2df00f1`, integrated on the fork's `main` history.
 Fresh uncached web/product checks pass: 224 web unit tests, 113 browserless
 smoke cases, types, backup/state/API compatibility, translations and generated
 outputs. All 12 independent-screen browser tests pass, including obsolete HLS
@@ -88,6 +88,31 @@ These are not live heap measurements.
 
 Factory-config OTA image: 4,739,056 bytes, SHA-256
 `78b4ad3e06ffe6b1311bc6101236554f7d3a22843e1ce19d44081a820f1a5a62`.
+
+### Live-action follow-up
+
+A delayed review found that the removed video settings hook also handled
+ordinary action edits while already asleep. Revision `1686929e8` restores
+that non-video behavior in the shared screensaver select callback. It retargets
+only the current idle/presence owner; schedule, manual sleep, wake, media and
+alarm requests retain priority. Legacy clock toggles use the same callback.
+
+`tests/firmware/screensaver_action_change_test.py` executes the actual YAML
+callbacks with the production arbiter. Off-to-clock failed before the fix and
+passes afterward; both automatic owners, all action pairs, legacy toggles,
+awake settings, in-flight invalidation and higher-priority owners are covered.
+The full ESPHome-Python host suite now passes **83/86**, with the same three
+Clang scaffold failures above. `npm test` still selects system Python despite
+a PATH override and therefore additionally fails the new test for missing
+PyYAML, alongside the previously listed dependency failures. Explicit
+`-DPython3_EXECUTABLE` is needed. Fresh uncached web checks pass.
+
+The final factory build from `1686929e8` succeeds: linked image 4,739,363 bytes,
+65.2% flash, static internal RAM 230,035 bytes, `.ext_ram.dummy` 4,653,024 bytes.
+The retained optimizations and absence of HLS symbols are verified in this build.
+The existing navigation compiler warning remains. Its OTA image supersedes the
+initial removal image above: 4,739,488 bytes, SHA-256
+`57bd4c5d5c0afec677a75d01963e645acba126d02d5da8321063b4c1ada69411`.
 
 These limits are separate from physical testing; no HLS-free image has been
 flashed as part of this removal.
