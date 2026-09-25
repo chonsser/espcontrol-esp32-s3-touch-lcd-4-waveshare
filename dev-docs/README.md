@@ -44,6 +44,7 @@ usage documentation lives in the root `README.md` and under `docs/`.
 - [Modal Layout System](modal-layout-system.md)
 - [Display Lifecycle Transition Contract](display-lifecycle.md)
 - [Cover Art Mode](cover-art-mode.md)
+- [HLS Screensaver](hls-screensaver.md) - supported streams, integration status and device testing.
 - [Font Guidelines](font-guidelines.md)
 
 ## Historical Records

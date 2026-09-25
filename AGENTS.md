@@ -7,25 +7,20 @@
 
 ## Development workflow
 
-- Treat `main` as the stable branch.
-- For normal code, firmware, configuration, UI, or documentation changes, create a short-lived branch from the latest `main`.
-- Use a separate git worktree for feature or fix work so multiple issues can be developed and tested at the same time without changing `main`.
-- Use short, descriptive branch names like `fix-display-timeout` or `update-pr-workflow`; do not include `codex` in branch names or PR titles.
-- Infer the branch name from the requested outcome unless the task is ambiguous.
-- Keep each branch focused on one bug fix, feature, device change, cleanup, or documentation change.
-- If a request starts to include unrelated work, keep the extra work out of the branch unless the user explicitly asks to include it.
-- Commit completed changes and push the branch.
-- Open a pull request marked ready for review so automated checks and review systems run, instead of merging directly to `main`.
-- Leave the pull request open until the user confirms they have tested it.
+- Work directly on `main` by default, as explicitly requested by the user on 2026-09-25. This replaces the previous feature-branch/worktree/PR-first workflow.
+- Fetch the latest `origin/main` before changes. Keep commits focused; do not include unrelated unfinished work.
+- Do not create new feature branches, worktrees or pull requests unless the user asks. Commit checked changes and push them to the user's fork on `main`.
+- Respect an existing session's worktree isolation. If `main` is checked out elsewhere, use a detached checkout of `origin/main` in the current worktree and push `HEAD:main` without force; do not modify another checkout or check out `main` concurrently.
+- Run relevant checks before pushing, and state remaining failures explicitly. Direct-to-main work does not waive verification or constitute physical device acceptance.
+- Firmware flashing still requires explicit permission; use only the factory configuration on provisioned panels.
 - Do not close related GitHub issues until the user confirms the fix works.
-- Only work directly on `main` when the user explicitly asks for it, or for a tiny emergency/documentation-only change where a PR would add no value.
-- After a pull request is merged, clean up its local worktree and branch when practical.
+- Retain existing feature branches/worktrees until their work is integrated and cleanup is safe; do not delete another session's workspace.
 
 ## Preserve completed features
 
 - Do not leave completed work stranded on separate branches while delivering firmware that drops it. When completed features are meant to coexist on the same device, integrate them into a common branch and push that branch to the user's fork.
 - Before building or flashing, identify the features the user already has and expects to keep. Verify that the integration branch contains their commits, that regenerated web assets expose them together, and that combined checks pass; a successful build of one feature branch is not enough.
-- Keep the source feature branches and PRs available until the combined version is tested and the user confirms merging. Do not automatically merge into `main`, close issues, or include unrelated unfinished work.
+- For existing feature PRs, merge only when the user asks and preserve both feature histories. A merge or push is not proof of device acceptance; keep issues open until the user confirms the fix. New work follows the direct-to-main workflow above.
 - State the exact integration branch and build revision in delivery notes. Distinguish source integration, successful compilation, and physical device testing; never silently replace a combined firmware with a feature-only image.
 
 ## GitHub account

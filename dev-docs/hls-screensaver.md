@@ -10,7 +10,9 @@ The reported **`Stopped`** status had a firmware cause: `display_mode_reconcile`
 
 The combined Waveshare **factory** firmware compiled successfully from **`589dcd597`**, using ESPHome 2026.9.0, ESP-IDF 5.5.5 and `espressif/esp_h264` 1.4.0. Linked image: 5,965,975 bytes (82.0% flash); reported static RAM: 252,475/341,760 bytes (73.9%). Subsequent integration work adds tests, generator preservation and compatibility snapshots; it does not change the compiled runtime sources or generated device YAML. Those numbers do not measure runtime PSRAM headroom or frame rate.
 
-**Not yet installed:** the provisioned panel still runs the HLS-only `359316718` firmware uploaded with permission on 2026-09-25. That installed version lacks both multi-screen integration and the HLS dispatch correction. No combined OTA or physical playback/touch verification has occurred. A successful build is not device acceptance.
+**Combined OTA installed with explicit permission on 2026-09-25:** the provisioned Waveshare accepted the 5,966,096-byte image built from `589dcd597`, rebooted and returned to HTTP. Its capabilities report `screen_navigation.version=2`, `standalone=true`, `options=true`. The uploaded image SHA-256 is `7e2c3e116921a7d2c5d52317cfd925304a2db464c01bfc9ee8081b0f088d9c3e`.
+
+**Playback remains blocked:** after the update, the saved HLS configuration attempts startup but reports `Not enough free memory for HLS`. The earlier dispatch defect is no longer the only issue; runtime allocation/headroom needs diagnosis. Moving video and touch exit are not verified. OTA success and API capabilities are not physical device acceptance.
 
 Automated integration evidence:
 
@@ -22,7 +24,7 @@ Automated integration evidence:
 - Full host suite with the ESPHome Python environment: **92/95 pass**. `web_ota_guard_test` and `reset_ota_wrapper_test` fail on unused test-scaffold constants under Apple Clang `-Werror`; `cover_art_activation_test` fails on a non-virtual-destructor warning in its scaffold. Bare `npm test` selects system Python, adding missing-PyYAML failures in `screensaver_appearance_wiring_test`, `presence_transition_test`, `clock_card_wiring_test`, `entity_screen_navigation_idle_test` and `entity_screen_navigation_routing_test`, and skipping `hls_config_test`. It stops before downstream checks; those were run separately above.
 - Full browser-suite limitations remain: the Waveshare browser smoke run stopped on a Polish UI click intercepted by a sticky header; its cause has not been established. Do not treat the targeted browser passes as a green complete browser suite.
 
-Before deployment, compile the shared branch, verify both feature tips remain ancestors, and use only the factory YAML below. Keep the source PRs and integration PR open until the user confirms device testing.
+Before deployment, verify the source contains both feature tips and use only the factory YAML below. The user explicitly authorized merging the combined PR and direct-to-main work on 2026-09-25; this does not confirm working HLS playback or waive the device checklist.
 
 ## Configuration and compatibility
 
