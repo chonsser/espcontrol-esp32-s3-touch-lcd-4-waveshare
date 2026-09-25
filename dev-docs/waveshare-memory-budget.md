@@ -44,3 +44,50 @@ no longer includes a stream URL.
 
 A source update or successful factory compilation does not change an installed
 panel. Flash only the factory configuration and only with explicit permission.
+
+## Removal verification (2026-09-25)
+
+Source revision: `9d2df00f1`, integrated on the fork's `main` history.
+Fresh uncached web/product checks pass: 224 web unit tests, 113 browserless
+smoke cases, types, backup/state/API compatibility, translations and generated
+outputs. All 12 independent-screen browser tests pass, including obsolete HLS
+metadata, unchanged action options and ordinary clock selection. The three
+memory-budget checks and sanitized RGB driver checks also pass.
+
+The complete local test suite is **not green**:
+
+- With ESPHome Python, 82/85 host tests pass. `web_ota_guard_test` and
+  `reset_ota_wrapper_test` fail on unused scaffold constants under Apple Clang
+  `-Werror`; `cover_art_activation_test` fails on nonvirtual-destructor warnings
+  in its scaffold. These failures also occurred before the removal.
+- Bare `npm test` additionally lacks PyYAML for
+  `screensaver_appearance_wiring_test`, `presence_transition_test`,
+  `clock_card_wiring_test`, `entity_screen_navigation_idle_test`, and
+  `entity_screen_navigation_routing_test`; it skips the memory-budget test.
+  Running with ESPHome Python resolves those dependency failures and the skip.
+- `scripts/check_tasks.py --self-test` still fails its existing product legacy
+  coverage assertion because `translations` is present only in the actual list.
+
+Factory compilation of `9d2df00f1` succeeds with ESPHome 2026.9.0 and ESP-IDF
+5.5.5. Generated code contains screen navigation and only the three remaining
+screensaver actions; the linked ELF and dependency lock contain no HLS player
+or `esp_h264`. Compiled display-controller and RGB sources match the checkout.
+The existing navigation `-Waddress` warning remains.
+
+| Build measurement | Optimized with HLS (`08907e6cc`) | Without HLS (`9d2df00f1`) |
+| --- | ---: | ---: |
+| Linked image | 4,841,487 B | 4,738,931 B |
+| Flash usage | 66.6% | 65.1% |
+| Static internal RAM | 252,475 B | 230,019 B |
+| `.flash.rodata` | 2,035,760 B | 2,024,544 B |
+| `.ext_ram.dummy` | 4,784,096 B | 4,653,024 B |
+
+Removal saves another 131,072 bytes of mapped PSRAM reservation and 22,456
+bytes of static internal RAM; the earlier scratch/font savings remain.
+These are not live heap measurements.
+
+Factory-config OTA image: 4,739,056 bytes, SHA-256
+`78b4ad3e06ffe6b1311bc6101236554f7d3a22843e1ce19d44081a820f1a5a62`.
+
+These limits are separate from physical testing; no HLS-free image has been
+flashed as part of this removal.
