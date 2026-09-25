@@ -8,8 +8,10 @@ import {
   decodePanelConfigBackupPayload,
   encodePanelConfig,
   parseLegacySubpageConfig,
+  parseRawSubpageConfig,
   serializeLegacySubpageConfig,
   subpageOrderForSerialize,
+  wrapStandaloneScreenConfig,
 } from "../../src/webserver/model";
 
 interface MigrationFixture {
@@ -58,6 +60,7 @@ function deepEqual(actual: unknown, expected: unknown, message: string): void {
 }
 
 function serializeSubpage(subpage: FeatureSubpage): string {
+  if (subpage.standaloneInvalid === true) return subpage.rawConfig || "";
   const fields = subpage.buttons.map((button) => [
     button.entity,
     button.label,
@@ -69,10 +72,13 @@ function serializeSubpage(subpage: FeatureSubpage): string {
     button.precision,
     button.options,
   ]);
-  return serializeLegacySubpageConfig(
+  const payload = serializeLegacySubpageConfig(
     subpageOrderForSerialize(subpage.order, subpage.backLabel),
     fields,
   );
+  return subpage.standalone
+    ? wrapStandaloneScreenConfig(subpage.screenLabel || "", payload)
+    : payload;
 }
 
 const feature = createBackupFeature({
@@ -80,7 +86,7 @@ const feature = createBackupFeature({
   gridCols: 3,
   numSlots: 6,
   normalizeButtonConfig: (button: CardConfig) => cloneCardConfig(button),
-  parseSubpageConfig: parseLegacySubpageConfig,
+  parseSubpageConfig: (value) => parseRawSubpageConfig(value, (code) => code),
   serializeSubpageConfig: serializeSubpage,
   buildSubpageGrid(subpage) {
     const result = buildSubpageGrid(subpage, 6, 3);
@@ -131,6 +137,80 @@ export function runBackupFeatureTests(migrationFixture?: MigrationFixture): void
   });
   equal(backup.button_order, "1,2d", "backup preserves exact size tokens");
   equal(backup.subpage_objects["1"]?.back_label, "Return", "backup preserves subpage back labels");
+
+  const screenBackup = feature.createBackupConfig({
+    device: "panel-a",
+    slots: 2,
+    buttons: [{ type: "", label: "Home card" }, {}],
+    subpages: {
+      "1": { standalone: true, screenLabel: "Empty screen", order: [], buttons: [], backLabel: "Back" },
+    },
+  });
+  equal(screenBackup.subpages["1"], "@screen:Empty screen\n",
+    "backup exports an empty standalone screen");
+  equal(screenBackup.button_order, "0", "backup keeps an empty standalone-only panel configured");
+  equal(screenBackup.subpage_objects["1"]?.standalone, true,
+    "backup structured metadata marks standalone screens");
+  equal(screenBackup.subpage_objects["1"]?.screenLabel, "Empty screen",
+    "backup structured metadata retains standalone names");
+  const restoredScreen = feature.planBackupImport(screenBackup, { device: "panel-a", slots: 2 });
+  equal(restoredScreen.subpages["1"]?.standalone, true,
+    "backup restore allocates standalone screens independently of home cards");
+  equal(restoredScreen.subpages["1"]?.screenLabel, "Empty screen",
+    "backup restore retains standalone screen names");
+
+  const independentlyRemapped = feature.planBackupImport({
+    version: 2,
+    format: "espcontrol.backup",
+    device: "panel-a",
+    button_order: "2,1",
+    buttons: [{ type: "static" }, { type: "subpage" }, {}],
+    subpages: {
+      "1": "@screen:Scenes\n",
+      "2": "B",
+    },
+    settings: {
+      screen_navigation_entity: "input_select.screen",
+      screen_navigation_rules: "1\tScenes\n2\tFolder",
+      screen_navigation_wake: true,
+    },
+  }, { device: "panel-a", slots: 2 });
+  equal(independentlyRemapped.subpages["1"]?.standalone, undefined,
+    "ordinary subpages continue to follow their remapped home cards");
+  equal(independentlyRemapped.subpages["2"]?.standalone, true,
+    "standalone screens allocate separately when a remapped home subpage takes their source ID");
+  equal(independentlyRemapped.settings?.screen_navigation_rules, "2\tScenes\n1\tFolder",
+    "screen navigation rules follow both independent and ordinary remaps");
+
+  const constrainedScreens = feature.planBackupImport({
+    version: 2,
+    format: "espcontrol.backup",
+    device: "panel-a",
+    buttons: [{}, {}],
+    subpages: { "1": "@screen:One\n", "2": "@screen:Two\n" },
+  }, { device: "panel-a", slots: 1 });
+  equal(Object.keys(constrainedScreens.subpages).length, 1,
+    "restore keeps every standalone screen that fits the target pool");
+  equal(constrainedScreens.button_order, "0",
+    "restore keeps a resized standalone-only panel configured");
+  equal(constrainedScreens.warnings.some((warning) => warning.includes("independent screens were omitted")), true,
+    "restore warns when standalone screen storage is exhausted");
+
+  const malformedScreen = "@screen:Bad%ZZname\n";
+  const quarantinedBackup = feature.normalizeBackupConfig({
+    version: 2,
+    format: "espcontrol.backup",
+    device: "panel-a",
+    buttons: [{}, {}],
+    subpages: { "2": malformedScreen },
+  });
+  equal(quarantinedBackup.subpages["2"], malformedScreen,
+    "backup normalization preserves malformed standalone payload bytes");
+  equal(quarantinedBackup.subpage_objects["2"], undefined,
+    "malformed standalone payloads are excluded from structured subpage metadata");
+  const quarantinedPlan = feature.planBackupImport(quarantinedBackup, { device: "panel-a", slots: 2 });
+  equal(quarantinedPlan.subpages["2"]?.rawConfig, malformedScreen,
+    "backup restore keeps malformed standalone data quarantined in occupied storage");
 
   const nativeDocument = encodePanelConfig({
     deviceProfile: "panel-a",

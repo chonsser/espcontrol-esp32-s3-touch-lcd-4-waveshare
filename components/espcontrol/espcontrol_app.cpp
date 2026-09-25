@@ -28,6 +28,8 @@
 #include "panel_config_http_context.h"
 #include "panel_identity_endpoint.h"
 #include "button_grid.h"
+#include "button_grid_screen_navigation_options.h"
+#include "screen_navigation_options_endpoint.h"
 
 extern "C" void espcontrol_register_web_server_handlers(
     esphome::web_server_idf::AsyncWebServer *server) {
@@ -35,6 +37,7 @@ extern "C" void espcontrol_register_web_server_handlers(
   if (server == nullptr) return;
   espcontrol::reset::register_handlers(*server);
   espcontrol::register_panel_identity_endpoint(*server);
+  espcontrol::register_screen_navigation_options_endpoint(*server);
   register_local_sensor_endpoint(*server);
   register_local_action_endpoint(*server);
   espcontrol::configuration::register_panel_config_capabilities_endpoint(*server);
@@ -353,6 +356,7 @@ void EspControlApp::initialize_native_configuration() {
 }
 
 void EspControlApp::loop() {
+  pump_screen_navigation_options();
   home_assistant_endpoint_.loop();
   core_.run_once();
   // The app core starts before WiFi so Home Assistant boot automations are

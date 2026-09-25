@@ -20,5 +20,7 @@ export function runLongPressOptionsTests(): void {
   equal(longPressDefaultEntity({type: "sensor", sensor: "__local_sensor__", entity: "uptime"}), "");
   equal(copyLongPressOptions("active_color,long_press=more_info,long_press_entity=sensor.old,long_press_text=Old", "long_press=none"), "active_color,long_press=none");
   equal(copyLongPressOptions("active_color,long_press=more_info", "long_press=unexpected"), "active_color");
+  // The default is effective firmware behavior, not a newly persisted option.
+  equal(copyLongPressOptions("active_color,long_press=more_info", ""), "active_color");
   equal(copyLongPressOptions("active_color", "long_press=more_info,long_press_text=Hello%2C%20world%3B"), "active_color,long_press=more_info,long_press_text=Hello%2C world%3B");
 }

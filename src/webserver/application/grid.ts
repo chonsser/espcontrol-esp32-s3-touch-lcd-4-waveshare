@@ -9,7 +9,7 @@ import type { ApplicationApiFeature } from "./api";
 import type { ButtonSettingsRenderQueueFeature } from "./button_settings_render_queue";
 
 export interface GridFeature {
-    ctx(): any;
+    ctx(screenSlot?: number): any;
     scheduleMainGridSave(): void;
     cancelMainGridSave(): void;
     sizeClass(size?: any): string;
@@ -35,22 +35,22 @@ export function createGridFeature(codec: ConfigCodecFeature, runtime: UiRuntimeS
         clearTimeout(mainGridSaveTimer);
         mainGridSaveTimer = null;
     }
-    function ctx(this: any) {
-        if (state.editingSubpage) {
-            var sp: any = getSubpage(state.editingSubpage);
+    function ctx(this: any, screenSlot: number = state.editingSubpage || 0) {
+        if (screenSlot) {
+            var sp: any = getSubpage(screenSlot);
             return {
                 grid: sp.grid, sizes: sp.sizes, buttons: sp.buttons,
-                maxSlots: layout.numSlots, selected: state.subpageSelectedSlots,
+                maxSlots: layout.numSlots, selected: screenSlot === state.editingSubpage ? state.subpageSelectedSlots : [],
                 isSub: true,
                 setSelected: function (this: any, s?: any) { state.subpageSelectedSlots = s; },
                 setLastClicked: function (this: any, s?: any) { state.subpageLastClicked = s; },
                 getLastClicked: function (this: any) { return state.subpageLastClicked; },
-                save: function (this: any) { saveSubpageConfig(state.editingSubpage); },
+                save: function (this: any) { saveSubpageConfig(screenSlot); },
             };
         }
         return {
             grid: state.grid, sizes: state.sizes, buttons: state.buttons,
-            maxSlots: layout.numSlots, selected: state.selectedSlots,
+            maxSlots: layout.numSlots, selected: state.editingSubpage ? [] : state.selectedSlots,
             isSub: false,
             setSelected: function (this: any, s?: any) { state.selectedSlots = s; },
             setLastClicked: function (this: any, s?: any) { state.lastClickedSlot = s; },
@@ -79,7 +79,7 @@ export function createGridFeature(codec: ConfigCodecFeature, runtime: UiRuntimeS
             renderQueue.schedule();
     }
     function serializeGrid(this: any, grid?: any) {
-        return EspControlModel.serializeGridOrder(grid, state.sizes);
+        return EspControlModel.serializeHomeGridOrder(grid, state.sizes, state.subpages);
     }
     function applyImportedButtonOrder(this: any, orderStr?: any, importedSizes?: any) {
         state.sizes = importedSizes || {};

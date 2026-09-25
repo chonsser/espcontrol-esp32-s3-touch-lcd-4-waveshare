@@ -82,6 +82,23 @@ substitutions:
   battery_status_apply_code: ""
   battery_status_hide_code: ""
   image_card_slot_capacity: "2"
+  hls_stop_code: |-
+    id(show_hls_view).stop();
+    id(hls_player).stop();
+    lv_obj_add_flag(id(hls_screensaver_view), LV_OBJ_FLAG_HIDDEN);
+  hls_apply_code: |-
+    if (target_mode == static_cast<int>(espcontrol::DisplayMode::HLS)) {
+      id(show_hls_view).execute(generation);
+    }
+  hls_request_mode_code: |-
+    if (id(screensaver_action).current_option() == "HLS Stream") {
+      if (!controller.request_active(espcontrol::DisplayRequestSource::IDLE_TIMER) &&
+          !controller.request_active(espcontrol::DisplayRequestSource::PRESENCE_SENSOR)) {
+        id(hls_player).clear_failure();
+      }
+      target_mode = static_cast<int>(id(hls_player).failed()
+          ? espcontrol::DisplayMode::CLOCK : espcontrol::DisplayMode::HLS);
+    }
 
 esphome:
   build_flags:
@@ -136,6 +153,7 @@ packages:
   screen_setup:    !include ../../common/device/screen_button_setup.yaml
   screen_clock:    !include ../../common/device/screen_clock.yaml
   screen_art:      !include ../../common/device/screen_cover_art.yaml
+  screen_hls:      !include ../../common/device/screen_hls.yaml
   image_cards:     !include ../../common/device/image_cards_2.yaml
   # ---------------------------------------------------------------------------
   # Main page and dynamic sensor subscriptions (after setup screens)

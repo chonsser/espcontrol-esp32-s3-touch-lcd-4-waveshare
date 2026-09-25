@@ -1,5 +1,7 @@
 #pragma once
 
+#include "standalone_screen_config.h"
+
 // Internal implementation detail for button_grid.h. Include button_grid.h from device YAML.
 
 // ── Subpage helpers ───────────────────────────────────────────────────
@@ -16,6 +18,11 @@ struct SubpageBtn {
   std::string precision;  // decimal places for sensor display; "text" = text sensor mode
   std::string options;    // comma-delimited card options
 };
+
+inline const ParsedCfg *subpage_parent_config_for_screen(
+    const ParsedCfg &parent_config, bool standalone) {
+  return standalone ? nullptr : &parent_config;
+}
 
 inline bool subpage_btn_same_definition(const SubpageBtn &left,
                                         const SubpageBtn &right) {
@@ -246,8 +253,11 @@ inline ParsedCfg parsed_cfg_from_subpage_btn(const SubpageBtn &b) {
 }
 
 // Parse "order|entity:label:icon:...|entity:label:..." into subpage buttons.
-inline std::vector<SubpageBtn> parse_subpage_config(const std::string &sp_cfg) {
+inline std::vector<SubpageBtn> parse_subpage_config(const std::string &raw_config) {
   std::vector<SubpageBtn> btns;
+  const auto screen = espcontrol::parse_standalone_screen_config(raw_config);
+  if (!screen.valid) return btns;
+  const std::string sp_cfg = raw_config.substr(screen.payload_offset);
   if (sp_cfg.empty()) return btns;
 
   bool compact = sp_cfg[0] == '~';
@@ -376,7 +386,10 @@ inline BtnSlot create_dynamic_card_slot(lv_obj_t *btn,
 }
 
 // Extract the order string (everything before the first pipe) from subpage config
-inline std::string get_subpage_order(const std::string &sp_cfg) {
+inline std::string get_subpage_order(const std::string &raw_config) {
+  const auto screen = espcontrol::parse_standalone_screen_config(raw_config);
+  if (!screen.valid) return "";
+  const std::string sp_cfg = raw_config.substr(screen.payload_offset);
   if (sp_cfg.empty()) return "";
   size_t start = sp_cfg[0] == '~' ? 1 : 0;
   size_t pe = sp_cfg.find('|', start);
@@ -430,7 +443,12 @@ struct SubpageOrder {
   int back_row_span = 1;
   int back_col_span = 1;
   bool has_back_token = false;
+  bool standalone = false;
 };
+
+inline int subpage_grid_position(const SubpageOrder &order, int position) {
+  return order.standalone || order.has_back_token ? position : position + 1;
+}
 
 inline void subscribe_subpage_parent_indicator(
     const std::string &entity_id,
@@ -519,7 +537,8 @@ inline void subscribe_climate_subpage_parent_indicator(
 
 // Parse subpage order CSV; "B"/"Bd"/"Bw"/"Bb"/"Bt"/"Bx" tokens mark the back button position
 inline void parse_subpage_order(const std::string &order_str, int num_slots, int num_btns,
-                                SubpageOrder &result) {
+                                SubpageOrder &result, bool standalone = false) {
+  result.standalone = standalone;
   int slot_limit = bounded_grid_slots(num_slots);
   int btn_limit = bounded_grid_slots(num_btns);
   for (int i = 0; i < MAX_GRID_SLOTS; i++) {
@@ -534,9 +553,11 @@ inline void parse_subpage_order(const std::string &order_str, int num_slots, int
     if (cm > st2) {
       char back_suffix = '\0';
       if (subpage_back_token_span(order_str, st2, cm, back_suffix)) {
-        result.back_pos = gp2;
-        grid_token_spans(back_suffix, result.back_row_span, result.back_col_span);
-        result.has_back_token = true;
+        if (!standalone) {
+          result.back_pos = gp2;
+          grid_token_spans(back_suffix, result.back_row_span, result.back_col_span);
+          result.has_back_token = true;
+        }
       } else {
         size_t token_end = cm;
         int row_span = 1, col_span = 1;
@@ -571,7 +592,7 @@ inline void normalize_subpage_order_spans(SubpageOrder &order, int num_slots,
   for (int position = 0; position < slot_limit; position++) {
     int button_index = order.positions[position];
     if (button_index < 1 || button_index > MAX_GRID_SLOTS) continue;
-    int rendered_position = order.has_back_token ? position : position + 1;
+    int rendered_position = subpage_grid_position(order, position);
     if (rendered_position >= slot_limit) {
       order.positions[position] = 0;
       continue;

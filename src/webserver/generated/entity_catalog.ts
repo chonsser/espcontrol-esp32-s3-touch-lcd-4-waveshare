@@ -60,6 +60,30 @@ export const ENTITY_CATALOG = {
         "screen_wake"
       ]
     },
+    "screen_navigation_entity": {
+      "domain": "text",
+      "name": "Screen Navigation: Entity",
+      "objectIds": [
+        "screen_navigation__entity",
+        "screen_navigation_entity"
+      ]
+    },
+    "screen_navigation_rules": {
+      "domain": "text",
+      "name": "Screen Navigation: Rules",
+      "objectIds": [
+        "screen_navigation__rules",
+        "screen_navigation_rules"
+      ]
+    },
+    "screen_navigation_wake": {
+      "domain": "switch",
+      "name": "Screen Navigation: Wake",
+      "objectIds": [
+        "screen_navigation__wake",
+        "screen_navigation_wake"
+      ]
+    },
     "indoor_temp_enable": {
       "domain": "switch",
       "name": "Indoor Temp Enable"
@@ -227,6 +251,22 @@ export const ENTITY_CATALOG = {
         "screen_saver__action",
         "screen_saver_action",
         "screensaver_action"
+      ]
+    },
+    "screen_saver_hls_url": {
+      "domain": "text",
+      "name": "Screen Saver HLS URL",
+      "objectIds": [
+        "screen_saver_hls_url",
+        "screensaver_hls_url"
+      ]
+    },
+    "screen_saver_hls_status": {
+      "domain": "text_sensor",
+      "name": "Screen Saver HLS Status",
+      "objectIds": [
+        "screen_saver_hls_status",
+        "screensaver_hls_status"
       ]
     },
     "screen_saver_clock_font": {
@@ -782,6 +822,8 @@ export const ENTITY_CATALOG = {
       "outdoor_temp_entity",
       "screensaver_mode",
       "screen_saver_action",
+      "screen_saver_hls_url",
+      "screen_saver_hls_status",
       "screen_saver_clock_font",
       "screen_saver_clock_time_format",
       "screen_saver_clock_date_format",

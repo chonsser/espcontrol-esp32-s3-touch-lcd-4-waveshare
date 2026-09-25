@@ -374,6 +374,91 @@ export async function runNativePanelConfigTests(migrationFixture?: MigrationFixt
     equal(nativeSaves, 3,
       "deferred backup restore and edits are each written once the native endpoint is ready");
 
+    const creationResult = await controller.createStandaloneScreen(1, "@screen:Empty\n");
+    equal(creationResult, "saved", "standalone screen creation saves its payload and empty-home sentinel together");
+    equal(savedDocuments[3]?.subpages[1], "@screen:Empty\n",
+      "the combined standalone creation includes the new screen");
+    equal(savedDocuments[3]?.settings.button_order, "1",
+      "standalone creation preserves the fresh native home-card order");
+
+    let emptyOrderDocument: PanelConfigDocument | undefined;
+    controller.client = createNativePanelConfigClient(async (path, request) => {
+      if (path === "/api/v1/capabilities") return response(200);
+      if (request?.method === "PUT") {
+        emptyOrderDocument = decodePanelConfig(new Uint8Array(request.body!));
+        return response(204);
+      }
+      return response(200, encodePanelConfig({
+        deviceProfile: "panel-a", buttons: {}, subpages: {}, settings: { button_order: "" },
+      }), "\"empty-order\"");
+    });
+    equal(await controller.createStandaloneScreen(1, "@screen:First\n"), "saved",
+      "the first standalone screen saves against a freshly empty home layout");
+    equal(emptyOrderDocument?.settings.button_order, "0",
+      "a freshly empty home layout receives the configured sentinel");
+
+    let changingOrderReads = 0;
+    const changingOrderWrites: PanelConfigDocument[] = [];
+    controller.client = createNativePanelConfigClient(async (path, request) => {
+      if (path === "/api/v1/capabilities") return response(200);
+      if (request?.method === "PUT") {
+        changingOrderWrites.push(decodePanelConfig(new Uint8Array(request.body!)));
+        return response(changingOrderWrites.length === 1 ? 409 : 204);
+      }
+      changingOrderReads += 1;
+      return response(200, encodePanelConfig({
+        deviceProfile: "panel-a", buttons: { 1: "first", 2: "second" }, subpages: {},
+        settings: { button_order: changingOrderReads === 1 ? "1,2" : "2,1" },
+      }), `\"changing-${changingOrderReads}\"`);
+    });
+    equal(await controller.createStandaloneScreen(2, "@screen:Retry order\n"), "saved",
+      "standalone creation retries a stale native generation");
+    equal(changingOrderWrites[1]?.settings.button_order, "2,1",
+      "a 409 retry preserves the newest home order from its fresh GET");
+
+    let collisionWrites = 0;
+    controller.client = createNativePanelConfigClient(async (path, request) => {
+      if (path === "/api/v1/capabilities") return response(200);
+      if (request?.method === "PUT") { collisionWrites += 1; return response(204); }
+      return response(200, encodePanelConfig({
+        deviceProfile: "panel-a", buttons: {}, subpages: { 1: "existing" }, settings: { button_order: "0" },
+      }), "\"occupied\"");
+    });
+    equal(await controller.createStandaloneScreen(1, "@screen:New\n"), "conflict",
+      "standalone creation rejects a payload that appeared after allocation");
+    equal(collisionWrites, 0, "an occupied standalone slot is never overwritten");
+
+    let emptySubpageCardWrites = 0;
+    controller.client = createNativePanelConfigClient(async (path, request) => {
+      if (path === "/api/v1/capabilities") return response(200);
+      if (request?.method === "PUT") { emptySubpageCardWrites += 1; return response(204); }
+      return response(200, encodePanelConfig({
+        deviceProfile: "panel-a", buttons: { 1: ";;;;;;subpage" }, subpages: {}, settings: { button_order: "1" },
+      }), "\"empty-subpage\"");
+    });
+    equal(await controller.createStandaloneScreen(1, "@screen:New\n"), "conflict",
+      "standalone creation reserves an ordinary Subpage card even before its payload exists");
+    equal(emptySubpageCardWrites, 0, "an empty ordinary Subpage payload is never overwritten");
+
+    let retryGets = 0;
+    let retryWrites = 0;
+    controller.client = createNativePanelConfigClient(async (path, request) => {
+      if (path === "/api/v1/capabilities") return response(200);
+      if (request?.method === "PUT") {
+        retryWrites += 1;
+        return response(409);
+      }
+      retryGets += 1;
+      return response(200, encodePanelConfig({
+        deviceProfile: "panel-a",
+        buttons: retryGets === 1 ? {} : { 1: ";;;;;;subpage" },
+        subpages: {}, settings: { button_order: "" },
+      }), `\"retry-${retryGets}\"`);
+    });
+    equal(await controller.createStandaloneScreen(1, "@screen:Retry\n"), "conflict",
+      "a 409 retry rechecks ordinary Subpage occupancy in the fresh document");
+    equal(retryWrites, 1, "a newly occupied retry slot is rejected before a second PUT");
+
     controller.maxDiscoveryRetries = 0;
     let permanentlyMissingCapabilityRequests = 0;
     const permanentlyMissingClient = createNativePanelConfigClient(async (path) => {

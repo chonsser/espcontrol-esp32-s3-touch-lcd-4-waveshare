@@ -85,7 +85,8 @@ export function createPreviewClipboardFeature(
         var c: any = ctx();
         var src: any = c.buttons[slot - 1];
         var subpageConfig: any = null;
-        if (!c.isSub && src.type === "subpage" && state.subpages[slot]) {
+        if (!c.isSub && src.type === "subpage" && state.subpages[slot] &&
+            !EspControlModel.isProtectedSubpageStorage(state.subpages[slot])) {
             subpageConfig = serializeSubpageConfig(state.subpages[slot]);
         }
         return createClipboardEntry(src, c.sizes[slot] || 1, subpageConfig);
@@ -329,14 +330,14 @@ export function createPreviewClipboardFeature(
     function clipboardButtonConfig(entry: any) {
         return normalizeButtonConfig(EspControlModel.cloneCardConfig(entry));
     }
-    function firstUnusedClipboardSlot(grid: any, maxSlots: any) {
+    function firstUnusedClipboardSlot(grid: any, maxSlots: any, subpages?: any, needsSubpageSlot?: any) {
         var used: any = {};
         grid.forEach(function (slot: any) {
             if (slot > 0)
                 used[slot] = true;
         });
         for (var slot: any = 1; slot <= maxSlots; slot++) {
-            if (!used[slot])
+            if (!used[slot] && (!needsSubpageSlot || !subpages[slot]))
                 return slot;
         }
         return -1;
@@ -357,10 +358,15 @@ export function createPreviewClipboardFeature(
         var slots: any = [];
         var resized: any = 0;
         for (var i: any = 0; i < entries.length; i++) {
-            var newSlot: any = firstUnusedClipboardSlot(nextGrid, dependencies.layout.numSlots);
+            var entry: any = entries[i];
+            var newSlot: any = firstUnusedClipboardSlot(
+                nextGrid,
+                dependencies.layout.numSlots,
+                nextSubpages,
+                !!entry.subpageConfig,
+            );
             if (newSlot < 0)
                 return { error: i18n("There is not enough room to paste every card.") };
-            var entry: any = entries[i];
             var requestedSize: any = entry.size || 1;
             var placement: any = findDuplicatePlacement(nextGrid, pos, requestedSize, dependencies.layout.numSlots);
             if (placement.pos < 0)
@@ -386,7 +392,7 @@ export function createPreviewClipboardFeature(
                 }
                 nextSubpages[newSlot] = subpage;
             }
-            else {
+            else if (!EspControlModel.isProtectedSubpageStorage(nextSubpages[newSlot])) {
                 delete nextSubpages[newSlot];
             }
             slots.push(newSlot);
@@ -401,7 +407,7 @@ export function createPreviewClipboardFeature(
         };
     }
     function cloneSubpageForClipboard(sp: any) {
-        return {
+        var clone: any = {
             order: (sp.order || []).slice(),
             buttons: (sp.buttons || []).map(function (button: any) {
                 return EspControlModel.cloneCardConfig(button);
@@ -410,6 +416,11 @@ export function createPreviewClipboardFeature(
             sizes: cloneSizeMap(sp.sizes),
             backLabel: sp.backLabel || "Back",
         };
+        if (sp.standalone === true) {
+            clone.standalone = true;
+            clone.screenLabel = sp.screenLabel;
+        }
+        return clone;
     }
     function planSubpageClipboardPaste(entries: any, pos: any) {
         var homeSlot: any = state.editingSubpage;
@@ -479,7 +490,8 @@ export function createPreviewClipboardFeature(
             state.subpages = plan.subpages;
             for (var i: any = 0; i < plan.slots.length; i++) {
                 configPersistence.saveButtonConfig(plan.slots[i]);
-                configPersistence.saveSubpageEntity(plan.slots[i]);
+                if (!EspControlModel.isProtectedSubpageStorage(state.subpages[plan.slots[i]]))
+                    configPersistence.saveSubpageEntity(plan.slots[i]);
             }
             dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
             state.selectedSlots = [];

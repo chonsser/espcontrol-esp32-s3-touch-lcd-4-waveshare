@@ -15,6 +15,10 @@
     { "key": "display_restart", "domain": "button", "name": "Restart" },
     { "key": "screen_wake", "domain": "button", "name": "Screen: Wake", "objectIds": ["screen__wake", "screen_wake"] },
 
+    { "key": "screen_navigation_entity", "domain": "text", "name": "Screen Navigation: Entity", "objectIds": ["screen_navigation__entity", "screen_navigation_entity"] },
+    { "key": "screen_navigation_rules", "domain": "text", "name": "Screen Navigation: Rules", "objectIds": ["screen_navigation__rules", "screen_navigation_rules"] },
+    { "key": "screen_navigation_wake", "domain": "switch", "name": "Screen Navigation: Wake", "objectIds": ["screen_navigation__wake", "screen_navigation_wake"] },
+
     { "key": "indoor_temp_enable", "domain": "switch", "name": "Indoor Temp Enable", "groups": ["settings"] },
     { "key": "outdoor_temp_enable", "domain": "switch", "name": "Outdoor Temp Enable", "groups": ["settings"] },
     { "key": "screen_clock_bar", "domain": "switch", "name": "Screen: Clock Bar", "objectIds": ["screen__clock_bar", "screen_clock_bar", "clock_bar_enabled"], "groups": ["settings"] },
@@ -38,6 +42,8 @@
     { "key": "outdoor_temp_entity", "domain": "text", "name": "Outdoor Temp Entity", "groups": ["settings"] },
     { "key": "screensaver_mode", "domain": "text", "name": "Screensaver Mode", "objectIds": ["screensaver_mode"], "groups": ["settings"] },
     { "key": "screen_saver_action", "domain": "select", "name": "Screen Saver: Action", "objectIds": ["screen_saver__action", "screen_saver_action", "screensaver_action"], "groups": ["settings"] },
+    { "key": "screen_saver_hls_url", "domain": "text", "name": "Screen Saver HLS URL", "objectIds": ["screen_saver_hls_url", "screensaver_hls_url"], "groups": ["settings"] },
+    { "key": "screen_saver_hls_status", "domain": "text_sensor", "name": "Screen Saver HLS Status", "objectIds": ["screen_saver_hls_status", "screensaver_hls_status"], "groups": ["settings"] },
     { "key": "screen_saver_clock_font", "domain": "select", "name": "Screen Saver Clock Font", "objectIds": ["screen_saver_clock_font", "screensaver_clock_font"], "groups": ["settings"] },
     { "key": "screen_saver_clock_time_format", "domain": "text", "name": "Screen Saver Clock Time Format", "objectIds": ["screen_saver_clock_time_format", "screensaver_clock_time_format"], "groups": ["settings"] },
     { "key": "screen_saver_clock_date_format", "domain": "text", "name": "Screen Saver Clock Date Format", "objectIds": ["screen_saver_clock_date_format", "screensaver_clock_date_format"], "groups": ["settings"] },

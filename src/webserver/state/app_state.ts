@@ -48,6 +48,7 @@ export function createInitialState(deviceConfig: DeviceConfig): AppState {
     coverArtHideExternalInputOn: true, homeAssistantArtworkProtocol: "http", coverArtHomeAssistantPort: 8123,
     homeAssistantArtworkEndpointMode: "Automatic", homeAssistantArtworkEndpointStatus: "Discovering",
     screensaverMode: "disabled", _screensaverModeReceived: false, screensaverAction: "off",
+    screensaverActionOptions: [], screensaverHlsUrl: "", screensaverHlsUrlAvailable: false, screensaverHlsStatus: "",
     screensaverClockFont: "Roboto Thin", screensaverClockFontOptions: [], screensaverClockFontLoaded: false,
     screensaverClockTimeFormat: "", screensaverClockDateFormat: "", screensaverClockTimeSize: "Auto", screensaverClockDateSize: "Auto",
     _screensaverActionReceived: false, clockScreensaverOn: false, clockBrightnessDay: 35,
@@ -81,7 +82,7 @@ export function createInitialState(deviceConfig: DeviceConfig): AppState {
     c6FirmwareChecking: false, c6FirmwareInstalling: false, autoUpdate: true, updateFrequency: "Daily",
     updateFreqOptions: ["Hourly", "Daily", "Weekly", "Monthly"], configLocked: false, configLockReason: "",
     clockBarDragItem: "", clockBarTempRestoreIndoor: false, clockBarTempRestoreOutdoor: true,
-    clockBarTempRestoreEntities: [], subpages: {}, subpageRaw: {}, subpageSavePending: {}, editingSubpage: null,
+    clockBarTempRestoreEntities: [], subpages: {}, subpageRaw: {}, subpageSavePending: {}, subpageNativeRaw: {}, editingSubpage: null,
     subpageSelectedSlots: [], subpageLastClicked: -1, clipboard: null, settingsDraft: null,
     entityPostPaths: {}, entityNames: {},
   };

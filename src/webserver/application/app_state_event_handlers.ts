@@ -24,7 +24,6 @@ import {
     normalizeScheduleTrigger,
     normalizeScheduleWakeBrightness,
     normalizeScheduleWakeTimeout,
-    normalizeScreensaverAction,
     normalizeScreensaverDimmedBrightness,
     normalizeTemperatureUnit,
     normalizeTimeOfDay,
@@ -40,6 +39,7 @@ import type { ScreenScheduleStateFeature } from "./screen_schedule_state";
 import type { ScreensaverTimeoutFeature } from "./screensaver_timeout";
 import type { ScreensaverClockFontFeature } from "./screensaver_clock_font";
 import type { ScreensaverClockFormatFeature } from "./screensaver_clock_format";
+import type { ScreensaverHlsFeature } from "./screensaver_hls";
 import type { ScreenRotationFeature } from "./screen_rotation_state";
 import type { AppearanceFeature } from "./appearance_state";
 import type { FirmwareVersionFeature } from "./firmware_version_state";
@@ -77,6 +77,7 @@ export function createAppStateEventHandlersFeature(
     preview: Pick<PreviewRenderFeature, "render">,
     screensaverClockFont: ScreensaverClockFontFeature,
     screensaverClockFormat: ScreensaverClockFormatFeature,
+    screensaverHls: ScreensaverHlsFeature,
 ): AppStateEventHandlersFeature {
     const { syncAlarmDelayAudioUi, syncClockScreensaverControls, syncCoverArtScreensaverUi, syncMediaPlayerSleepPreventionUi } = settingsHelpers;
     const { render: renderPreview } = preview;
@@ -289,11 +290,12 @@ export function createAppStateEventHandlersFeature(
                 screensaverClockFont.applyState({ ...d, value: d?.value ?? val });
             },
             "select-screen_saver__action": function (this: any, val?: any, d?: any) {
-                state._screensaverActionReceived = true;
-                state.screensaverAction = normalizeScreensaverAction(d.value || val);
+                screensaverHls.applyAction({ ...d, value: d?.value ?? val });
                 state.clockScreensaverOn = state.screensaverAction === "clock";
                 syncClockScreensaverControls();
             },
+            "text-screen_saver_hls_url": (value, data) => screensaverHls.applyUrl({ ...data, value: data?.value ?? value }),
+            "text_sensor-screen_saver_hls_status": (value, data) => screensaverHls.applyStatus({ ...data, value: data?.value ?? value }),
             "number-screen_saver__dimmed_brightness": function (this: any, val?: any) {
                 state.screensaverDimmedBrightness = normalizeScreensaverDimmedBrightness(val);
                 syncClockScreensaverControls();

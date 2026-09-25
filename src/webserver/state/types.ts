@@ -85,6 +85,10 @@ export interface RuntimeSubpage {
   grid: number[];
   sizes: SlotSizeMap;
   backLabel?: string;
+  standalone?: true;
+  screenLabel?: string;
+  standaloneInvalid?: true;
+  rawConfig?: string;
 }
 
 export interface AppClipboard {
@@ -158,6 +162,10 @@ export interface AppState {
   screensaverMode: string;
   _screensaverModeReceived: boolean;
   screensaverAction: string;
+  screensaverActionOptions: string[];
+  screensaverHlsUrl: string;
+  screensaverHlsUrlAvailable: boolean;
+  screensaverHlsStatus: string;
   screensaverClockFont: string;
   screensaverClockTimeFormat: string;
   screensaverClockDateFormat: string;
@@ -256,6 +264,7 @@ export interface AppState {
   subpages: Record<string, RuntimeSubpage>;
   subpageRaw: Record<string, Record<string, string>>;
   subpageSavePending: Record<string, string>;
+  subpageNativeRaw: Record<string, string>;
   editingSubpage: number | null;
   subpageSelectedSlots: number[];
   subpageLastClicked: number;

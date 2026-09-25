@@ -2,6 +2,7 @@ import type { CardConfig } from "../contracts/types";
 import { cloneCardConfig } from "./card";
 import { decodeConfigField, encodeConfigField } from "./config_primitives";
 import { applySpans, sizeFromToken, sizeToken, type SlotSizeMap } from "./grid";
+import { parseStandaloneScreenEnvelope, STANDALONE_SCREEN_PREFIX } from "./standalone_screens";
 
 export interface BackOrderToken {
   token: string;
@@ -17,12 +18,18 @@ export interface ParsedSubpageConfig {
   order: string[];
   buttons: CardConfig[];
   backLabel: string;
+  standalone?: true;
+  screenLabel?: string;
+  standaloneInvalid?: true;
+  rawConfig?: string;
 }
 
 export interface StructuredSubpageConfig {
   order: string[];
   back_label: string;
   buttons: CardConfig[];
+  standalone?: true;
+  screenLabel?: string;
 }
 
 export interface SubpageGridSource {
@@ -31,6 +38,8 @@ export interface SubpageGridSource {
   sizes?: SlotSizeMap;
   buttons?: readonly unknown[];
   backLabel?: string;
+  standalone?: boolean;
+  standaloneInvalid?: boolean;
 }
 
 const BACK_TOKENS = new Set(["B", "Bd", "Bw", "Bb", "Bt", "Bx"]);
@@ -166,8 +175,21 @@ export function parseRawSubpageConfig(
   value: string | null | undefined,
   typeFromCode: (code: string) => string,
 ): ParsedSubpageConfig {
-  if (value && value.charAt(0) === "~") return parseCompactSubpageConfig(value, typeFromCode);
-  return parseLegacySubpageConfig(value);
+  const envelope = parseStandaloneScreenEnvelope(value);
+  const raw = String(value || "");
+  if (!envelope && raw.startsWith(STANDALONE_SCREEN_PREFIX)) {
+    return {
+      order: [], buttons: [], backLabel: "Back",
+      standaloneInvalid: true, rawConfig: raw,
+    };
+  }
+  const payload = envelope ? envelope.payload : value;
+  const parsed = payload && payload.charAt(0) === "~"
+    ? parseCompactSubpageConfig(payload, typeFromCode)
+    : parseLegacySubpageConfig(payload);
+  return envelope
+    ? { ...parsed, standalone: true, screenLabel: envelope.screenLabel }
+    : parsed;
 }
 
 export function structuredSubpageFromParsed(
@@ -177,6 +199,9 @@ export function structuredSubpageFromParsed(
     order: (subpage?.order || []).map((item) => parseBackOrderToken(item).token),
     back_label: subpage?.backLabel || backLabelFromOrder(subpage?.order) || "Back",
     buttons: (subpage?.buttons || []).map((button) => cloneCardConfig(button)),
+    ...(subpage?.standalone === true
+      ? { standalone: true as const, screenLabel: subpage.screenLabel || "" }
+      : {}),
   };
 }
 
@@ -208,6 +233,9 @@ export function parseStructuredSubpageConfig(value: unknown): ParsedSubpageConfi
     order: parsedOrder.order,
     buttons,
     backLabel: backLabel || "Back",
+    ...(value.standalone === true
+      ? { standalone: true as const, screenLabel: stringField(value, "screenLabel") }
+      : {}),
   };
 }
 
@@ -306,11 +334,25 @@ export function buildSubpageGrid(
 ): { grid: number[]; sizes: SlotSizeMap } {
   const grid = Array<number>(maxSlots).fill(0);
   const sizes: SlotSizeMap = { ...(subpage.sizes || {}) };
+  if (subpage.standaloneInvalid === true) return { grid, sizes };
   const order = subpage.order || [];
   const buttonCount = (subpage.buttons || []).length;
+  const standalone = subpage.standalone === true;
   if (order.length > 0) {
     const hasBack = order.some((item) => isBackOrderToken(parseBackOrderToken(item).token));
-    if (hasBack) {
+    if (standalone) {
+      for (let i = 0; i < order.length && i < maxSlots; i += 1) {
+        const token = parseBackOrderToken(order[i]).token;
+        if (!token || isBackOrderToken(token)) continue;
+        const last = token.charAt(token.length - 1);
+        const parsedSize = sizeFromToken(last);
+        const slot = parseInt(token, 10);
+        if (slot >= 1 && slot <= buttonCount && !Number.isNaN(slot)) {
+          grid[i] = slot;
+          if (parsedSize > 1) sizes[String(slot)] = parsedSize;
+        }
+      }
+    } else if (hasBack) {
       for (let i = 0; i < order.length && i < maxSlots; i += 1) {
         const token = parseBackOrderToken(order[i]).token;
         if (!token) continue;
@@ -344,7 +386,7 @@ export function buildSubpageGrid(
         }
       }
     }
-  } else {
+  } else if (!standalone) {
     grid[0] = -2;
     delete sizes[String(-2)];
   }
@@ -356,11 +398,12 @@ export function serializeSubpageGrid(
   grid: readonly number[],
   sizes: SlotSizeMap,
   backLabel?: string | null,
+  standalone = false,
 ): string[] {
   let last = -1;
   for (let i = grid.length - 1; i >= 0; i -= 1) {
     const slot = grid[i] ?? 0;
-    if (slot > 0 || slot === -2) {
+    if (slot > 0 || (!standalone && slot === -2)) {
       last = i;
       break;
     }
@@ -369,7 +412,7 @@ export function serializeSubpageGrid(
   const order: string[] = [];
   for (let i = 0; i <= last; i += 1) {
     const slot = grid[i] ?? 0;
-    if (slot === -2) {
+    if (slot === -2 && !standalone) {
       order.push(backOrderToken("B" + sizeToken(sizes[String(-2)]), backLabel || "Back"));
     } else if (slot <= 0) {
       order.push("");

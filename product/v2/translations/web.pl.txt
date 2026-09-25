@@ -25,10 +25,12 @@ screen_dimmed_screensaver_is_not_available_on_this_firmware_upda=Wygaszacz z prz
 buy_me_a_coffee=Postaw mi kawę
 
 # src/webserver/application/app_backup.ts
+could_not_export_screen_navigation_check_the_connection_and_expo=Nie udało się wyeksportować nawigacji ekranów. Sprawdź połączenie i wyeksportuj ponownie.
 backup_exported_without_the_panel_name_because_naming_is_unavail=Kopia zapasowa została wyeksportowana bez nazwy panelu, ponieważ nadawanie nazwy jest niedostępne.
 this_backup_contains_wifi_sharing_cards_which_require_current_de=Ta kopia zapasowa zawiera karty udostępniania Wi-Fi, które wymagają aktualnej wersji firmware urządzenia. Zaktualizuj panel przed przywróceniem tej kopii zapasowej.
 could_not_confirm_that_this_device_can_safely_restore_the_layout=Nie można potwierdzić, że to urządzenie może bezpiecznie przywrócić układ. Sprawdź połączenie i spróbuj ponownie.
-the_layout_could_not_be_restored_no_other_backup_settings_were_c=Nie można przywrócić układu. Pozostałe ustawienia kopii zapasowej nie zostały zmienione.
+the_layout_could_not_be_restored_screen_navigation_may_be_disabl=Nie udało się przywrócić układu. Nawigacja ekranów może być wyłączona; sprawdź jej ustawienia przed ponowną próbą.
+could_not_restore_the_hls_screensaver_action=Nie udało się przywrócić trybu wygaszacza HLS.
 configuration_restored_but_panel_naming_or_restart_failed_reason=Konfiguracja została przywrócona, ale nadawanie nazwy panelu lub ponowne uruchomienie nie powiodło się: {reason}
 could_not_restore_backup=Nie można przywrócić kopii zapasowej
 
@@ -82,7 +84,7 @@ on_state_pattern=Wzór stanu włączenia
 solid=Jednolity
 stripes=Paski
 long_press=Przytrzymanie
-same_as_tap=Tak jak dotknięcie
+controls_details_default=Sterowanie / szczegóły (domyślnie)
 show_more_info=Pokaż więcej informacji
 no_action=Brak działania
 info_entity_optional=Encja informacji (opcjonalnie)
@@ -248,6 +250,7 @@ move_name_down=Przesuń zakładkę {name} w dół
 # src/webserver/application/config_post_api.ts
 wifi_sharing_requires_current_device_firmware_update_the_panel_b=Udostępnianie Wi-Fi wymaga aktualnej wersji firmware urządzenia. Zaktualizuj panel przed zapisaniem tej karty.
 subpage_is_too_large_to_save_shorten_labels_or_entity_ids=Podstrona jest za duża, aby ją zapisać. Skróć etykiety lub identyfikatory encji.
+independent_screens_require_current_device_firmware=Niezależne ekrany wymagają aktualnej wersji firmware urządzenia.
 
 # src/webserver/application/config_robot_card_options.ts
 status=Status
@@ -431,6 +434,44 @@ device_reported_that_the_firmware_upload_failed=Urządzenie zgłosiło, że prze
 firmware_uploaded_waiting_for_device_to_restart=Przesłano firmware. Oczekiwanie na ponowne uruchomienie urządzenia…
 could_not_upload_firmware_update=Nie można przesłać aktualizacji firmware.
 
+# src/webserver/application/screen_navigation.ts
+home_screen=Ekran główny
+subpage_number=Podstrona {number}
+screen_number=Ekran {number}
+could_not_load_screen_navigation_check_the_connection_and_try_ag=Nie udało się wczytać nawigacji ekranów. Sprawdź połączenie i spróbuj ponownie.
+configuration_changed_in_another_browser_reload_before_saving_ag=Konfiguracja została zmieniona w innej przeglądarce. Odśwież stronę przed ponownym zapisaniem.
+no_free_screen_storage_delete_an_unused_screen_first=Brak miejsca na kolejny ekran. Najpierw usuń nieużywany ekran.
+add_screen=Dodaj ekran
+update_the_panel_firmware_to_add_screens=Zaktualizuj firmware panelu, aby dodawać ekrany.
+could_not_load_screens_reload_the_page_to_try_again=Nie udało się wczytać ekranów. Odśwież stronę, aby spróbować ponownie.
+enter_a_screen_name=Wpisz nazwę ekranu.
+screen_name_is_too_long_shorten_it=Nazwa ekranu jest za długa. Skróć ją.
+screen_name_contains_an_unsupported_character=Nazwa ekranu zawiera niedozwolony znak.
+screen_name=Nazwa ekranu
+rename=Zmień nazwę
+delete_screen=Usuń ekran
+delete_screen_name_and_its_cards=Usunąć ekran „{name}” i jego karty?
+add_state_value=Dodaj wartość stanu
+saving_screen_navigation=Zapisywanie nawigacji ekranów…
+choose_a_state_value=Wybierz wartość stanu
+value_unavailable={value} (niedostępna)
+state_value_number=Wartość stanu {number}
+remove_mapping_number=Usuń przypisanie {number}
+screen_from_home_assistant=Ekran z Home Assistant
+enter_the_home_assistant_entity_that_provides_screen_values_leav=Wpisz encję Home Assistant udostępniającą wartości ekranów. Pozostaw puste pole, aby wyłączyć automatyczną nawigację.
+retry_loading_values=Ponów pobieranie wartości
+wake_the_screen_when_the_state_changes=Wybudzaj ekran przy zmianie stanu
+save_screen_settings=Zapisz ustawienia ekranu
+reload_settings=Wczytaj ustawienia ponownie
+loading_home_assistant_values=Pobieranie wartości z Home Assistant…
+check_the_entity_id_and_update_the_panel_firmware_if_value_disco=Sprawdź identyfikator encji i zaktualizuj oprogramowanie panelu, jeśli pobieranie wartości nie jest obsługiwane.
+choose_the_values_that_open_each_screen_below=Wybierz wartości, które otwierają poszczególne ekrany poniżej.
+this_entity_has_no_available_values=Ta encja nie ma dostępnych wartości.
+could_not_load_home_assistant_values_check_the_entity_and_connec=Nie udało się pobrać wartości z Home Assistant. Sprawdź encję i połączenie, a następnie ponów próbę.
+loading_screen_navigation=Wczytywanie nawigacji ekranów…
+unavailable_screen_number_state=Niedostępny ekran {number}: {state}
+remove_unavailable_mapping_number=Usuń niedostępne przypisanie {number}
+
 # src/webserver/application/screen_rotation_state.ts
 degrees_deg={degrees}°
 
@@ -471,6 +512,18 @@ clock_format_or_text_size_was_skipped_because_this_firmware_does=Pominięto form
 could_not_restore_the_clock_format_or_text_size=Nie można przywrócić formatu zegara lub rozmiaru tekstu.
 time_text_size=Rozmiar tekstu godziny
 larger_text_is_reduced_automatically_when_needed_to_fit_the_scre=Większy tekst jest w razie potrzeby automatycznie zmniejszany, aby zmieścił się na ekranie bez przycinania.
+
+# src/webserver/application/screensaver_hls.ts
+hls_stream=Strumień HLS
+not_playing=Odtwarzanie zatrzymane
+save_a_valid_hls_url_before_enabling_the_video_screensaver=Zapisz poprawny adres HLS przed włączeniem wygaszacza wideo.
+hls_was_skipped_because_this_firmware_does_not_support_video_scr=Pominięto HLS, ponieważ ten firmware nie obsługuje wygaszacza wideo.
+invalid_hls_url_in_backup=Nieprawidłowy adres HLS w kopii zapasowej.
+could_not_restore_the_hls_url=Nie udało się przywrócić adresu HLS.
+hls_stream_url=Adres strumienia HLS
+save_the_url_first_then_select_hls_stream_unencrypted_mpeg_ts_h=Najpierw zapisz adres, a następnie wybierz Strumień HLS. Nieszyfrowany MPEG-TS, H.264 constrained baseline, do 320×192 i 15 kl./s, jedna klatka referencyjna, bez klatek B i dźwięku. Adres może mieć do 255 znaków. W razie błędu odtwarzania pojawi się zegar.
+enter_an_http_or_https_url_without_credentials_spaces_or_a_fragm=Wpisz adres HTTP lub HTTPS bez loginu, hasła, spacji i fragmentu po znaku #.
+could_not_save_the_hls_url_your_draft_has_been_kept=Nie udało się zapisać adresu HLS. Wpisany tekst został zachowany.
 
 # src/webserver/application/settings_cover_art_section.ts
 show_cover_art=Pokaż okładkę
@@ -913,7 +966,6 @@ use_8_63_bytes_or_exactly_64_hexadecimal_characters=Użyj 8–63 bajtów lub dok
 these_credentials_are_too_long_to_save_on_the_panel=Te dane logowania są zbyt długie, aby zapisać je na panelu.
 
 # src/webserver/controllers/native_panel_config_controller.ts
-configuration_changed_in_another_browser_reload_before_saving_ag=Konfiguracja została zmieniona w innej przeglądarce. Odśwież stronę przed ponownym zapisaniem.
 the_configuration_saved_but_its_older_firmware_copy_did_not_do_n=Konfiguracja została zapisana, ale jej kopia dla starszej wersji firmware nie została zapisana. Nie instaluj jeszcze starszego firmware na tym panelu.
 this_firmware_requires_web_authentication_for_wifi_sharing_passw=Ta wersja firmware wymaga uwierzytelniania w interfejsie WWW dla haseł udostępniania Wi-Fi. Zaloguj się, włącz web_server_auth lub zaktualizuj firmware panelu.
 
@@ -927,6 +979,8 @@ the_device_was_reset_reload_this_page_before_making_changes=Urządzenie zostało
 this_backup_was_taken_from_source_this_device_is_target_layout_w=Ta kopia zapasowa pochodzi z urządzenia {source}, a to urządzenie to {target}. Układ zostanie przywrócony, ale konfiguracja natywna zostanie pominięta.
 config_was_exported_from_a_different_panel_device_layout_may_loo=Konfiguracja została wyeksportowana z innego panelu ({device}) – układ może wyglądać inaczej
 backup_has_imported_slots_current_config_has_current_adapting=Liczba pól w kopii zapasowej: {imported}, w bieżącej konfiguracji: {current} – dostosowywanie
+some_independent_screens_were_omitted_because_this_panel_has_no=Pominięto niektóre niezależne ekrany, ponieważ na tym panelu nie ma już na nie miejsca.
+some_screen_mappings_were_removed_because_their_subpages_are_una=Niektóre przypisania ekranów usunięto, ponieważ ich podstrony są niedostępne na tym panelu.
 
 # src/webserver/features/backup_file_controller.ts
 invalid_file_could_not_parse_json=Nieprawidłowy plik – nie można odczytać JSON
@@ -977,6 +1031,11 @@ configure_a_label_card=Skonfiguruj kartę typu {label}.
 configure_a_card=Skonfiguruj kartę.
 label_not_available={label} (niedostępne)
 
+# src/webserver/features/screen_navigation_controller.ts
+screen_navigation_could_not_be_saved_and_may_be_disabled_check_t=Nie udało się zapisać nawigacji ekranów; może być wyłączona. Sprawdź połączenie i zapisz ponownie.
+update_the_panel_firmware_to_use_screen_navigation_from_home_ass=Zaktualizuj oprogramowanie panelu, aby korzystać z nawigacji ekranów przez Home Assistant.
+screen_navigation_saved=Zapisano nawigację ekranów.
+
 # src/webserver/features/settings.ts
 on_2=WŁ.
 
@@ -1026,6 +1085,15 @@ panelconfig_backup_device_profile_does_not_match_its_document=profil urządzenia
 panel_name_must_be_text=Nazwa panelu musi być tekstem.
 use_up_to_120_utf_8_bytes_with_no_control_characters=Użyj maksymalnie 120 bajtów UTF-8 bez znaków sterujących.
 invalid_panel_identity_in_backup=Nieprawidłowe dane identyfikacyjne panelu w kopii zapasowej.
+
+# src/webserver/model/screen_navigation.ts
+the_entity_name_is_too_long_use_a_shorter_entity_id=Nazwa encji jest za długa. Użyj krótszego identyfikatora encji.
+enter_a_valid_home_assistant_entity_id_such_as_input_select_scre=Wpisz prawidłowy identyfikator encji Home Assistant, np. input_select.screen.
+enter_a_state_value_other_than_unknown_or_unavailable=Wpisz wartość stanu inną niż unknown lub unavailable.
+each_state_value_can_only_be_mapped_once=Każdą wartość stanu można przypisać tylko raz.
+choose_the_home_screen_or_an_existing_subpage_for_every_mapping=Dla każdego przypisania wybierz ekran główny lub istniejącą podstronę.
+the_screen_mappings_are_too_long_shorten_the_values_or_remove_a=Przypisania ekranów są za długie. Skróć wartości lub usuń przypisanie.
+the_saved_screen_mappings_are_invalid_remove_or_correct_them_bef=Zapisane przypisania ekranów są nieprawidłowe. Usuń je lub popraw przed zapisaniem.
 
 # product/v2/card_contract.json
 timer=Minutnik

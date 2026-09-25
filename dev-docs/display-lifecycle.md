@@ -118,6 +118,39 @@ off-hours it also starts the existing temporary-wake timer and uses temporary-wa
 brightness. The first touch that wakes dimmed, clock, cover art, or display off is
 consumed by the applicable touch guard and must not activate an underlying card.
 
+## Entity-selected screens
+
+`common/addon/entity_screen_navigation.yaml` observes lifecycle readiness every
+500 ms. `entity_screen_navigation.h` stores an exact state-to-screen selection;
+`button_grid_entity_screen_navigation.h` owns a separate HA subscription scope
+and resolves only home or registered subpage slots. Callbacks queue values only:
+they never touch LVGL or dispatch a card action. A generation invalidates
+callbacks after settings change, and repeated state deliveries cannot replay a
+consumed selection.
+
+The latest matching selection waits during setup, boot guard, screen lock,
+critical/interactive takeover, and any in-progress transition. If configured to
+wake, it uses the existing `screensaver_wake` path before navigation; otherwise
+it waits for `ACTIVE`. Unknown or unmatched states cancel a pending selection.
+Successful navigation refreshes ordinary activity and idle timers. Host tests
+cover the state machine and its actual subscription/navigation adapter.
+
+Independent screens share the bounded subpage payload pool, with a
+`@screen:<encoded-name>\n` envelope. Grid phase 2 registers these screens without
+a parent home card, parent indicator, or Back tile. Their own label is used in
+the clock bar. An empty home grid stores the valid order sentinel `0` while an
+independent screen exists, so setup readiness does not hide configured screens.
+Navigation waits for both grid refresh scripts before resolving pending targets.
+The web editor requires the `screen_navigation` version 2 standalone capability
+before creating these payloads.
+
+Three internal restored settings hold the source, rules, and wake preference.
+Rules are LF-separated `slot<TAB>state` records, with slot 0 for home and 1–32
+for subpage parent slots. Only `%`, TAB, LF, and CR are escaped (`%25`, `%09`,
+`%0A`, `%0D`); Unicode stays UTF-8. The total rule limit is 255 bytes. Malformed
+rules or duplicate states disable the binding. Web backup import suspends the
+source before replacing the layout and restores rules after remapping slots.
+
 ## Transition invariants
 
 These are true after every completed transition:

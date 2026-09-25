@@ -162,6 +162,30 @@ def cover_art_substitution_lines(device: dict) -> list[str]:
     return [f'  {key}: "{value}"' for key, value in layout.items()]
 
 
+def hls_substitution_lines(device: dict) -> list[str]:
+    if device["slug"] != "waveshare-esp32-s3-touch-lcd-4":
+        return []
+    return [
+        "  hls_stop_code: |-",
+        "    id(show_hls_view).stop();",
+        "    id(hls_player).stop();",
+        "    lv_obj_add_flag(id(hls_screensaver_view), LV_OBJ_FLAG_HIDDEN);",
+        "  hls_apply_code: |-",
+        "    if (target_mode == static_cast<int>(espcontrol::DisplayMode::HLS)) {",
+        "      id(show_hls_view).execute(generation);",
+        "    }",
+        "  hls_request_mode_code: |-",
+        '    if (id(screensaver_action).current_option() == "HLS Stream") {',
+        "      if (!controller.request_active(espcontrol::DisplayRequestSource::IDLE_TIMER) &&",
+        "          !controller.request_active(espcontrol::DisplayRequestSource::PRESENCE_SENSOR)) {",
+        "        id(hls_player).clear_failure();",
+        "      }",
+        "      target_mode = static_cast<int>(id(hls_player).failed()",
+        "          ? espcontrol::DisplayMode::CLOCK : espcontrol::DisplayMode::HLS);",
+        "    }",
+    ]
+
+
 def include_line(key: str, include: str) -> str:
     key_text = f"  {key}:"
     return key_text.ljust(19) + include if len(key_text) < 19 else f"{key_text} {include}"
@@ -204,6 +228,7 @@ def package_file_text(device: dict) -> str:
             "substitutions:",
             *package_substitution_lines(device),
             f'  image_card_slot_capacity: "{int(device["image_slot_capacity"])}"',
+            *hls_substitution_lines(device),
             "",
             "esphome:",
             "  build_flags:",
@@ -290,6 +315,11 @@ def package_file_text(device: dict) -> str:
             include_line("screen_setup", "!include ../../common/device/screen_button_setup.yaml"),
             include_line("screen_clock", "!include ../../common/device/screen_clock.yaml"),
             include_line("screen_art", "!include ../../common/device/screen_cover_art.yaml"),
+            *(
+                [include_line("screen_hls", "!include ../../common/device/screen_hls.yaml")]
+                if device["slug"] == "waveshare-esp32-s3-touch-lcd-4"
+                else []
+            ),
             *(
                 [
                     include_line(

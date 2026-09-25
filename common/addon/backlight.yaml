@@ -14,6 +14,12 @@
 # Touch wake is handled by the touchscreen on_touch in device.yaml.
 # =============================================================================
 
+# Optional device-specific video support; other profiles need no decoder.
+substitutions:
+  hls_stop_code: ""
+  hls_apply_code: ""
+  hls_request_mode_code: ""
+
 button:
   - platform: template
     id: screen_wake
@@ -187,6 +193,9 @@ script:
                   static_cast<espcontrol::DisplayMode>(target_mode));
           then:
             - lambda: |-
+                if (target_mode != static_cast<int>(espcontrol::DisplayMode::HLS)) {
+                  ${hls_stop_code}
+                }
                 const auto transition = id(espcontrol_app).display().resolve();
                 const bool schedule_owned = transition.winning_source.has_value() &&
                     (*transition.winning_source == espcontrol::DisplayRequestSource::BOOT_GUARD ||
@@ -208,6 +217,8 @@ script:
                       generation: !lambda 'return generation;'
                       target_mode: !lambda 'return target_mode;'
                   - script.wait: cover_art_hide_effect
+            - lambda: |-
+                ${hls_apply_code}
             - if:
                 condition:
                   lambda: 'return target_mode == static_cast<int>(espcontrol::DisplayMode::ACTIVE);'
@@ -497,6 +508,7 @@ script:
               transition.target_mode == espcontrol::DisplayMode::DIMMED ||
               transition.target_mode == espcontrol::DisplayMode::CLOCK ||
               transition.target_mode == espcontrol::DisplayMode::COVER_ART ||
+              transition.target_mode == espcontrol::DisplayMode::HLS ||
               transition.target_mode == espcontrol::DisplayMode::DISPLAY_OFF;
 
           if (controller.transition_in_progress(transition)) {
@@ -600,6 +612,7 @@ script:
           const auto other = source == espcontrol::DisplayRequestSource::PRESENCE_SENSOR
               ? espcontrol::DisplayRequestSource::IDLE_TIMER
               : espcontrol::DisplayRequestSource::PRESENCE_SENSOR;
+          ${hls_request_mode_code}
           controller.clear(other);
           controller.request(source, static_cast<espcontrol::DisplayMode>(target_mode));
       - script.execute: display_mode_reconcile
@@ -718,7 +731,8 @@ script:
             - lambda: |-
                 const auto &controller = id(espcontrol_app).display();
                 if (!controller.takeover_active(espcontrol::DisplayTakeoverKind::INTERACTIVE) &&
-                    !controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL)) {
+                    !controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL) &&
+                    !entity_screen_navigation_holds_screen()) {
                   navigation_return_home(id(main_page)->obj);
                 }
             - if:
@@ -947,6 +961,7 @@ script:
           }
       - script.execute: hide_clock_view
       - lvgl.widget.hide: dim_screensaver_touch_guard
+      - lambda: 'entity_screen_navigation_capture_return(id(screen_off_page)->obj);'
       - lvgl.page.show: screen_off_page
       - script.execute: clock_bar_hide
       - delay: 50ms
@@ -1047,6 +1062,7 @@ script:
             lambda: |-
               float val = id(home_screen_timeout).state;
               return !id(connectivity_setup_display_active) &&
+                     !entity_screen_navigation_holds_screen() &&
                      !id(button_order).state.empty() &&
                      !std::isnan(val) && val > 0;
           then:
@@ -1056,6 +1072,7 @@ script:
                 return (int)(val * 1000);
             - lambda: |-
                 if (!id(connectivity_setup_display_active) &&
+                    !entity_screen_navigation_holds_screen() &&
                     !id(button_order).state.empty() &&
                     !alarm_display_takeover_active()) {
                   navigation_return_home(id(main_page)->obj);
@@ -1069,12 +1086,13 @@ script:
             lambda: |-
               float val = id(home_screen_timeout).state;
               if (id(connectivity_setup_display_active) ||
+                  entity_screen_navigation_holds_screen() ||
                   id(button_order).state.empty() ||
                   std::isnan(val) || val <= 0) return false;
               return lv_disp_get_inactive_time(NULL) >= (uint32_t)(val * 1000);
           then:
             - lambda: |-
-                if (!alarm_display_takeover_active()) {
+                if (!alarm_display_takeover_active() && !entity_screen_navigation_holds_screen()) {
                   navigation_return_home(id(main_page)->obj);
                 }
           else:
@@ -1100,7 +1118,10 @@ script:
               !controller.current_mode_is(espcontrol::DisplayMode::ACTIVE);
           id(screensaver_wake_touch_guard_skip_once) =
               controller.target_mode_is(espcontrol::DisplayMode::COVER_ART) ||
+              controller.target_mode_is(espcontrol::DisplayMode::HLS) ||
+              controller.current_mode_is(espcontrol::DisplayMode::HLS) ||
               controller.target_mode_is(espcontrol::DisplayMode::DISPLAY_OFF);
+          ${hls_stop_code}
           ESP_LOGD("display_mode",
                    "Wake requested: unfinished=%s clock_visible=%s cleanup=%s",
                    unfinished ? "true" : "false",
@@ -1501,7 +1522,7 @@ script:
                   id(espcontrol_app).display().transition_is_current(
                       static_cast<uint32_t>(generation), espcontrol::DisplayMode::CLOCK);
           then:
-            - lambda: 'navigation_return_home(id(main_page)->obj);'
+            - lambda: 'if (!entity_screen_navigation_preserves_screen()) navigation_return_home(id(main_page)->obj);'
             - lvgl.widget.hide: dim_screensaver_touch_guard
             - script.execute: clock_screensaver_refresh_appearance
             - script.execute: clock_bar_hide
