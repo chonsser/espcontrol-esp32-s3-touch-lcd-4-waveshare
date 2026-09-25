@@ -145,7 +145,7 @@ ATTRIBUTE_HELPER_PATTERN = re.compile(
 )
 SUBSCRIPTION_TRACKING_PATTERN = re.compile(
     r"subscriptions_\.push_back\(\s*\{\s*callback_ref\s*,\s*scope(?:\s*,\s*owner)?"
-    r"(?:\s*,\s*channel)?(?:\s*,\s*retain_latest)?\s*\}\s*\)"
+    r"(?:\s*,\s*channel)?(?:\s*,\s*retain_latest)?(?:\s*,\s*retain_replay)?\s*\}\s*\)"
 )
 DEFERRED_CALLBACK_FANOUT_PATTERN = re.compile(
     r"for\s*\(\s*const\s+auto\s*&\s*callback(?:_ref)?\s*:\s*\*callback_refs\s*\)"
@@ -2838,7 +2838,12 @@ def firmware_clock_bar_navigation_errors(
             continue
         active_guard = body.find("target_mode_is(")
         active_mode = body.find("DisplayMode::ACTIVE", active_guard)
-        page_show = body.find("lvgl.page.show: main_page")
+        home_navigation = re.search(
+            r"lvgl\.page\.show:\s*main_page\b|"
+            r"navigation_return_home\(\s*id\(main_page\)->obj\s*\)",
+            body,
+        )
+        page_show = home_navigation.start() if home_navigation else -1
         if (
             active_guard == -1
             or active_mode == -1
@@ -4733,6 +4738,21 @@ def expect_c6_update_status_errors(name: str, text: str, expected: tuple[str, ..
 
 
 def run_self_test() -> int:
+    for fields in (
+        "callback_ref, scope",
+        "callback_ref, scope, owner, channel, retain_latest",
+        "callback_ref, scope, owner, channel, retain_latest, retain_replay",
+    ):
+        assert SUBSCRIPTION_TRACKING_PATTERN.search(
+            f"subscriptions_.push_back({{{fields}}});"
+        ), f"subscription tracking not recognized: {fields}"
+    for fields in (
+        "scope, owner, channel, retain_latest, retain_replay",
+        "callback_ref, owner, channel, retain_latest, retain_replay",
+    ):
+        assert not SUBSCRIPTION_TRACKING_PATTERN.search(
+            f"subscriptions_.push_back({{{fields}}});"
+        ), f"incomplete subscription tracking accepted: {fields}"
     for call in (
         "api->get_home_assistant_state(entity, callback);",
         "api.get_home_assistant_state(entity, callback);",
@@ -7162,6 +7182,30 @@ def run_self_test() -> int:
         valid_shared_wake_guard_widget,
         "",
         ("clear the shared wake guard after a stuck touch timeout",),
+    )
+    navigation_header = "script:\n  - id: navigate_after_api\n    then:\n"
+    active_wait = (
+        "      - wait_until:\n"
+        "          condition:\n"
+        "            lambda: |-\n"
+        "              return id(espcontrol_app).display().target_mode_is(\n"
+        "                  espcontrol::DisplayMode::ACTIVE);\n"
+    )
+    home_helper = "      - lambda: 'navigation_return_home(id(main_page)->obj);'\n"
+    expect_clock_bar_navigation_errors(
+        "guarded home helper remains available",
+        navigation_header + active_wait + home_helper,
+        (),
+    )
+    expect_clock_bar_navigation_errors(
+        "unguarded home helper rejected",
+        navigation_header + home_helper,
+        ("guard late home-page navigation",),
+    )
+    expect_clock_bar_navigation_errors(
+        "home helper before guard rejected despite later guarded legacy show",
+        navigation_header + home_helper + active_wait + "      - lvgl.page.show: main_page\n",
+        ("guard late home-page navigation",),
     )
     expect_clock_bar_navigation_errors(
         "late navigation requires active display mode",
