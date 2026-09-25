@@ -7,6 +7,28 @@ The Material Design Icons font is committed under `common/assets/fonts/` so
 firmware builds do not depend on downloading it during ESPHome configuration.
 Keep its filename version aligned with `MDI_VERSION` in `scripts/build.py`.
 
+The offline web UI embeds `materialdesignicons-web-subset-7.4.47.ttf`, not the
+full font. It retains every Product Model and fixed browser icon (currently 452
+codepoints), with identical outlines and advances. Its JSON manifest records the
+source and subset hashes plus the required codepoints. Normal builds validate
+these without a FontTools dependency and reject stale subsets.
+
+After changing the supported icon set or pinned MDI version, regenerate using
+an isolated environment with `fonttools==4.59.0`:
+
+```sh
+python3 -m venv .venv-fonttools
+.venv-fonttools/bin/python -m pip install fonttools==4.59.0
+.venv-fonttools/bin/python scripts/subset_web_icon_font.py
+.venv-fonttools/bin/python scripts/subset_web_icon_font.py --check
+python3 scripts/build.py www
+```
+
+Commit both subset files and the regenerated web assets; do not commit the
+virtual environment. Keep the original full font for firmware generation.
+The subset generator preserves the source bounding boxes: recalculating them
+would shift some icons even when their advances are unchanged.
+
 ## Font style names
 
 Device fonts use functional style IDs instead of physical names such as

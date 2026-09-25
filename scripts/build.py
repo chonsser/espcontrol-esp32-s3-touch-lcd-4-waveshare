@@ -43,6 +43,8 @@ ROOT = Path(__file__).resolve().parent.parent
 MDI_VERSION = "7.4.47"
 MDI_CSS_URL = f"https://cdn.jsdelivr.net/npm/@mdi/font@{MDI_VERSION}/css/materialdesignicons.css"
 MDI_WEB_FONT = ROOT / "common" / "assets" / "fonts" / f"materialdesignicons-webfont-{MDI_VERSION}.ttf"
+MDI_WEB_SUBSET = MDI_WEB_FONT.with_name(f"materialdesignicons-web-subset-{MDI_VERSION}.ttf")
+MDI_WEB_SUBSET_MANIFEST = MDI_WEB_SUBSET.with_suffix(".json")
 INTER_WEB_FONT = ROOT / "node_modules" / "vitepress" / "dist" / "client" / "theme-default" / "fonts" / "inter-roman-latin.woff2"
 ROBOTO_WEB_FONT = ROOT / "common" / "assets" / "fonts" / "roboto-latin.woff2"
 SUPPORT_BUTTON_IMAGE = ROOT / "common" / "assets" / "images" / "buy-me-a-coffee-button.png"
@@ -3751,6 +3753,26 @@ def web_mdi_icon_names(data, codepoints):
     return names
 
 
+def load_web_icon_font(required_codepoints):
+    """Validate the generated subset without adding a normal-build dependency."""
+    try:
+        data = MDI_WEB_SUBSET.read_bytes()
+        manifest = json.loads(MDI_WEB_SUBSET_MANIFEST.read_text(encoding="utf-8"))
+        valid = (
+            manifest["source_sha256"] == hashlib.sha256(MDI_WEB_FONT.read_bytes()).hexdigest()
+            and manifest["subset_sha256"] == hashlib.sha256(data).hexdigest()
+            and manifest["codepoints"] == sorted(set(required_codepoints))
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        valid = False
+    if not valid:
+        raise BuildError(
+            "Web icon font subset is missing or stale. Install fonttools==4.59.0 "
+            "and run python scripts/subset_web_icon_font.py before rebuilding www."
+        )
+    return data
+
+
 def embedded_web_mdi_styles():
     """Build the local interface and icon font CSS used by the browser bundle.
 
@@ -3777,7 +3799,9 @@ def embedded_web_mdi_styles():
     interface_font_data = base64.b64encode(INTER_WEB_FONT.read_bytes()).decode("ascii")
     preview_font_data = base64.b64encode(ROBOTO_WEB_FONT.read_bytes()).decode("ascii")
     support_button_image_data = base64.b64encode(SUPPORT_BUTTON_IMAGE.read_bytes()).decode("ascii")
-    icon_font_data = base64.b64encode(MDI_WEB_FONT.read_bytes()).decode("ascii")
+    icon_font_data = base64.b64encode(
+        load_web_icon_font(int(codepoints[name], 16) for name in icon_names)
+    ).decode("ascii")
     css = [
         "@font-face{font-family:'Roboto';src:url(data:font/woff2;base64,",
         preview_font_data,
@@ -4281,7 +4305,8 @@ def main():
             run_generated_transaction_self_test()
             web_i18n.run_self_test()
             print("Web i18n extractor and catalog self-test passed.")
-        except (BuildError, web_i18n.WebI18nError) as exc:
+            subprocess.run([sys.executable, str(ROOT / "tests/web/web_icon_font_test.py")], check=True)
+        except (BuildError, web_i18n.WebI18nError, subprocess.CalledProcessError) as exc:
             print(exc)
             return 1
         return 0

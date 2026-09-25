@@ -20,6 +20,9 @@ endforeach()
 add_test(NAME hls_config_test COMMAND ${Python3_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/hls_config_test.py)
 set_tests_properties(hls_config_test PROPERTIES SKIP_RETURN_CODE 77)
+add_test(NAME waveshare_memory_budget_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/waveshare_memory_budget_test.py)
+set_tests_properties(waveshare_memory_budget_test PROPERTIES SKIP_RETURN_CODE 77)
 find_program(HLS_FFMPEG ffmpeg)
 find_program(HLS_FFPROBE ffprobe)
 if(HLS_FFMPEG AND HLS_FFPROBE)

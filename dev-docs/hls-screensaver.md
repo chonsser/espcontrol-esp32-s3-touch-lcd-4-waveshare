@@ -4,7 +4,7 @@ The Waveshare ESP32-S3-Touch-LCD-4 profile includes a native video screensaver. 
 
 ## Integration and device status (2026-09-25)
 
-The shared branch **`integrate-hls-screens`** includes both the complete HLS branch (`c53104e82`) and independent-screen/navigation branch (`0e527673c`). Neither source branch nor stable `main` was discarded or replaced. The combined web application retains independent grids, Home Assistant screen mappings and HLS settings together.
+PR #5 merged **`integrate-hls-screens`** into **`main`** at `3b7e8259f`, preserving both the complete HLS branch (`c53104e82`) and independent-screen/navigation branch (`0e527673c`). Neither source history was discarded or replaced. The combined web application retains independent grids, Home Assistant screen mappings and HLS settings together. Follow-up work targets `main`.
 
 The reported **`Stopped`** status had a firmware cause: `display_mode_reconcile` omitted HLS from its presentation-effect allowlist. The controller could request HLS but never open its view, so the player correctly refused to start before presentation. Commit **`589dcd597`** includes HLS in that allowlist without relaxing priority, wake or OTA guards. A regression executes the actual YAML reconciliation tail and reproduces the missing dispatch before the fix.
 
@@ -14,7 +14,16 @@ The combined Waveshare **factory** firmware compiled successfully from **`589dcd
 
 **Playback remains blocked:** after the update, the saved HLS configuration attempts startup but reports `Not enough free memory for HLS`. Read-only device diagnostics show approximately **421,100 bytes of free PSRAM**, with a largest block of 417,792 bytes. The initial two segment and three RGB-frame buffers alone require **892,928 bytes**; later fixed media buffers bring the requirement to 1,171,460 bytes, before the decoder and other runtime overhead. The second segment allocation is the likely failure, but the exact allocation stage is not logged. Disassembly of the uploaded binary confirms the intended PSRAM allocator, not an accidental internal-heap fallback.
 
-The combined image copies instructions and read-only data into PSRAM (approximately 5.6 MiB reserved), alongside 1,843,200 bytes of display/draw/rotation buffers. The embedded compressed web UI alone contributes about 1.14 MB of read-only data. Playback therefore needs a revised memory budget, not another URL or a smaller startup buffer without decoder headroom. Moving read-only data back to flash is an unverified candidate, not a safe fix yet: display behavior during flash writes and OTA must be checked. No memory-layout change or follow-up flash has been performed. Moving video and touch exit are not verified. OTA success and API capabilities are not physical device acceptance.
+The installed combined image copies instructions and read-only data into PSRAM (approximately 5.6 MiB reserved), alongside 1,843,200 bytes of display/draw/rotation buffers. The embedded compressed web UI alone contributes about 1.14 MB of read-only data. Playback therefore needs a revised memory budget, not another URL or a smaller startup buffer without decoder headroom. Mapped instructions/read-only data cannot be safely freed as a runtime cache; XIP remains enabled to protect RGB operation during flash/NVS/OTA writes. Moving video and touch exit are not verified. OTA success and API capabilities are not physical device acceptance.
+
+### Memory optimization (not yet installed)
+
+- The browser icon font keeps all 452 supported codepoints with identical outlines and advances, but omits unused glyphs: 1,307,660 → 67,876 bytes. The combined offline web bundle becomes 1,106,598 bytes minified / 388,058 bytes gzip (Node zlib; firmware compression may differ slightly). All independent-screen and HLS settings remain present.
+- Only the three large media title/artist fonts change from 4bpp to 2bpp. Rasterized bitmap data falls from 739,514 to 370,017 bytes, with every glyph, size and metric retained, including Hebrew. The visual tradeoff is four coverage levels instead of sixteen for these fonts; other fonts are unchanged.
+- LVGL draw and software-rotation scratch use quarter-frames instead of full frames: 921,600 → 230,400 bytes, saving 691,200 bytes. Both full RGB scanout buffers, software rotation and atomic `begin_frame`/`end_frame` presentation remain intact. Chunked redraw performance at 90°/270° requires physical testing.
+- HLS segment/frame/decoder limits are unchanged. These are build-time resource reductions, not destructive runtime UI teardown or an internal-heap fallback.
+
+Fresh optimization checks: all 96 host tests ran using ESPHome Python, with **93 passing** and the same three Apple Clang scaffold failures (`web_ota_guard_test`, `reset_ota_wrapper_test`, `cover_art_activation_test`). Bare `npm test` fails eight tests because system Python additionally lacks PyYAML; it skips `hls_config_test` and the new profile test. The actual font raster comparison passes separately with ESPHome tooling. Font subsetting is deterministic and verifies all saved outlines/advances. The built overview suite passes 12/12, and the HLS browser suite passes 1/1. Compilation, linker reservation measurements and a separately authorized device test are needed before judging playback headroom.
 
 Automated integration evidence:
 
