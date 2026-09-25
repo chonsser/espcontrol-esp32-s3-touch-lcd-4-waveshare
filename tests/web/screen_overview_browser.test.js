@@ -22,6 +22,7 @@ async function mount(options = {}) {
   page.setDefaultTimeout(5000);
   const errors = [], writes = [], queries = [];
   const settings = { entity: "input_select.screen", rules: "0\tHome\n3\tMusic", wake: true };
+  const hls = options.hls ? { url: "http://video.test/old.m3u8", action: "Screen Dimmed", writes: [] } : null;
   const panel = { deviceProfile: profile, buttons: { 1: initialClock, 2: ";Rooms;Home;Auto;;;subpage" }, subpages: { 3: "@screen:Music\n~1|CK,Music clock,,,,,,,large_numbers=off", 4: "@screen:Weather\n~1|CK,Weather clock,,,,,,,large_numbers=off" }, settings: { button_order: "1,2" } };
   let document = panel, generation = 1;
   page.on("pageerror", error => errors.push(error.message));
@@ -44,7 +45,19 @@ async function mount(options = {}) {
       const result = options.discover ? await options.discover(entity) : { status: "ready", options: ["Home", "Music", "Weather"] };
       return route.fulfill({ json: { entity_id: entity, ...result } });
     }
-    const key = ["entity", "rules", "wake"].find(key => decodeURIComponent(url.pathname).toLowerCase().replace(/[^a-z]+/g, "_").includes("screen_navigation_" + key));
+    const entityPath = decodeURIComponent(url.pathname).toLowerCase().replace(/[^a-z]+/g, "_");
+    if (hls) {
+      const field = entityPath.includes("screen_saver_hls_url") ? "url" : entityPath.includes("screen_saver_action") ? "action" : null;
+      if (field) {
+        if (request.method() === "POST") {
+          hls[field] = url.searchParams.get(field === "url" ? "value" : "option");
+          hls.writes.push([field, hls[field]]);
+          return route.fulfill({ status: 200, json: {} });
+        }
+        return route.fulfill({ json: { value: hls[field], ...(field === "action" ? { option: ["Display Off", "Screen Dimmed", "Clock", "HLS Stream"] } : {}) } });
+      }
+    }
+    const key = ["entity", "rules", "wake"].find(key => entityPath.includes("screen_navigation_" + key));
     if (key) {
       if (request.method() === "POST") { settings[key] = key === "wake" ? url.pathname.endsWith("turn_on") : url.searchParams.get("value"); return route.fulfill({ status: 200, json: {} }); }
       return route.fulfill({ json: { value: settings[key] } });
@@ -81,7 +94,7 @@ async function mount(options = {}) {
   await page.getByRole("tab", { name: "Screen", exact: true }).click();
   await page.locator('[data-screen-slot="0"] .sp-main [data-slot="1"]').waitFor();
 
-  return { page, errors, writes, queries, settings, document: () => document };
+  return { page, errors, writes, queries, settings, hls, document: () => document };
 }
 async function edit(page, screen = 0, slot = 1) {
   await page.locator(`[data-screen-slot="${screen}"] .sp-main [data-slot="${slot}"]`).click();
@@ -97,6 +110,41 @@ async function save(page) {
   await page.waitForFunction(() => !document.querySelector(".sp-settings-overlay.sp-visible"));
 }
 
+
+test("one built app preserves independent screens while configuring the HLS screensaver", async () => {
+ const app = await mount({ hls: true }), { page } = app;
+ try {
+  await edit(page, 3);
+  await page.locator("#sp-sp-inp-clock-font").selectOption("mono");
+  await save(page);
+  const screens = structuredClone(app.document());
+  const navigation = { ...app.settings };
+  assert.match(screens.subpages[3], /clock_font=mono/);
+
+  await page.getByRole("tab", { name: "Settings", exact: true }).click();
+  const card = page.locator("#sp-settings .card").filter({ has: page.locator(".card-header h3", { hasText: /^Screensaver$/ }) });
+  await card.locator(".card-header").click();
+  await card.getByRole("button", { name: "Timer", exact: true }).click();
+  const url = page.locator("#sp-set-hls-url");
+  await url.waitFor();
+  assert.equal(await url.inputValue(), "http://video.test/old.m3u8");
+  await url.fill("http://video.test/combined.m3u8");
+  await url.locator("..").getByRole("button", { name: "Save", exact: true }).click();
+  await page.waitForFunction(() => !document.querySelector("#sp-set-hls-url").parentElement.querySelector("button").disabled);
+  await page.locator("#sp-set-clock-mode").selectOption("hls");
+  await page.waitForFunction(() => document.querySelector("#sp-set-sensor-clock-mode").value === "hls");
+  assert.deepEqual(app.hls.writes, [["url", "http://video.test/combined.m3u8"], ["action", "HLS Stream"]]);
+  assert.deepEqual(structuredClone(app.document()), screens, "HLS settings must not replace the independent grids");
+  assert.deepEqual(app.settings, navigation, "HLS settings must not change HA screen mappings");
+
+  await page.getByRole("tab", { name: "Screen", exact: true }).click();
+  assert.equal(await page.locator("[data-screen-slot]").count(), 4);
+  await edit(page, 3);
+  assert.equal(await page.locator("#sp-sp-inp-clock-font").inputValue(), "mono");
+  await page.locator(".sp-settings-close").click();
+  assert.deepEqual(app.errors, []);
+ } finally { await page.close(); }
+});
 
 test("shared source stays open above simultaneous independent screen editors", async () => {
  const app = await mount(), { page } = app;
