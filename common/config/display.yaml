@@ -620,6 +620,19 @@ select:
             then:
               - script.execute: screensaver_idle_check
 
+        - lambda: |-
+            // Apply edits to an existing automatic screensaver only; preserve
+            // active controls, schedule, manual sleep, media and alarm ownership.
+            auto &controller = id(espcontrol_app).display();
+            const auto decision = controller.resolve();
+            if (!espcontrol::presence_can_wake_display(decision)) return;
+            const auto action = id(screensaver_action).current_option();
+            const auto mode = screensaver_action_clock_mode(action) ? espcontrol::DisplayMode::CLOCK :
+                (screensaver_action_dimmed_mode(action) ? espcontrol::DisplayMode::DIMMED :
+                 espcontrol::DisplayMode::DISPLAY_OFF);
+            controller.request(*decision.winning_source, mode);
+            id(display_mode_reconcile).execute();
+
   - platform: template
     name: "${entity_screen_temperature_unit}"
     internal: true
