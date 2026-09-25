@@ -8,10 +8,16 @@ description:
 
 You can save your entire panel configuration as a file and restore it later. You'll find these options in the **Settings** tab on the [Setup](/features/setup) page, under the **Backup** section.
 
-- **Export** - saves your entire setup (cards, subpages, colours, brightness, screen schedule, display settings, Home Assistant artwork settings, and firmware update preferences) as a file you can keep as a backup.
+- **Export** - saves your entire setup (cards, subpages, independent screens, colours, brightness, screen schedule, display settings, Home Assistant artwork settings, and firmware update preferences) as a file you can keep as a backup.
 - **Import** - loads a previously saved file to restore your setup. If you're loading a backup from a different-sized panel, the cards are rearranged to fit automatically.
 
 Restored presence and screen-schedule sensors reconnect automatically without restarting the display.
+
+[Entity-based screen navigation](/features/subpages#choose-a-screen-from-an-entity)
+is also included. During import it pauses until the new layout is ready, then
+reconnects with targets mapped to the restored screens. Independent screen names
+and full grids are preserved separately from home-screen cards. If a screen
+cannot fit, its navigation rules are omitted and the import reports this.
 
 Backup files are versioned so newer EspControl releases can keep importing older backups safely. Older version 1 backups still import, and new exports use version 2 while keeping the same readable layout fields for compatibility.
 

@@ -21,6 +21,13 @@
 - Only work directly on `main` when the user explicitly asks for it, or for a tiny emergency/documentation-only change where a PR would add no value.
 - After a pull request is merged, clean up its local worktree and branch when practical.
 
+## Preserve completed features
+
+- Do not leave completed work stranded on separate branches while delivering firmware that drops it. When completed features are meant to coexist on the same device, integrate them into a common branch and push that branch to the user's fork.
+- Before building or flashing, identify the features the user already has and expects to keep. Verify that the integration branch contains their commits, that regenerated web assets expose them together, and that combined checks pass; a successful build of one feature branch is not enough.
+- Keep the source feature branches and PRs available until the combined version is tested and the user confirms merging. Do not automatically merge into `main`, close issues, or include unrelated unfinished work.
+- State the exact integration branch and build revision in delivery notes. Distinguish source integration, successful compilation, and physical device testing; never silently replace a combined firmware with a feature-only image.
+
 ## GitHub account
 
 - Use the user's private GitHub account `chonsser` for this project, including all GitHub CLI (`gh`) operations. Do not use work accounts.

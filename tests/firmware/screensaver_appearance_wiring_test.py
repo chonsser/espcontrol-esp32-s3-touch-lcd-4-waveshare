@@ -13,6 +13,7 @@ class Loader(yaml.SafeLoader):
 
 
 Loader.add_constructor("!lambda", lambda loader, node: loader.construct_scalar(node))
+Loader.add_constructor("!include", lambda loader, node: loader.construct_scalar(node))
 
 
 def config(path):

@@ -56,6 +56,7 @@
 #include "button_grid_climate.h"
 #include "button_grid_confirm.h"
 #include "button_grid_more_info.h"
+#include "button_grid_long_press_controls.h"
 #include "button_grid_long_press.h"
 #include "button_grid_option_select.h"
 #include "battery_status.h"
@@ -64,4 +65,5 @@
 #include "network_status.h"
 #include "button_grid_alarm.h"
 #include "button_grid_navigation.h"
+#include "button_grid_entity_screen_navigation.h"
 #include "button_grid_grid.h"

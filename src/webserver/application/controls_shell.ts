@@ -31,6 +31,9 @@ export interface ControlsShellDependencies {
     readonly schedule: typeof setTimeout;
     readonly cancelSchedule: (handle: any) => void;
     readonly buildSettingsPage: (parent: HTMLElement) => void;
+    readonly buildScreenToolbar?: () => HTMLElement;
+    readonly buildScreenSettings?: () => HTMLElement;
+    readonly buildScreenOverview?: (home: HTMLElement) => HTMLElement;
     readonly closeSettings: () => void;
     readonly postButtonPress: (name: string) => Promise<Response>;
     readonly waitForReboot: () => void;
@@ -170,6 +173,8 @@ export function createControlsShellFeature(
         var page: any = document.createElement("div");
         page.id = "sp-screen";
         page.className = "sp-page";
+        if (dependencies.buildScreenSettings) page.appendChild(dependencies.buildScreenSettings());
+        if (dependencies.buildScreenToolbar) page.appendChild(dependencies.buildScreenToolbar());
         var selectionBar: any = document.createElement("div");
         selectionBar.className = "sp-selection-bar";
         els.selectionBar = selectionBar;
@@ -185,7 +190,7 @@ export function createControlsShellFeature(
                 "</div>" +
                 '<div class="sp-main"></div>' +
                 "</div>";
-        page.appendChild(wrap);
+
         els.topbar = wrap.querySelector(".sp-topbar");
         els.clockBarSections = {
             left: wrap.querySelector('[data-clockbar-section="left"]'),
@@ -201,6 +206,7 @@ export function createControlsShellFeature(
         hint.textContent = i18n("tap to select \u2022 shift/ctrl+tap to multi-select \u2022 right click to manage");
         els.previewHint = hint;
         page.appendChild(hint);
+        page.insertBefore(dependencies.buildScreenOverview ? dependencies.buildScreenOverview(wrap) : wrap, hint);
         var overlay: any = document.createElement("div");
         overlay.className = "sp-settings-overlay";
         var modal: any = document.createElement("div");

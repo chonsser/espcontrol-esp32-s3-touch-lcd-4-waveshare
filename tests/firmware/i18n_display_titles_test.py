@@ -19,7 +19,12 @@ source = r'''
 #include "i18n_generated.h"
 struct ParsedCfg { std::string entity, label, sensor; };
 struct NavigationHomeTargetEntry { int slot; std::string label; };
-struct NavigationSubpageEntry { int slot; std::string kind; };
+struct NavigationSubpageEntry {
+  int slot;
+  std::string kind;
+  bool standalone = false;
+  std::string label{};
+};
 NavigationHomeTargetEntry parent{3, "Lighting"};
 NavigationSubpageEntry subpage{3, "lights"};
 int active_slot = 3;
@@ -67,6 +72,14 @@ int main() {
   active_slot = 3;
   set_espcontrol_language("en");
   assert(navigation_active_subpage_label() == "Lighting");
+  subpage.standalone = true;
+  subpage.label = "Niezależny ekran";
+  parent.slot = 9;  // No matching home card is required.
+  assert(navigation_active_subpage_label() == "Niezależny ekran");
+  set_espcontrol_language("pl");
+  assert(navigation_active_subpage_label() == "Niezależny ekran");
+  parent.slot = 3;
+  assert(navigation_active_subpage_label() == "Niezależny ekran");
 
   set_espcontrol_language("pl");
   ParsedCfg alarm{"alarm_control_panel.home", "Arm Home", "home"};

@@ -67,11 +67,11 @@ async function mount() {
     ...Object.entries(panel.subpages).map(([slot, state]) => ({ id: `text-subpage_${slot}_config`, state })),
   ]), panel);
   await page.getByRole("tab", { name: "Screen", exact: true }).click();
-  await page.locator('.sp-main [data-slot="1"]').waitFor();
+  await page.locator('.sp-screen-active .sp-main [data-slot="1"]').waitFor();
   return { page, errors, writes, document: () => document };
 }
 async function edit(page, slot = 1) {
-  await page.locator(`.sp-main [data-slot="${slot}"]`).click();
+  await page.locator(`.sp-screen-active .sp-main [data-slot="${slot}"]`).click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await page.locator(".sp-settings-overlay.sp-visible").waitFor();
   // The editor groups secondary fields into its real Card Settings disclosure.
@@ -88,7 +88,7 @@ for (const subpage of [false, true]) {
   test(`${subpage ? "subpage" : "main"}: real clock editor saves encoded formats and reopens the same native document`, async () => {
     const app = await mount(), { page } = app;
     try {
-      if (subpage) await page.locator('.sp-main [data-slot="2"] .sp-subpage-badge').click();
+      if (subpage) await page.locator('.sp-screen-active .sp-main [data-slot="2"] .sp-subpage-badge').click();
       await edit(page);
       const prefix = subpage ? "sp-sp-inp-" : "sp-inp-";
       const font = page.locator(`#${prefix}clock-font`);
@@ -105,7 +105,7 @@ for (const subpage of [false, true]) {
         return subpage ? codec.parseSubpageConfig(document.subpages[2]).buttons[0] : codec.parseButtonConfig(document.buttons[1]);
       }, { document: app.document(), subpage });
       assert.equal(saved.options, "large_numbers=off,text_size=medium,clock_font=mono,time_format=%25H%3A%25M%3A%25S,date_format=%25Y-%25m-%25d,date_size=large");
-      const preview = page.locator('.sp-main [data-slot="1"]');
+      const preview = page.locator('.sp-screen-active .sp-main [data-slot="1"]');
       assert.equal(await preview.locator(".sp-sensor-value").textContent(), "00:59:58");
       assert.equal(await preview.locator(".sp-clock-date").textContent(), "2027-01-01");
       const styles = await preview.evaluate(el => {
@@ -182,7 +182,7 @@ test("clock seconds refresh without rebuilding the editor or discarding an inval
     await page.locator("#sp-inp-clock-time-format").fill("%A");
     await page.evaluate(() => { window.clockDraftInput = document.querySelector('#sp-inp-clock-time-format'); });
     await page.clock.setFixedTime(new Date("2027-01-01T00:00:01Z"));
-    await page.waitForFunction(() => document.querySelector('.sp-main [data-slot="1"] .sp-sensor-value').textContent === '01:00:01');
+    await page.waitForFunction(() => document.querySelector('.sp-screen-active .sp-main [data-slot="1"] .sp-sensor-value').textContent === '01:00:01');
     assert.equal(await page.evaluate(() => window.clockDraftInput === document.querySelector('#sp-inp-clock-time-format')), true);
     assert.equal(await page.locator("#sp-inp-clock-time-format").inputValue(), "%A");
     assert.equal(await page.locator("#sp-inp-clock-time-format").getAttribute("aria-invalid"), "true");
@@ -196,7 +196,7 @@ test("clock custom 32-character lines shrink to fit; font and date-size choices 
   try {
     await edit(page);
     await page.locator("#sp-inp-clock-date-format-preset").selectOption("%d.%m.%Y");
-    const preview = page.locator('.sp-main [data-slot="1"]');
+    const preview = page.locator('.sp-screen-active .sp-main [data-slot="1"]');
     for (const [font, weight] of [["thin", "100"], ["bold", "700"], ["mono", "400"]]) {
       await page.locator("#sp-inp-clock-font").selectOption(font);
       const actual = await preview.evaluate(el => ['.sp-sensor-value', '.sp-clock-date'].map(selector => {

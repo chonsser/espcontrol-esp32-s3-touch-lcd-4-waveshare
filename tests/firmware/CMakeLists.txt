@@ -42,6 +42,10 @@ add_test(NAME web_ota_guard_test COMMAND
   ${CMAKE_COMMAND} -E env "CXX=${CMAKE_CXX_COMPILER}"
   ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/web_ota_guard_test.py)
 
+add_test(NAME web_response_status_test COMMAND
+  ${CMAKE_COMMAND} -E env "CXX=${CMAKE_CXX_COMPILER}"
+  ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/web_response_status_test.py)
+
 add_executable(button_grid_foundations_test button_grid_foundations_test.cpp)
 target_compile_features(button_grid_foundations_test PRIVATE cxx_std_17)
 target_compile_options(button_grid_foundations_test PRIVATE -Wall -Wextra -Werror)
@@ -531,13 +535,13 @@ add_test(NAME camera_feedback_test COMMAND
 
 add_executable(long_press_config_test long_press_config_test.cpp)
 target_compile_features(long_press_config_test PRIVATE cxx_std_17)
-target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror)
+target_compile_options(long_press_config_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_include_directories(long_press_config_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME long_press_config_test COMMAND long_press_config_test)
 
 add_executable(long_press_runtime_test long_press_runtime_test.cpp)
 target_compile_features(long_press_runtime_test PRIVATE cxx_std_17)
-target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror)
+target_compile_options(long_press_runtime_test PRIVATE -Wall -Wextra -Werror -UNDEBUG)
 target_include_directories(long_press_runtime_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME long_press_runtime_test COMMAND long_press_runtime_test)
 
@@ -546,3 +550,42 @@ target_compile_features(more_info_modal_test PRIVATE cxx_std_17)
 target_compile_options(more_info_modal_test PRIVATE -Wall -Wextra -Werror)
 target_include_directories(more_info_modal_test PRIVATE stubs ../../components/espcontrol)
 add_test(NAME more_info_modal_test COMMAND more_info_modal_test)
+
+add_executable(entity_screen_navigation_test entity_screen_navigation_test.cpp)
+target_compile_features(entity_screen_navigation_test PRIVATE cxx_std_17)
+target_compile_options(entity_screen_navigation_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(entity_screen_navigation_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME entity_screen_navigation_test COMMAND entity_screen_navigation_test)
+
+add_executable(entity_screen_navigation_runtime_test entity_screen_navigation_runtime_test.cpp)
+target_compile_features(entity_screen_navigation_runtime_test PRIVATE cxx_std_17)
+target_compile_options(entity_screen_navigation_runtime_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(entity_screen_navigation_runtime_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME entity_screen_navigation_runtime_test COMMAND entity_screen_navigation_runtime_test)
+add_test(NAME entity_screen_navigation_idle_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/entity_screen_navigation_idle_test.py ${CMAKE_CXX_COMPILER})
+add_test(NAME entity_screen_navigation_routing_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/entity_screen_navigation_routing_test.py ${CMAKE_CXX_COMPILER})
+
+add_executable(standalone_screen_config_test standalone_screen_config_test.cpp)
+target_compile_features(standalone_screen_config_test PRIVATE cxx_std_17)
+target_compile_options(standalone_screen_config_test PRIVATE -Wall -Wextra -Werror)
+target_include_directories(standalone_screen_config_test PRIVATE stubs ../../components/espcontrol)
+add_test(NAME standalone_screen_config_test COMMAND standalone_screen_config_test)
+add_test(NAME standalone_screen_runtime_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/standalone_screen_runtime_test.py)
+add_test(NAME standalone_alarm_parent_runtime_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/standalone_alarm_parent_runtime_test.py)
+
+foreach(test_name screen_navigation_options_test screen_navigation_options_runtime_test screen_navigation_options_coordinator_test)
+  add_executable(${test_name} ${test_name}.cpp)
+  target_compile_features(${test_name} PRIVATE cxx_std_17)
+  target_compile_options(${test_name} PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+  target_include_directories(${test_name} PRIVATE stubs ../../components/espcontrol)
+  add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach()
+
+add_test(NAME long_press_lifecycle_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/long_press_lifecycle_test.py)
+add_test(NAME long_press_yaml_routing_test COMMAND ${Python3_EXECUTABLE}
+  ${CMAKE_CURRENT_SOURCE_DIR}/long_press_yaml_routing_test.py)

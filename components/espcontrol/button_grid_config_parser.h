@@ -1312,7 +1312,7 @@ inline bool card_supports_long_press(const ParsedCfg &config) {
 inline std::string card_long_press_action(const ParsedCfg &config) {
   if (!card_supports_long_press(config)) return "";
   const std::string action = cfg_option_value(config.options, "long_press");
-  return action == "more_info" || action == "none" ? action : "";
+  return action == "more_info" || action == "none" ? action : "controls";
 }
 
 inline std::string copy_long_press_options(const std::string &target, const std::string &source) {

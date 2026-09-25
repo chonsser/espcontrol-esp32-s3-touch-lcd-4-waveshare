@@ -27,6 +27,57 @@ You can also right-click an empty space on the home screen and choose **Create S
 
 Subpages can contain Switch, Lights, Action, Local Action, Option Select, Webhook, Trigger, Sensor, Local Sensor, Doors & Windows, Presence, Slider, Fans, Vacuum, Lawn Mower, Cover, Garage Door, Lock, Alarm, Date & Time, Clock, World Clock, Weather, Camera, Media, Climate, Internal Switches, and Screen Lock cards. Subpages cannot contain another Subpage card.
 
+## Choose a Screen From an Entity
+
+In the web page, open **Screen**. All screen configurations appear beside one
+another, with a preview and value assignments for each screen. Use **+** to add
+an independent screen, then add cards in its editor. Each independent screen has
+a full grid: it does not need a home-screen card or reserve a Back card.
+Existing Subpage cards keep their normal Back card and continue to work as before.
+
+The **Screen from Home Assistant** section stays open above the editors. Enter
+the shared source entity once, for example `input_select.aktualny_ekran`.
+The panel automatically reads its available options through the existing
+Home Assistant connection. Choose the value that opens each screen from its
+list, then save the screen settings. For example, `Salon` can open a living-room
+screen and `Start` can return home. More than one value can select the same screen.
+
+Option discovery does not save the source or change the panel's current screen.
+The source must expose an `options` attribute, as standard `input_select` and
+`select` entities do; custom entity IDs are preserved. If Home Assistant is
+disconnected or the entity does not provide a list, a status and retry control
+appear. Existing assignments remain visible even if an option disappears, so
+you can replace or remove them without losing the other settings.
+
+You can rename or delete an independent screen here. Deleting it removes its
+cards and matching navigation rules, while keeping home-screen cards intact.
+Independent screens and ordinary subpages share the device's screen capacity;
+the editor tells you when no more screens fit. Update older firmware before
+creating independent screens.
+
+Values match exactly, including capital letters and spaces. `unknown`, `unavailable`,
+and values without a matching rule leave the current screen unchanged. Rules
+can only open screens; they do not press cards or run their actions. This feature
+also works on ESP32-S3 panels.
+
+The current matching value applies when the setting is enabled or the panel
+restarts. After that, each changed value opens its screen once. You can then
+navigate manually without the same value repeatedly pulling you back. The screen
+selected by Home Assistant stays selected until the next matching entity change;
+the home-screen timeout does not return it home. The screensaver can still dim or
+turn off the display while preserving the selected screen underneath. If you
+navigate to another screen manually, its normal home-screen timeout applies.
+
+**Wake the screen when the state changes** is enabled by default. Turn it off to wait until the display
+is awake. A screen lock, setup screen, alarm takeover, or active interactive
+control temporarily holds the latest selection; it applies once the panel is
+available. An unmatched value cancels a waiting selection.
+
+Clear the entity and save to disable this feature. The form rejects rules that
+exceed available storage. Backups include screens, names and these settings;
+when importing onto another panel, rules follow screens that fit the new layout.
+Rules for screens that cannot be restored are omitted with a notice.
+
 ## Open or Activate a Target From Home Assistant
 
 You can ask Home Assistant to wake the panel and open or activate something on the home screen. This is useful in automations, scripts, dashboards, or voice routines where you want the panel to jump to a relevant page or open a card's normal control popup.

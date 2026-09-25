@@ -54,6 +54,13 @@ class HaReadCoordinator {
     }
     return bytes;
   }
+  size_t retained_state_bytes() const {
+    size_t bytes = 0;
+    for (const auto &channel : subscription_channels_) {
+      bytes += channel.last_state.size() + channel.cached_state.size();
+    }
+    return bytes;
+  }
   size_t retained_channel_count() const {
     size_t count = 0;
     for (size_t i = 0; i < subscription_channels_.size(); i++) {
@@ -138,12 +145,15 @@ class HaReadCoordinator {
     return queue_on_subscription_channel(channel, std::move(callback_ref));
   }
 
+  // Replay storage is independent of retained reads. Metadata discovery opts
+  // out of both; other consumers on the same channel retain their own policy.
   bool subscribe(const std::string &entity_id,
                  const std::string &attribute,
                  Callback callback,
                  uint32_t scope,
                  void *owner = nullptr,
-                 bool retain_latest = false) {
+                 bool retain_latest = false,
+                 bool retain_replay = true) {
     if (!available() || entity_id.empty() || !callback) return false;
     auto callback_ref =
         std::allocate_shared<Callback>(ReboundAllocator<Callback>{}, std::move(callback));
@@ -160,10 +170,11 @@ class HaReadCoordinator {
           entity_id, attribute,
           [this, channel](State state) { invoke_subscription_channel(channel, state); });
     }
-    subscriptions_.push_back({callback_ref, scope, owner, channel, retain_latest});
+    subscriptions_.push_back({callback_ref, scope, owner, channel, retain_latest, retain_replay});
+    release_unrequested_replay_state(channel);
     // A grid rebuild re-subscribes on an existing channel; replay the last value
     // so rebuilt cards reflect the live state immediately.
-    if (!new_channel && subscription_channels_[channel].has_last_state) {
+    if (retain_replay && !new_channel && subscription_channels_[channel].has_last_state) {
       invoke(callback_ref, State(subscription_channels_[channel].last_state));
     }
     return true;
@@ -304,6 +315,7 @@ class HaReadCoordinator {
     void *owner = nullptr;
     size_t channel = 0;
     bool retain_latest = false;
+    bool retain_replay = true;
     bool pending_release = false;
   };
 
@@ -404,14 +416,16 @@ class HaReadCoordinator {
     }
     callbacks.reserve(matching_callbacks);
     bool retain_latest = false;
+    bool retain_replay = false;
     for (const auto &ref : subscriptions_) {
       if (!ref.pending_release && ref.channel == channel &&
           ref.callback && *ref.callback) {
         callbacks.push_back(ref.callback);
         retain_latest = retain_latest || ref.retain_latest;
+        retain_replay = retain_replay || ref.retain_replay;
       }
     }
-    if (callbacks.empty()) {
+    if (!retain_replay) {
       release_string_storage(subscription.last_state);
       subscription.has_last_state = false;
     } else {
@@ -526,11 +540,30 @@ class HaReadCoordinator {
 
   void release_inactive_channel_state() {
     for (size_t channel = 0; channel < subscription_channels_.size(); channel++) {
+      release_unrequested_replay_state(channel);
       if (channel_reuses_reads(channel)) continue;
       SubscriptionChannel &subscription = subscription_channels_[channel];
       release_string_storage(subscription.cached_state);
       release_callback_storage(subscription.pending_reads);
       subscription.has_cached_state = false;
+    }
+  }
+
+  void release_unrequested_replay_state(size_t channel) {
+    bool has_subscriber = false;
+    for (const auto &ref : subscriptions_) {
+      if (ref.pending_release || ref.channel != channel || !ref.callback || !*ref.callback) continue;
+      if (ref.retain_replay) return;
+      has_subscriber = true;
+    }
+    // Preserve replay across ordinary grid rebuilds with no active consumers.
+    // When only opt-out consumers remain, release any earlier shared payload.
+    if (has_subscriber) {
+      release_string_storage(subscription_channels_[channel].last_state);
+      subscription_channels_[channel].has_last_state = false;
+    } else {
+      // A replacement consumer must be able to retry an unanswered request.
+      subscription_channels_[channel].fresh_request_pending = false;
     }
   }
 

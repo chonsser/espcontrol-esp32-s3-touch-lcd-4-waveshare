@@ -82,7 +82,7 @@ export function createInitialState(deviceConfig: DeviceConfig): AppState {
     c6FirmwareChecking: false, c6FirmwareInstalling: false, autoUpdate: true, updateFrequency: "Daily",
     updateFreqOptions: ["Hourly", "Daily", "Weekly", "Monthly"], configLocked: false, configLockReason: "",
     clockBarDragItem: "", clockBarTempRestoreIndoor: false, clockBarTempRestoreOutdoor: true,
-    clockBarTempRestoreEntities: [], subpages: {}, subpageRaw: {}, subpageSavePending: {}, editingSubpage: null,
+    clockBarTempRestoreEntities: [], subpages: {}, subpageRaw: {}, subpageSavePending: {}, subpageNativeRaw: {}, editingSubpage: null,
     subpageSelectedSlots: [], subpageLastClicked: -1, clipboard: null, settingsDraft: null,
     entityPostPaths: {}, entityNames: {},
   };

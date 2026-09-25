@@ -420,7 +420,7 @@ export function createButtonSettingsFeature(
             }
             var saved: any = cardEditorSaveController.apply(draft, {
                 slot: slot, maxSlots: c.maxSlots, isSubpage: c.isSub,
-                grid: c.grid, buttons: c.buttons,
+                grid: c.grid, buttons: c.buttons, subpages: state.subpages,
             });
             if (!saved.accepted) {
                 if (draft.isNew)
@@ -860,7 +860,7 @@ export function createButtonSettingsFeature(
         b.options = copyLongPressOptions(b.options, longPressOptions);
         if (cardSupportsLongPress(b)) {
             const holdAction = selectField(i18n("Long Press"), idPrefix + "long-press", [
-                ["", i18n("Same as tap")], ["more_info", i18n("Show more info")], ["none", i18n("No action")],
+                ["", i18n("Controls / details (default)")], ["more_info", i18n("Show more info")], ["none", i18n("No action")],
             ], longPressAction(b.options), function (this: HTMLSelectElement) {
                 longPressOptions = setConfigOptionValue(b.options, "long_press", this.value);
                 b.options = copyLongPressOptions(b.options, longPressOptions);

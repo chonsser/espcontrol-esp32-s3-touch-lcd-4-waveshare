@@ -1,3 +1,4 @@
+import { createScreenNavigationEditor } from "./application/screen_navigation_editor";
 import { i18n } from "./i18n";
 import { resetAwareFetch } from "./api/reset_session";
 import * as DeviceConfig from "./device_config";
@@ -94,6 +95,7 @@ import { createBackupContractFeature } from "./application/backup_contract";
 import { createAppBackupFeature } from "./application/app_backup";
 import { createAppStatusPreviewFeature, type AppStatusPreviewFeature } from "./application/app_status_preview";
 import { createPanelIdentityFeature } from "./application/panel_identity";
+import { createScreenNavigationFeature } from "./application/screen_navigation";
 import { createAppTitleFeature } from "./application/app_title";
 import { createAppConfigEventsFeature } from "./application/app_config_events";
 import { createAppStateEventHandlersFeature } from "./application/app_state_event_handlers";
@@ -320,6 +322,9 @@ function composeApplicationContext(): ApplicationContext {
     state: AppInstance.state,
     schedule: dom.schedule,
     cancelSchedule: (handle) => { dom.window.clearTimeout(handle); },
+    buildScreenToolbar: () => screenNavigation.buildToolbar(),
+    buildScreenSettings: () => screenNavigation.buildCard(),
+    buildScreenOverview: home => screenNavigation.buildOverview(home),
     buildSettingsPage: (parent) => { settingsPage.buildSettingsPage(parent); },
     closeSettings: () => { selection.closeSettings(); },
     postButtonPress: (name) => requestApi.postButtonPress(name),
@@ -618,6 +623,7 @@ function composeApplicationContext(): ApplicationContext {
     },
   );
   preview = createPreviewRenderFeature({
+    syncScreenNavigation: () => screenNavigation.sync(),
     updateClockBarItemUi: () => statusPreview.updateClockBarItemUi(),
     document: dom.document,
     layout,
@@ -822,8 +828,49 @@ function composeApplicationContext(): ApplicationContext {
     },
     showBanner: shell.showBanner,
   });
+  const screenNavigation = createScreenNavigationFeature({
+    document: dom.document, deviceApi, requestApi, entityState, fields,
+    buttons: () => AppInstance.state.buttons,
+    previews: {
+      register: (slot, wrap) => {
+        const main = wrap.querySelector<HTMLElement>(".sp-main")!;
+        main.setAttribute("role", "grid"); main.setAttribute("aria-label", i18n("Button grid"));
+        runtime.els.screenPreviews ||= new Map<number, HTMLElement>();
+        runtime.els.screenPreviews.set(slot, main);
+        interactions.setup(main, slot);
+      },
+      remove: slot => runtime.els.screenPreviews?.delete(slot),
+      render: () => preview.render(),
+    },
+    editor: createScreenNavigationEditor({
+      state: AppInstance.state,
+      maxSlots: () => layout.totalSlots,
+      whenComplete: () => stateLoader.whenComplete(),
+      native: nativePanelConfig,
+      codec: configurationCodec,
+      queueIdle: () => requestApi.postQueueIdle(),
+      select: (slot) => {
+        selection.hideSettingsOverlay();
+        if (slot) configurationCodec.enterSubpage(slot);
+        else configurationCodec.exitSubpage();
+      },
+      create: slot => configurationPersistence.createStandaloneScreen(slot),
+      render: () => preview.render(),
+      confirm: message => dom.window.confirm(message),
+      capabilities: async () => {
+        const result = await deviceApi.getJson<{ screen_navigation?: { version?: number; standalone?: boolean } }>("/api/v1/capabilities");
+        return result.ok && result.value.screen_navigation?.version === 2 && result.value.screen_navigation?.standalone === true;
+      },
+      readDocument: async () => {
+        const response = await resetAwareFetch("/api/v1/config", { cache: "no-store", credentials: "include" });
+        if (!response.ok) throw new Error("Could not load screens");
+        return new Uint8Array(await response.arrayBuffer());
+      },
+    }),
+  });
   const backupApplication = createAppBackupFeature({
     identity,
+    screenNavigation,
     layout,
     backupExport,
     backupImport,
@@ -916,7 +963,7 @@ function composeApplicationContext(): ApplicationContext {
     screensaverTimeout, screenRotation, appearance, clockBarState, entityState,
     shell, requestApi, statusPreview, artworkPostApi, schedulePostApi,
     clockBarPostApi, fields, settingsHelpers, scheduleSection, coverArtSection,
-    systemSection, preview, screensaverClockFont, screensaverClockFormat, screensaverHls,
+    systemSection, preview, screensaverClockFont, screensaverClockFormat, screensaverHls, screenNavigation,
   );
   requestApi.connectReconnect(appEvents.connect);
   // Start after composition; the service retries on a later Settings visit if offline.

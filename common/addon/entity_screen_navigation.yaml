@@ -1,0 +1,101 @@
+# Select a registered screen from an exact Home Assistant state value.
+# These internal settings persist independently of the HA source entity.
+text:
+  - platform: template
+    id: screen_navigation_entity
+    name: "${entity_screen_navigation_entity}"
+    internal: true
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 100
+    mode: text
+    entity_category: config
+    update_interval: never
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      - script.execute: entity_screen_navigation_refresh
+
+  - platform: template
+    id: screen_navigation_rules
+    name: "${entity_screen_navigation_rules}"
+    internal: true
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 255
+    mode: text
+    entity_category: config
+    update_interval: never
+    web_server:
+      sorting_group_id: sg_display
+    on_value:
+      - script.execute: entity_screen_navigation_refresh
+
+switch:
+  - platform: template
+    id: screen_navigation_wake
+    name: "${entity_screen_navigation_wake}"
+    internal: true
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_display
+    on_turn_on:
+      - script.execute: entity_screen_navigation_refresh
+    on_turn_off:
+      - script.execute: entity_screen_navigation_refresh
+
+esphome:
+  on_boot:
+    - priority: -300
+      then:
+        - script.execute: entity_screen_navigation_refresh
+
+script:
+  - id: entity_screen_navigation_refresh
+    mode: restart
+    then:
+      - lambda: |-
+          configure_entity_screen_navigation(
+              id(screen_navigation_entity).state,
+              id(screen_navigation_rules).state,
+              id(screen_navigation_wake).state);
+
+interval:
+  - interval: 500ms
+    then:
+      - lambda: |-
+          auto &controller = id(espcontrol_app).display();
+          auto *main_screen = id(main_page) != nullptr ? id(main_page)->obj : nullptr;
+          espcontrol::ScreenNavigationConditions conditions;
+          conditions.ready = main_screen != nullptr &&
+              !id(refresh_button_grid).is_running() &&
+              !id(refresh_subpage_grid).is_running() &&
+              !id(button_order).state.empty() &&
+              (!navigation_home_targets().empty() || !navigation_subpages().empty()) &&
+              ha_api_state_connected();
+          conditions.active = controller.current_mode_is(espcontrol::DisplayMode::ACTIVE) &&
+              controller.target_mode_is(espcontrol::DisplayMode::ACTIVE);
+          conditions.waking = id(screensaver_wake).is_running() ||
+              controller.has_transition_in_progress();
+          conditions.locked = screen_lock_enabled();
+          conditions.protected_display = id(connectivity_setup_display_active) ||
+              controller.request_active(espcontrol::DisplayRequestSource::ONBOARDING) ||
+              controller.request_active(espcontrol::DisplayRequestSource::BOOT_GUARD) ||
+              controller.takeover_active(espcontrol::DisplayTakeoverKind::CRITICAL) ||
+              controller.takeover_active(espcontrol::DisplayTakeoverKind::INTERACTIVE) ||
+              alarm_display_takeover_active();
+          const auto action = step_entity_screen_navigation(conditions, main_screen);
+          if (action == espcontrol::ScreenNavigationAction::WAKE) {
+            id(screensaver_wake).execute();
+          } else if (action == espcontrol::ScreenNavigationAction::NAVIGATE) {
+            lv_disp_trig_activity(nullptr);
+            navigation_refresh_subpage_label();
+            id(screensaver_idle_check).execute();
+            id(home_screen_idle_check).execute();
+          }

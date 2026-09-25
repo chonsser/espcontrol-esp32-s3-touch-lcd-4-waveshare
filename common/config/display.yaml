@@ -5,6 +5,9 @@
 # All values persist across reboots and are editable via the webserver v3 UI.
 # =============================================================================
 
+packages:
+  entity_screen_navigation: !include ../addon/entity_screen_navigation.yaml
+
 globals:
   - id: screen_rotation_ready
     type: bool

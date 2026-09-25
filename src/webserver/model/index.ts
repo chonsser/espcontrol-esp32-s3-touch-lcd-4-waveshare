@@ -195,3 +195,22 @@ export type {
   StructuredSubpageConfig,
   SubpageGridSource,
 } from "./subpage";
+
+export {
+  STANDALONE_SCREEN_PREFIX,
+  firstFreeStandaloneScreenSlot,
+  hasStandaloneScreens,
+  isProtectedSubpageStorage,
+  isQuarantinedStandaloneSubpage,
+  isStandaloneSubpage,
+  parseStandaloneScreenEnvelope,
+  standaloneScreenNameError,
+  serializeHomeGridOrder,
+  wrapStandaloneScreenConfig,
+} from "./standalone_screens";
+
+export type {
+  StandaloneScreenEnvelope,
+  StandaloneScreenNameError,
+  StandaloneSubpageMetadata,
+} from "./standalone_screens";

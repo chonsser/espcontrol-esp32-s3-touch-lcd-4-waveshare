@@ -43,6 +43,12 @@ namespace esphome::web_server_idf {
 #ifndef HTTPD_409
 #define HTTPD_409 "409 Conflict"
 #endif
+#ifndef HTTPD_429
+#define HTTPD_429 "429 Too Many Requests"
+#endif
+#ifndef HTTPD_503
+#define HTTPD_503 "503 Service Unavailable"
+#endif
 
 #define CRLF_STR "\r\n"
 #define CRLF_LEN (sizeof(CRLF_STR) - 1)
@@ -462,11 +468,20 @@ void AsyncWebServerRequest::init_response_(AsyncWebServerResponse *rsp, int code
     case 200:
       status = HTTPD_200;
       break;
+    case 400:
+      status = HTTPD_400;
+      break;
     case 404:
       status = HTTPD_404;
       break;
     case 409:
       status = HTTPD_409;
+      break;
+    case 429:
+      status = HTTPD_429;
+      break;
+    case 503:
+      status = HTTPD_503;
       break;
     default:
       status = HTTPD_500;

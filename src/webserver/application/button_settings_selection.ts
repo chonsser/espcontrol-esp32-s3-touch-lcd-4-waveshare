@@ -174,7 +174,7 @@ export function createButtonSettingsSelectionFeature(runtime: UiRuntimeState, cl
             (els.selectionBar && els.selectionBar.contains(target)) ||
             (els.settingsOverlay && els.settingsOverlay.contains(target)) ||
             dependencies.contextMenuContains(target) ||
-            (target.closest && target.closest(".sp-ctx-menu")));
+            (target.closest && target.closest(".sp-ctx-menu, .sp-screen-toolbar, .sp-screen-navigation")));
     }
     function handleDocumentSelectionMouseDown(this: any, e?: any) {
         if (e.button !== 0)

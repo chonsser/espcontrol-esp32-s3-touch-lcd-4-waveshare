@@ -1,0 +1,13 @@
+# Independent screens in the Screen tab
+
+The user wants entity-controlled screen configuration in the **Screen / Ekran** tab and a **+** beside the screen selector that creates a new screen editor. We interpret new screens as independent full grids, without adding a home-screen tile. Existing home cards and ordinary subpages remain unchanged.
+
+The Screen tab will contain the screen selector, accessible add action, source HA entity, selected screen's exact state value, and wake preference. The current editor is reused for the selected screen. Names and state values are editable; creating a screen persists an empty named screen and opens its editor. Delete must clearly identify the selected screen, never delete its same-ID home card, and remove its mappings. The default home screen cannot be deleted. Ordinary subpages can still be edited normally.
+
+Storage uses the already allocated subpage payload pool, independently of home buttons. A standalone payload is `@screen:<encodeConfigField(name)>\n<existing-subpage-payload>`. Metadata fields in the web model are `standalone?: true` and `screenLabel?: string`. Names are nonempty, at most 64 UTF-8 bytes, and contain no control characters. Old subpage formats remain byte-compatible. Standalone screens have all device grid cells and no injected Back tile. Existing per-device payload limits remain enforced. A slot holding an ordinary subpage or any standalone screen cannot be overwritten by creating the other kind.
+
+The firmware advertises `screen_navigation: {version: 2, standalone: true}` from `/api/v1/capabilities`. Older firmware may still use existing state mappings, but cannot create independent screens. UI must finish loading all saved subpages (or use a complete native document) before allocating. Normal card delete, copy, paste, and type changes must preserve independent payloads stored at the same numeric ID. Backups preserve metadata, allocate independent screen IDs separately from home-button remapping, remap entity rules correctly and warn about omitted screens.
+
+Existing exact-value navigation, one-shot delivery, wake option, lock/takeover protection, and registered-screen-only behavior remain. Empty source disables switching. No HA actions are executed by navigation.
+
+Firmware updates to the user's Waveshare panel MUST use the ignored local `devices/waveshare-esp32-s3-touch-lcd-4/dev-pr-navigation.yaml` overlay of factory YAML, preserving provisioned WiFi, MAC-suffixed identity and dynamic API encryption. Stock dev.yaml must not be used for this panel. OTA target is 192.168.11.59; current panel has recovered successfully and the previous version's UI matches its built asset.

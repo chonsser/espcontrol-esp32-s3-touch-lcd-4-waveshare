@@ -60,6 +60,30 @@ export const ENTITY_CATALOG = {
         "screen_wake"
       ]
     },
+    "screen_navigation_entity": {
+      "domain": "text",
+      "name": "Screen Navigation: Entity",
+      "objectIds": [
+        "screen_navigation__entity",
+        "screen_navigation_entity"
+      ]
+    },
+    "screen_navigation_rules": {
+      "domain": "text",
+      "name": "Screen Navigation: Rules",
+      "objectIds": [
+        "screen_navigation__rules",
+        "screen_navigation_rules"
+      ]
+    },
+    "screen_navigation_wake": {
+      "domain": "switch",
+      "name": "Screen Navigation: Wake",
+      "objectIds": [
+        "screen_navigation__wake",
+        "screen_navigation_wake"
+      ]
+    },
     "indoor_temp_enable": {
       "domain": "switch",
       "name": "Indoor Temp Enable"

@@ -34,7 +34,7 @@ export interface PreviewInteractionsDependencies {
 }
 export interface PreviewInteractionsFeature {
     clearPlaceholder(): void;
-    setup(): void;
+    setup(container?: HTMLElement, screenSlot?: number): void;
     addSlot(position?: any): void;
     addSubpageSlot(position?: any): void;
     duplicateButton(slot?: any): void;
@@ -88,12 +88,48 @@ export function createPreviewInteractionsFeature(
         if (selection && selection.removeAllRanges)
             selection.removeAllRanges();
     }
-    function setupPreviewEvents(this: any) {
-        var container: any = els.previewMain;
+    const registered = new WeakSet<HTMLElement>();
+    let dragScreen: number | null = null;
+    let dragContainer: HTMLElement | null = null;
+    function clearDragOwnership() {
+        dragScreen = null;
+        dragContainer?.classList.remove("sp-drag-active");
+        dragContainer = null;
+    }
+    function setupPreviewEvents(this: any, previewContainer?: HTMLElement, screenSlot: number = 0) {
+        var container: any = previewContainer || els.previewMain;
+        if (registered.has(container)) return;
+        registered.add(container);
+        const activate = (event: Event) => {
+            if (isConfigLocked()) return;
+            if (dragScreen !== null && dragScreen !== screenSlot) {
+                event.preventDefault(); event.stopImmediatePropagation();
+                if (event.type === "drop") {
+                    clearDragOwnership();
+                    runtime.dragSrcPos = -1;
+                    runtime.previewDropIdx = -1;
+                    clearPlaceholder();
+                }
+                return;
+            }
+            if ((state.editingSubpage || 0) !== screenSlot) {
+                hideSettingsOverlay();
+                runtime.didDrag = false;
+                state.editingSubpage = screenSlot || null;
+                state.subpageSelectedSlots = [];
+                state.subpageLastClicked = -1;
+                state.selectedSlots = [];
+                state.lastClickedSlot = -1;
+                state.clockBarSelectedItem = "";
+                els.previewMain = container;
+            }
+        };
+        for (const type of ["mousedown", "click", "contextmenu", "dragstart", "dragenter", "dragover", "drop"]) container.addEventListener(type, activate, true);
         var pendingCellIdx: any = -1;
         state.clockBarDragItem = "";
-        if (els.topbar) {
-            els.topbar.addEventListener("click", function (this: any, e?: any) {
+        const topbar = container.parentElement?.querySelector(".sp-topbar") || els.topbar;
+        if (topbar) {
+            topbar.addEventListener("click", function (this: any, e?: any) {
                 if (isConfigLocked()) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -106,7 +142,7 @@ export function createPreviewInteractionsFeature(
                 e.stopPropagation();
                 selectClockBarItem(target.getAttribute("data-clockbar-item"));
             });
-            els.topbar.addEventListener("keydown", function (this: any, e?: any) {
+            topbar.addEventListener("keydown", function (this: any, e?: any) {
                 if (e.key !== "Enter" && e.key !== " ")
                     return;
                 var target: any = e.target.closest("[data-clockbar-item]");
@@ -115,7 +151,7 @@ export function createPreviewInteractionsFeature(
                 e.preventDefault();
                 selectClockBarItem(target.getAttribute("data-clockbar-item"));
             });
-            els.topbar.addEventListener("contextmenu", function (this: any, e?: any) {
+            topbar.addEventListener("contextmenu", function (this: any, e?: any) {
                 if (isConfigLocked()) {
                     e.preventDefault();
                     return;
@@ -227,6 +263,8 @@ export function createPreviewInteractionsFeature(
             if (!target)
                 return;
             var pos: any = parseInt(target.getAttribute("data-pos"), 10);
+            dragScreen = screenSlot;
+            dragContainer = container;
             runtime.dragSrcPos = pos;
             if (dependencies.layout.config.dragAnimation)
                 runtime.dragSrcEl = target;
@@ -240,6 +278,7 @@ export function createPreviewInteractionsFeature(
             }
         });
         container.addEventListener("dragend", function (this: any) {
+            clearDragOwnership();
             runtime.dragSrcPos = -1;
             runtime.previewDropIdx = -1;
             runtime.dragEnterCount = 0;
@@ -302,6 +341,8 @@ export function createPreviewInteractionsFeature(
             }
         });
         container.addEventListener("drop", function (this: any, e?: any) {
+            // Redrawing detaches the original source, so its dragend may never reach this grid.
+            clearDragOwnership();
             if (isConfigLocked()) {
                 e.preventDefault();
                 return;
@@ -424,6 +465,18 @@ export function createPreviewInteractionsFeature(
         }
         return -1;
     }
+    function firstFreeOrdinarySubpageSlot(this: any) {
+        var used: any = {};
+        state.grid.forEach(function (this: any, s?: any) {
+            if (s > 0)
+                used[s] = true;
+        });
+        for (var i: any = 1; i <= dependencies.layout.numSlots; i++) {
+            if (!used[i] && !state.subpages[i])
+                return i;
+        }
+        return -1;
+    }
     function firstFreeCell(this: any, afterPos?: any) {
         var start: any = afterPos != null ? afterPos : 0;
         for (var i: any = 0; i < dependencies.layout.numSlots; i++) {
@@ -478,7 +531,7 @@ export function createPreviewInteractionsFeature(
         var c: any = ctx();
         if (c.isSub)
             return;
-        var slot: any = firstFreeSlot();
+        var slot: any = firstFreeOrdinarySubpageSlot();
         if (slot < 0)
             return;
         state.buttons[slot - 1] = emptyButtonConfig("subpage");
@@ -493,7 +546,10 @@ export function createPreviewInteractionsFeature(
     function duplicateButton(this: any, srcSlot?: any) {
         if (isConfigLocked())
             return;
-        var newSlot: any = firstFreeSlot();
+        var src: any = state.buttons[srcSlot - 1];
+        var copiesSubpage: any = src && src.type === "subpage" && state.subpages[srcSlot] &&
+            !EspControlModel.isProtectedSubpageStorage(state.subpages[srcSlot]);
+        var newSlot: any = copiesSubpage ? firstFreeOrdinarySubpageSlot() : firstFreeSlot();
         if (newSlot < 0)
             return;
         var srcSz: any = state.sizes[srcSlot] || 1;
@@ -501,9 +557,8 @@ export function createPreviewInteractionsFeature(
         var placement: any = findDuplicatePlacement(state.grid, srcPos + 1, srcSz, dependencies.layout.numSlots);
         if (placement.pos < 0)
             return;
-        var src: any = state.buttons[srcSlot - 1];
         var extraImageCards: any = isImageCard(src) ? 1 : 0;
-        if (state.subpages[srcSlot])
+        if (copiesSubpage)
             extraImageCards += imageCardCountInSubpage(state.subpages[srcSlot]);
         if (!canAddImageCards(extraImageCards)) {
             showImageCardLimitBanner();
@@ -520,7 +575,7 @@ export function createPreviewInteractionsFeature(
         else
             state.sizes[newSlot] = placement.size;
         placeSlotAt(state.grid, newSlot, placement.pos, placement.size);
-        if (state.subpages[srcSlot]) {
+        if (copiesSubpage) {
             var spJson: any = serializeSubpageConfig(state.subpages[srcSlot]);
             var spCopy: any = parseSubpageConfig(spJson);
             spCopy.sizes = {};
@@ -529,7 +584,8 @@ export function createPreviewInteractionsFeature(
         }
         dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
         configPersistence.saveButtonConfig(newSlot);
-        configPersistence.saveSubpageEntity(newSlot);
+        if (!EspControlModel.isProtectedSubpageStorage(state.subpages[newSlot]) || copiesSubpage)
+            configPersistence.saveSubpageEntity(newSlot);
         state.selectedSlots = [newSlot];
         state.lastClickedSlot = newSlot;
         renderPreview();
@@ -601,9 +657,12 @@ export function createPreviewInteractionsFeature(
         else {
             dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
             state.buttons[slot - 1] = emptyButtonConfig();
-            delete state.subpages[slot];
+            var protectedSubpage: any = EspControlModel.isProtectedSubpageStorage(state.subpages[slot]);
+            if (!protectedSubpage)
+                delete state.subpages[slot];
             configPersistence.saveButtonConfig(slot);
-            configPersistence.saveSubpageEntity(slot);
+            if (!protectedSubpage)
+                configPersistence.saveSubpageEntity(slot);
         }
         renderPreview();
         renderButtonSettings();
@@ -638,9 +697,12 @@ export function createPreviewInteractionsFeature(
         else {
             slots.forEach(function (this: any, slot?: any) {
                 state.buttons[slot - 1] = emptyButtonConfig();
-                delete state.subpages[slot];
+                var protectedSubpage: any = EspControlModel.isProtectedSubpageStorage(state.subpages[slot]);
+                if (!protectedSubpage)
+                    delete state.subpages[slot];
                 configPersistence.saveButtonConfig(slot);
-                configPersistence.saveSubpageEntity(slot);
+                if (!protectedSubpage)
+                    configPersistence.saveSubpageEntity(slot);
             });
             dependencies.requestApi.postText(entityName("button_order"), serializeGrid(state.grid));
         }
