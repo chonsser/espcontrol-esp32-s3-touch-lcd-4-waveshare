@@ -21,6 +21,12 @@
 - Only work directly on `main` when the user explicitly asks for it, or for a tiny emergency/documentation-only change where a PR would add no value.
 - After a pull request is merged, clean up its local worktree and branch when practical.
 
+## GitHub account
+
+- Use the user's private GitHub account `chonsser` for this project, including all GitHub CLI (`gh`) operations. Do not use work accounts.
+- Before authenticated GitHub operations, verify the active account with `gh auth status`; if needed, select it with `gh auth switch --hostname github.com --user chonsser`.
+- Target the user's fork explicitly with `--repo chonsser/espcontrol-esp32-s3-touch-lcd-4-waveshare` when using `gh`. Do not open upstream pull requests unless the user asks.
+
 ## Pull requests
 
 - PR descriptions should explain the purpose of the change, the practical impact, and how it was checked.
